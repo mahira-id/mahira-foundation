@@ -1,5 +1,5 @@
 type LogoProps = {
-  tone?: "blue" | "silver" | "flat";
+  tone?: "blue" | "silver" | "flat" | "emblem";
   className?: string;
   priority?: boolean;
 };
@@ -8,9 +8,10 @@ const logoSources = {
   blue: "/logo/MAHIRA_L_BLUE.svg",
   silver: "/logo/MAHIRA_L_SILVER.svg",
   flat: "/logo/MAHIRA_L_FLAT.svg",
+  emblem: "/logo/M_MAHIRA.svg",
 } as const;
 
-export function Logo({ tone = "blue", className, priority = false }: LogoProps) {
+export function Logo({ tone = "emblem", className, priority = false }: LogoProps) {
   return (
     // The brand asset is a local SVG lockup; next/image would add no value here.
     // eslint-disable-next-line @next/next/no-img-element
@@ -18,10 +19,10 @@ export function Logo({ tone = "blue", className, priority = false }: LogoProps) 
       alt="Mahira Indonesia Development"
       className={className}
       decoding="async"
-      height={373}
+      height={tone === "emblem" ? 320 : 373}
       loading={priority ? "eager" : "lazy"}
       src={logoSources[tone]}
-      width={2221}
+      width={tone === "emblem" ? 700 : 2221}
     />
   );
 }

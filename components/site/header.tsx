@@ -65,7 +65,7 @@ export function Header() {
           <Logo
             className="h-7 w-auto sm:h-8"
             priority
-            tone="silver"
+            tone="emblem"
           />
         </a>
 
@@ -96,7 +96,7 @@ export function Header() {
           aria-controls="mobile-navigation"
           aria-expanded={open}
           aria-label={open ? "Tutup menu" : "Buka menu"}
-          className="inline-flex min-h-11 items-center gap-2 border border-white/35 px-3 text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:border-white hover:bg-white/10 lg:hidden"
+          className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-white/35 px-3 text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:border-white hover:bg-white/10 lg:hidden"
           onClick={() => setOpen((current) => !current)}
           ref={menuButtonRef}
           type="button"

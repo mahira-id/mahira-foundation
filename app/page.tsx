@@ -219,7 +219,7 @@ export default function Home() {
             <div className="mt-2">
               {publications.map((publication, index) => (
                 <details className="publication-row border-b border-line" key={publication.slug}>
-                  <summary className="group grid cursor-pointer gap-3 px-1 py-5 transition-colors hover:bg-silver/60 md:grid-cols-12 md:items-center md:gap-6 md:px-3 md:py-6">
+                  <summary className="group grid cursor-pointer gap-3 rounded-sm px-1 py-5 transition-colors hover:bg-silver/60 md:grid-cols-12 md:items-center md:gap-6 md:px-3 md:py-6">
                     <span className="text-xs font-bold tabular-nums text-muted md:col-span-1">
                       {String(index + 1).padStart(2, "0")}
                     </span>
@@ -238,7 +238,7 @@ export default function Home() {
                     </div>
                     <span className="flex items-center justify-between gap-4 md:col-span-3 md:justify-end">
                       <AccessBadge level={publication.access} />
-                      <span className="row-icon inline-flex h-8 w-8 items-center justify-center border border-line text-ink">
+                      <span className="row-icon inline-flex h-8 w-8 items-center justify-center rounded-sm border border-line text-ink">
                         <PlusIcon className="h-4 w-4" />
                       </span>
                     </span>

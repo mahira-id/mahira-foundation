@@ -23,7 +23,7 @@ export function AccessBadge({ level }: { level: AccessLevel }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 border px-2 py-1 text-[0.6875rem] font-bold uppercase leading-none tracking-[0.12em] ${config.className}`}
+      className={`inline-flex items-center gap-1.5 rounded-xs border px-2 py-1 text-[0.6875rem] font-bold uppercase leading-none tracking-[0.12em] ${config.className}`}
     >
       <span aria-hidden="true" className={`h-1 w-1 rounded-full ${config.dot}`} />
       {config.label}
