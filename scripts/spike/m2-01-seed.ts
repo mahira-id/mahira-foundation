@@ -117,9 +117,11 @@ async function printCounts(): Promise<void> {
     authors: (await payload.count({ collection: "authors", where: { slug: { like: "fixture-" } }, overrideAccess: true })).totalDocs,
     topics: (await payload.count({ collection: "topics", where: { slug: { like: "fixture-" } }, overrideAccess: true })).totalDocs,
     publicationTypes: (await payload.count({ collection: "publication-types", where: { slug: { like: "fixture-" } }, overrideAccess: true })).totalDocs,
-    translationGroups: (await payload.count({ collection: "translation-groups", where: { label: { like: "[FIXTURE]" } }, overrideAccess: true })).totalDocs,
+    // Only the seed's own groups: the M2-02/M2-03 check scripts add their own
+    // '[FIXTURE] chk *' / '[FIXTURE] media *' groups.
+    translationGroups: (await payload.count({ collection: "translation-groups", where: { label: { in: [...TRANSLATION_GROUPS] } }, overrideAccess: true })).totalDocs,
   };
-  const expected = { users: 1, authors: 2, topics: 2, publicationTypes: 2, translationGroups: 1 };
+  const expected = { users: 1, authors: 2, topics: 2, publicationTypes: 2, translationGroups: TRANSLATION_GROUPS.length };
   let ok = true;
   for (const [key, value] of Object.entries(counts)) {
     const want = expected[key as keyof typeof expected];

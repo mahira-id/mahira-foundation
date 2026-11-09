@@ -37,20 +37,26 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await enableRlsOnPayloadTables({ db, payload, req })
 }
 
+// SPIKE FIX (M2 integration): same guard as 20261109_132023_publications.
+// `DROP TABLE "media" CASCADE` already removes the three FKs that reference it,
+// so the generated DROP CONSTRAINT statements would fail; and Payload 3.93.0
+// migrate:reset rolls back oldest-first, so earlier down() calls may already
+// have dropped publications / payload_locked_documents_rels.
+// IF EXISTS guards make the statements order-independent; nothing else changed.
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "media" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "media" CASCADE;
-  ALTER TABLE "publications" DROP CONSTRAINT "publications_cover_image_id_media_id_fk";
+   ALTER TABLE IF EXISTS "media" DISABLE ROW LEVEL SECURITY;
+  DROP TABLE IF EXISTS "media" CASCADE;
+  ALTER TABLE IF EXISTS "publications" DROP CONSTRAINT IF EXISTS "publications_cover_image_id_media_id_fk";
   
-  ALTER TABLE "_publications_v" DROP CONSTRAINT "_publications_v_version_cover_image_id_media_id_fk";
+  ALTER TABLE IF EXISTS "_publications_v" DROP CONSTRAINT IF EXISTS "_publications_v_version_cover_image_id_media_id_fk";
   
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_media_fk";
+  ALTER TABLE IF EXISTS "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_media_fk";
   
-  DROP INDEX "publications_cover_image_idx";
-  DROP INDEX "_publications_v_version_version_cover_image_idx";
-  DROP INDEX "payload_locked_documents_rels_media_id_idx";
-  ALTER TABLE "publications" DROP COLUMN "cover_image_id";
-  ALTER TABLE "_publications_v" DROP COLUMN "version_cover_image_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "media_id";`)
+  DROP INDEX IF EXISTS "publications_cover_image_idx";
+  DROP INDEX IF EXISTS "_publications_v_version_version_cover_image_idx";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_media_id_idx";
+  ALTER TABLE IF EXISTS "publications" DROP COLUMN IF EXISTS "cover_image_id";
+  ALTER TABLE IF EXISTS "_publications_v" DROP COLUMN IF EXISTS "version_cover_image_id";
+  ALTER TABLE IF EXISTS "payload_locked_documents_rels" DROP COLUMN IF EXISTS "media_id";`)
 }
