@@ -1,6 +1,6 @@
 # Decision Register
 
-**Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. Every other row keeps its earlier status.  
+**Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-018 was Accepted on 2026-11-09 (§2.1). Every other row keeps its earlier status.  
 **Canonical IDs:** `DEC-NNN`. Historical PRD `D-xx` and SRS `T-xx` are retained for traceability.  
 **Last updated:** 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
 
@@ -23,7 +23,7 @@
 | DEC-004 | Localization storage model | PRD D-03; SRS T-02 | Compare Payload field localization vs linked translation records using editorial and URL requirements. | Accepted (Option C hybrid; validation evidence pending Spike A prototype; see §2.1) | Publication, author/topic schema, search, routing | PO + Engineering | Haidar (Product Owner) | 2026-11-08 |
 | DEC-005 | Public URL and slug policy | SRS T-02 | Use locale-prefixed routes; define locale-specific slug uniqueness and redirects before content migration. | Accepted (validation evidence pending Spike A prototype; see §2.1) | IA, SEO, migrations | Engineering + SEO owner | Haidar (Product Owner) | 2026-11-08 |
 | DEC-006 | CMS selection and application topology | PRD D-09; SRS T-01 | Payload CMS 3 embedded in the Next.js application remains the baseline candidate; prove via spike. | Proposed | Admin, collection design, deployment | Engineering + PO | — | — |
-| DEC-007 | Database schema ownership and migration | SRS T-01 | Payload owns CMS collections; application schema owner/migration process must be explicit; no shared ad-hoc migrations. | Open — critical | All schema, backup, access, deployment | Engineering | — | — |
+| DEC-007 | Database schema ownership and migration | SRS T-01 | Payload owns CMS collections; application schema owner/migration process must be explicit; no shared ad-hoc migrations. | Open — critical (spike environment set 2026-11-09; see §2.2) | All schema, backup, access, deployment | Engineering | — | — |
 | DEC-008 | Public and staff identity boundary | PRD §6.4; SRS T-06 | Supabase Auth for public users; Payload staff auth for staff; no implicit role promotion or shared session assumption. | Proposed | Auth, account, admin, access policy | Security owner + PO | — | — |
 | DEC-009 | Staff access to exclusive publications | SRS access matrix / T-06 | Deny-by-default; define whether staff use separate public account or an audited staff grant. | Open — critical | Access evaluator, audit, tests | PO + Security owner | — | — |
 | DEC-010 | Authorization and entitlement model | PRD D-06; SRS §4 | Server-side authorization; explicit entitlement; RLS for app-user data; Payload access control for CMS. | Proposed | Access policy, APIs, storage, tests | Security owner | — | — |
@@ -34,7 +34,7 @@
 | DEC-015 | Editorial workflow | PRD D-05 | Define draft, review, approval, schedule, publish, unpublish, revise, archive and responsibility. | Accepted (minimum workflow; see §2.1) | Payload workflow, role, content guide | Editorial Lead | Haidar (Product Owner) | 2026-11-08 |
 | DEC-016 | Staff roles and operational admin scope | PRD D-07; SRS T-07 | Minimum Admin and Editor; Reviewer/Finance only if workflow justifies. Separate editorial and entitlement permissions. | Accepted (Admin and Editor; both may publish; see §2.1) | CMS access, dashboard routes | PO + Security owner | Haidar (Product Owner) | 2026-11-08 |
 | DEC-017 | Hosting platform and database region | PRD D-10; SRS T-08 | Vercel + Supabase is the baseline proposal; confirm region, commercial plan, cost, backup, and runtime compatibility. | Proposed | Deployment, latency, budget, operations | PO + Engineering | — | — |
-| DEC-018 | Package manager and runtime | Repository has `bun.lock`; Claude discussion | Determine whether Bun is package manager only or runtime too; pin versions and validate CI/deploy compatibility. | Open | Local setup, CI, deployment | Engineering | — | — |
+| DEC-018 | Package manager and runtime | Repository has `bun.lock`; Claude discussion | Determine whether Bun is package manager only or runtime too; pin versions and validate CI/deploy compatibility. | Accepted (Bun = package manager, Node.js = runtime; see §2.1) | Local setup, CI, deployment | Engineering | Haidar (Product Owner) | 2026-11-09 |
 | DEC-019 | Email delivery | SRS T-09 | Select transactional email provider after sender-domain and deliverability requirements are known. | Open | Auth verification, reset, notifications | Engineering + Operations | — | — |
 | DEC-020 | Privacy, retention, and legal basis | PRD risk §11; SRS T-10 | Inventory personal data and processing purposes now; legal interpretation requires qualified review. | Open — high | Signup, logs, analytics, legal copy | Organization + legal advisor | — | — |
 | DEC-021 | SEO and publication discoverability policy | SRS FR-007 / NFR-001 | Public metadata is indexable; account/admin noindex; decide treatment of gated body and structured data per page type. | Accepted (see §2.1) | Routing, pages, canonical, sitemap | SEO owner + PO | Haidar (Product Owner) | 2026-11-08 |
@@ -111,6 +111,27 @@ Common fields for every record below:
 - **Validation evidence:** not needed (policy decision); the prototype exercises it.
 - **Review trigger:** a structured-data decision (spec 01 PUB-OQ-39), or MVP+ restricted publications.
 
+#### DEC-018 — Package manager and runtime
+
+- **Status:** Accepted. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-09, Owner chat session ("sesuai rekomendasi dan best-practices").
+- **Decision:** Bun (`packageManager: bun@1.3.14`, `bun.lock`) is the package manager only. Node.js is the runtime for build, CI, and production. Bun is not used as the production runtime.
+- **Evidence:** `next.config.ts` enables `cacheComponents`; the installed Next.js doc `cacheComponents.md` states it requires the Node.js runtime.
+- **Not decided:** the exact Node.js version pin (`engines.node`, Vercel setting). Set in MILESTONES M2-04.
+- **Review trigger:** Next.js or the host officially supports Bun as runtime for the features in use, and the Owner wants to switch.
+
+### 2.2 Spike environment for DEC-007 (not a decision)
+
+Recorded 2026-11-09 from the Owner; project facts read through the Supabase Management API (Composio account alias `mahira-id`, organization "Mahira Dev"). DEC-007 stays Open until Spike A (SPIKE-001) gives evidence.
+
+| Role | Project name | Ref | Region | Postgres |
+|---|---|---|---|---|
+| CMS (Payload Postgres only) | `mahira-cms` | `qnfzzymrceoubowfknvl` | `eu-west-1` | 17 |
+| APP (Auth, Storage, app tables) | `mahira.id` | `dmtbieetvgkvncadbkmd` | `eu-central-1` | 17 |
+
+- The Owner named the APP project "mahira-id"; the API name is `mahira.id`.
+- Plan tier was not returned by the API: unknown.
+- Both regions are in Europe and differ from each other. Region for production is part of DEC-017 (latency for Indonesian readers) and DEC-020 (data location). These projects are for the spike and may be replaced.
+
 ## 3. Legacy ID mapping
 
 | Legacy reference | Canonical register item |
@@ -169,3 +190,4 @@ A decision is only `Accepted` after the approver is known and the decision has a
 |---|---|
 | 2026-11-05 | Initial proposed register. |
 | 2026-11-08 | Columns Approver and Decided added (spec 01 PUB-DU-14). DEC-001, DEC-002, DEC-003 (structure only), DEC-004, DEC-005, DEC-015, DEC-016, DEC-021 set to Accepted with approver Haidar (Product Owner) and date 2026-11-08; records in §2.1. No other row changed. |
+| 2026-11-09 | DEC-018 Accepted (Bun package manager, Node.js runtime). DEC-007 spike environment recorded in §2.2; DEC-007 stays Open. |
