@@ -16,6 +16,13 @@
 
 ## [Unreleased]
 
+### Removed
+- [M0-05] `INTEGRATE-INTO-REPOSITORY.md`, `PACKAGE-MANIFEST.json` (sisa paket dokumen; langkahnya sudah tercakup di MILESTONES M1–M2) — bukti: branch `chore/m0-cleanup`
+
+### Changed
+- [M0-05] `docs/CHAT_WITH_CLAUDE.md` → `docs/references/CHAT_WITH_CLAUDE.md`, diindeks sebagai REF-001 — bukti: branch `chore/m0-cleanup`
+- [M0-06] Root `README.md`: boilerplate create-next-app diganti petunjuk proyek (Bun, alur branch/PR) — bukti: branch `chore/m0-cleanup`, lint + build lulus
+
 ### Decisions
 - DEC-018 → Accepted 2026-11-09: Bun = package manager, Node.js = runtime — bukti: `decisions/DECISIONS.md` §2.1
 - DEC-007 tetap Open; lingkungan spike dicatat (CMS `mahira-cms`, APP `mahira.id`) — bukti: `decisions/DECISIONS.md` §2.2, Supabase Management API

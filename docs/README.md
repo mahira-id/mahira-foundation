@@ -112,4 +112,4 @@ Jika dokumen dan codebase tidak konsisten, jangan mengasumsikan salah satunya be
 
 ## 7. Integrasi dengan dokumen inti yang sudah ada
 
-Pindahkan atau pertahankan file yang sudah tersedia sebagai `docs/CORE/PRD.md`, `PDD.md`, `SRS.md`, dan README baseline. Jangan menghapus `CHAT_WITH_CLAUDE.md`; pindahkan ke `docs/references/` bila ingin menyimpan arsip dan beri label non-normatif.
+Pindahkan atau pertahankan file yang sudah tersedia sebagai `docs/CORE/PRD.md`, `PDD.md`, `SRS.md`, dan README baseline. Arsip percakapan AI sudah dipindahkan ke `docs/references/CHAT_WITH_CLAUDE.md` (REF-001, non-normatif).
