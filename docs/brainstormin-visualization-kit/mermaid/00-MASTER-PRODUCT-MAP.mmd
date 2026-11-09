@@ -1,0 +1,101 @@
+flowchart TB
+  root(["MAHIRA<br/>Digital Publication & Knowledge Platform"])
+  public["PUBLICATION PLATFORM"]
+  public0["Homepage & institutional pages"]
+  public1["Publication discovery<br/>Listing · filters · pagination"]
+  public2["Publication detail<br/>Metadata · abstract · assets"]
+  public3["Search & taxonomy<br/>Desk · topic · type"]
+  public4["SEO & distribution<br/>Canonical · OG · sitemap"]
+  editorial["EDITORIAL MANAGEMENT"]
+  editorial0["Publication CMS<br/>Create · edit · archive"]
+  editorial1["Editorial workflow<br/>Draft · review · publish"]
+  editorial2["Content taxonomy<br/>Authors · desk · topic · type"]
+  editorial3["Media & asset library<br/>Cover · PDF · appendix"]
+  editorial4["Localization<br/>ID · EN · translation review"]
+  account["USER ACCOUNT & ACCESS"]
+  account0["Authentication<br/>Register · login · recovery"]
+  account1["Account dashboard<br/>Profile · access status"]
+  account2["Entitlement management<br/>Manual grant · revoke"]
+  account3["Protected downloads<br/>Server authorization · signed URL"]
+  account4["Subscription — Phase 2<br/>Plan · payment · renewal"]
+  learning["LEARNING HUB"]
+  learning0["Learning catalog<br/>Browse · filter"]
+  learning1["Learning resource detail<br/>Description · metadata"]
+  learning2["Video / external resources<br/>Embed · playlist · links"]
+  learning3["Topic relationships<br/>Connect to research content"]
+  learning4["Learning expansion<br/>Progress / LMS only if approved"]
+  foundation["SHARED FOUNDATIONS — identity boundaries · localization · content model · accessibility · observability · security · operations"]
+  external["EXTERNAL / PLATFORM SERVICES<br/>Vercel · Supabase · email provider<br/>YouTube · payment gateway (future)"]
+  governance["GOVERNANCE<br/>PRD · PDD · SRS · ADR<br/>Content policy · privacy · editorial rules"]
+  quality["QUALITY & DELIVERY<br/>CI/CD · unit/integration/E2E<br/>Security · SEO · accessibility · recovery"]
+  phase{"RELEASE BOUNDARIES<br/>MVP scope to be decided<br/>Learning & subscription phased"}
+  root --> public
+  public --> public0
+  public --> public1
+  public --> public2
+  public --> public3
+  public --> public4
+  root --> editorial
+  editorial --> editorial0
+  editorial --> editorial1
+  editorial --> editorial2
+  editorial --> editorial3
+  editorial --> editorial4
+  root --> account
+  account --> account0
+  account --> account1
+  account --> account2
+  account --> account3
+  account --> account4
+  root --> learning
+  learning --> learning0
+  learning --> learning1
+  learning --> learning2
+  learning --> learning3
+  learning --> learning4
+  public -.-> foundation
+  editorial -.-> foundation
+  account -.-> foundation
+  learning -.-> foundation
+  foundation --> external
+  foundation --> governance
+  foundation --> quality
+  foundation --> phase
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class root root;
+  class public domain;
+  class public0 module;
+  class public1 module;
+  class public2 module;
+  class public3 module;
+  class public4 module;
+  class editorial domain;
+  class editorial0 module;
+  class editorial1 module;
+  class editorial2 module;
+  class editorial3 module;
+  class editorial4 module;
+  class account domain;
+  class account0 module;
+  class account1 module;
+  class account2 module;
+  class account3 module;
+  class account4 future;
+  class learning domain;
+  class learning0 module;
+  class learning1 module;
+  class learning2 module;
+  class learning3 module;
+  class learning4 future;
+  class foundation dark;
+  class external neutral;
+  class governance neutral;
+  class quality neutral;
+  class phase open;

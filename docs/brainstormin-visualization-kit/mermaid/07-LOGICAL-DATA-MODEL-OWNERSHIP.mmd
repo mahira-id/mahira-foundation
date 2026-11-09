@@ -1,0 +1,74 @@
+flowchart TB
+  db(["SUPABASE POSTGRESQL<br/>Shared database platform · separated ownership"])
+  payload["PAYLOAD-OWNED EDITORIAL DOMAIN<br/>Payload schema + Payload access control"]
+  supabase["APPLICATION-OWNED USER / ACCESS DOMAIN<br/>Supabase Auth + app tables + RLS"]
+  pub["Publication"]
+  asset["PublicationAsset<br/>owner TBD"]
+  author["Author"]
+  desk["ResearchDesk"]
+  topic["Topic"]
+  type["PublicationType"]
+  tag["Tag [optional]"]
+  learn["LearningResource"]
+  page["Page"]
+  staff["StaffUser / Payload Auth"]
+  authuser["auth.users<br/>Supabase Auth"]
+  profile["public_user_profiles"]
+  entitlement["entitlements"]
+  download["download_events"]
+  subscription["subscriptions<br/>Phase 2"]
+  payment["payment_transactions<br/>Phase 2"]
+  webhook["payment_webhook_events<br/>Phase 2"]
+  boundary["OWNERSHIP BOUNDARY<br/>Payload migrations own Payload schema. Application migrations own app tables. Supabase Auth owns auth.users.<br/>Cross-domain content references use stable IDs; do not assume RLS protects tables accessed through Payload database credentials."]
+  note_1{"OPEN: PublicationAsset ownership, schema namespace, foreign-key strategy across domains, localization storage model, and Desk cardinality must be decided before production migrations."}
+  db --> payload
+  db --> supabase
+  payload --> pub
+  payload --> asset
+  payload --> author
+  payload --> desk
+  payload --> topic
+  payload --> type
+  payload --> tag
+  payload --> learn
+  payload --> page
+  payload --> staff
+  supabase --> authuser
+  supabase --> profile
+  supabase --> entitlement
+  supabase --> download
+  supabase --> subscription
+  supabase --> payment
+  supabase --> webhook
+  payload -.-> boundary
+  supabase -.-> boundary
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class db root;
+  class payload domain;
+  class supabase domain;
+  class pub module;
+  class asset module;
+  class author module;
+  class desk module;
+  class topic module;
+  class type module;
+  class tag module;
+  class learn module;
+  class page module;
+  class staff module;
+  class authuser module;
+  class profile module;
+  class entitlement module;
+  class download module;
+  class subscription future;
+  class payment future;
+  class webhook future;
+  class boundary danger;
+  class note_1 open;

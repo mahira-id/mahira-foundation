@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3500" height="2000" viewBox="0 0 3500 2000">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3500" height="2000" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">SYSTEM ARCHITECTURE &amp; INTEGRATION MAP</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Logical deployment and data flows · Vercel + Supabase is proposed, subject to spike and cost validation</text>
+<path d="M 1640.0 140 L 1640.0 195.0 L 1640.0 195.0 L 1640.0 250" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 480.0 L 490.0 480.0 L 490.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 480.0 L 1320.0 480.0 L 1320.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 480.0 L 2065.0 480.0 L 2065.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 480.0 L 2890.0 480.0 L 2890.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 490.0 720 L 490.0 810.0 L 890.0 810.0 L 890.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2065.0 720 L 2065.0 810.0 L 890.0 810.0 L 890.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2890.0 720 L 2890.0 810.0 L 2710.0 810.0 L 2710.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2890.0 720 L 2890.0 810.0 L 3210.0 810.0 L 3210.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 790.0 L 370.0 790.0 L 370.0 1190" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 790.0 L 1050.0 790.0 L 1050.0 1190" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 790.0 L 1730.0 790.0 L 1730.0 1190" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 790.0 L 2410.0 790.0 L 2410.0 1190" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1640.0 390 L 1640.0 790.0 L 3090.0 790.0 L 3090.0 1190" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<rect x="1240" y="40" width="800" height="100" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1640.0" y="80.34" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" fill="#FFFFFF">BROWSER / CLIENT</text>
+<text x="1640.0" y="107.22" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" fill="#FFFFFF">Public visitor · registered user · staff</text>
+<rect x="1050" y="250" width="1180" height="140" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1640.0" y="299.09999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">NEXT.JS APP ROUTER</text>
+<text x="1640.0" y="323.41999999999996" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">Public rendering · account UI · server routes/actions</text>
+<text x="1640.0" y="347.73999999999995" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">Locale routing · SEO · server-side authorization</text>
+<rect x="80" y="570" width="820" height="150" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="490.0" y="626.3000000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">PAYLOAD CMS 3</text>
+<text x="490.0" y="648.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Embedded admin / editorial API</text>
+<text x="490.0" y="669.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Staff Auth · collections · versions · access control</text>
+<rect x="1010" y="570" width="620" height="150" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1320.0" y="626.3000000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SUPABASE AUTH</text>
+<text x="1320.0" y="648.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Public-user identity</text>
+<text x="1320.0" y="669.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Session / JWT / recovery</text>
+<rect x="1740" y="570" width="650" height="150" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2065.0" y="626.3000000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SUPABASE APP TABLES</text>
+<text x="2065.0" y="648.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Profiles · entitlements · download events</text>
+<text x="2065.0" y="669.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">RLS</text>
+<rect x="2500" y="570" width="780" height="150" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2890.0" y="626.3000000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SUPABASE STORAGE</text>
+<text x="2890.0" y="648.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Public assets bucket</text>
+<text x="2890.0" y="669.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Private restricted-asset bucket</text>
+<rect x="440" y="900" width="900" height="130" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="1.5"/>
+<text x="890.0" y="945.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#FFFFFF">SUPABASE POSTGRESQL</text>
+<text x="890.0" y="968.24" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#FFFFFF">Payload schema + application schema</text>
+<text x="890.0" y="991.2800000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#FFFFFF">Separate migration / ownership boundaries</text>
+<rect x="2450" y="900" width="520" height="110" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="2710.0" y="947.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Public assets</text>
+<text x="2710.0" y="968.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">public URL permitted</text>
+<rect x="3060" y="900" width="300" height="110" rx="10" ry="10" fill="#FFF0E5" stroke="#FF6A00" stroke-width="1.5"/>
+<text x="3210.0" y="948.0999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Private assets</text>
+<text x="3210.0" y="967.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">server-issued signed URL</text>
+<rect x="80" y="1190" width="580" height="120" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="370.0" y="1232.3999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">EMAIL PROVIDER</text>
+<text x="370.0" y="1252.8799999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Resend / Brevo candidate</text>
+<text x="370.0" y="1273.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">SMTP &amp; transactional email</text>
+<rect x="760" y="1190" width="580" height="120" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1050.0" y="1242.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">VIDEO / EXTERNAL CONTENT</text>
+<text x="1050.0" y="1263.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">YouTube or approved embed provider</text>
+<rect x="1440" y="1190" width="580" height="120" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1730.0" y="1242.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">OBSERVABILITY</text>
+<text x="1730.0" y="1263.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Sentry · uptime · structured logs</text>
+<rect x="2120" y="1190" width="580" height="120" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2410.0" y="1242.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">HOSTING / CI-CD</text>
+<text x="2410.0" y="1263.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Vercel proposed · GitHub</text>
+<rect x="2800" y="1190" width="580" height="120" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="3090.0" y="1242.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PAYMENT PROVIDER · PHASE 2</text>
+<text x="3090.0" y="1263.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Xendit / Midtrans candidates</text>
+<rect x="80" y="1450" width="3200" height="120" rx="10" ry="10" fill="#FCE8E6" stroke="#C65B52" stroke-width="2"/>
+<text x="1680.0" y="1513.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SECURITY BOUNDARY: browser never receives service-role secrets or a trusted access decision. Private assets are never placed in public buckets; every private download is authorized server-side before signing.</text>
+</svg>

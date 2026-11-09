@@ -1,0 +1,132 @@
+{
+  "project": "Mahira Foundation",
+  "version": "0.1.0",
+  "generated_at": "2026-11-05T16:01:41.369176+00:00",
+  "boards": [
+    {
+      "id": "00-MASTER-PRODUCT-MAP",
+      "title": "MAHIRA — MASTER PRODUCT MAP",
+      "excalidraw": "excalidraw/00-MASTER-PRODUCT-MAP.excalidraw",
+      "mermaid": "mermaid/00-MASTER-PRODUCT-MAP.mmd",
+      "preview": "previews/00-MASTER-PRODUCT-MAP.svg"
+    },
+    {
+      "id": "01-FEATURE-CAPABILITY-TREE",
+      "title": "FEATURE / CAPABILITY TREE",
+      "excalidraw": "excalidraw/01-FEATURE-CAPABILITY-TREE.excalidraw",
+      "mermaid": "mermaid/01-FEATURE-CAPABILITY-TREE.mmd",
+      "preview": "previews/01-FEATURE-CAPABILITY-TREE.svg"
+    },
+    {
+      "id": "02-SITEMAP-PAGE-HIERARCHY",
+      "title": "SITEMAP & PAGE HIERARCHY",
+      "excalidraw": "excalidraw/02-SITEMAP-PAGE-HIERARCHY.excalidraw",
+      "mermaid": "mermaid/02-SITEMAP-PAGE-HIERARCHY.mmd",
+      "preview": "previews/02-SITEMAP-PAGE-HIERARCHY.svg"
+    },
+    {
+      "id": "03-ACTORS-ROLES-AND-CAPABILITIES",
+      "title": "ACTORS, ROLES & IDENTITY BOUNDARIES",
+      "excalidraw": "excalidraw/03-ACTORS-ROLES-AND-CAPABILITIES.excalidraw",
+      "mermaid": "mermaid/03-ACTORS-ROLES-AND-CAPABILITIES.mmd",
+      "preview": "previews/03-ACTORS-ROLES-AND-CAPABILITIES.svg"
+    },
+    {
+      "id": "04-USER-JOURNEYS",
+      "title": "USER JOURNEYS — DISCOVER, READ, REGISTER & ACCESS",
+      "excalidraw": "excalidraw/04-USER-JOURNEYS.excalidraw",
+      "mermaid": "mermaid/04-USER-JOURNEYS.mmd",
+      "preview": "previews/04-USER-JOURNEYS.svg"
+    },
+    {
+      "id": "05-EDITORIAL-AND-TRANSLATION-WORKFLOW",
+      "title": "EDITORIAL & TRANSLATION WORKFLOW",
+      "excalidraw": "excalidraw/05-EDITORIAL-AND-TRANSLATION-WORKFLOW.excalidraw",
+      "mermaid": "mermaid/05-EDITORIAL-AND-TRANSLATION-WORKFLOW.mmd",
+      "preview": "previews/05-EDITORIAL-AND-TRANSLATION-WORKFLOW.svg"
+    },
+    {
+      "id": "06-CONTENT-ARCHITECTURE-AND-TAXONOMY",
+      "title": "CONTENT ARCHITECTURE & TAXONOMY",
+      "excalidraw": "excalidraw/06-CONTENT-ARCHITECTURE-AND-TAXONOMY.excalidraw",
+      "mermaid": "mermaid/06-CONTENT-ARCHITECTURE-AND-TAXONOMY.mmd",
+      "preview": "previews/06-CONTENT-ARCHITECTURE-AND-TAXONOMY.svg"
+    },
+    {
+      "id": "07-LOGICAL-DATA-MODEL-OWNERSHIP",
+      "title": "LOGICAL DATA MODEL & OWNERSHIP",
+      "excalidraw": "excalidraw/07-LOGICAL-DATA-MODEL-OWNERSHIP.excalidraw",
+      "mermaid": "mermaid/07-LOGICAL-DATA-MODEL-OWNERSHIP.mmd",
+      "preview": "previews/07-LOGICAL-DATA-MODEL-OWNERSHIP.svg"
+    },
+    {
+      "id": "07B-CONTENT-RELATIONSHIP-ERD",
+      "title": "CONTENT RELATIONSHIP ERD",
+      "excalidraw": "excalidraw/07B-CONTENT-RELATIONSHIP-ERD.excalidraw",
+      "mermaid": "mermaid/07B-CONTENT-RELATIONSHIP-ERD.mmd",
+      "preview": "previews/07B-CONTENT-RELATIONSHIP-ERD.svg"
+    },
+    {
+      "id": "07C-USER-ENTITLEMENT-DATA-FLOW",
+      "title": "USER, ENTITLEMENT & SUBSCRIPTION DATA RELATIONSHIPS",
+      "excalidraw": "excalidraw/07C-USER-ENTITLEMENT-DATA-FLOW.excalidraw",
+      "mermaid": "mermaid/07C-USER-ENTITLEMENT-DATA-FLOW.mmd",
+      "preview": "previews/07C-USER-ENTITLEMENT-DATA-FLOW.svg"
+    },
+    {
+      "id": "08-SYSTEM-ARCHITECTURE-AND-INTEGRATIONS",
+      "title": "SYSTEM ARCHITECTURE & INTEGRATION MAP",
+      "excalidraw": "excalidraw/08-SYSTEM-ARCHITECTURE-AND-INTEGRATIONS.excalidraw",
+      "mermaid": "mermaid/08-SYSTEM-ARCHITECTURE-AND-INTEGRATIONS.mmd",
+      "preview": "previews/08-SYSTEM-ARCHITECTURE-AND-INTEGRATIONS.svg"
+    },
+    {
+      "id": "09-ACCESS-CONTROL-DOWNLOAD-FLOW",
+      "title": "ACCESS-CONTROL & SECURE DOWNLOAD FLOW",
+      "excalidraw": "excalidraw/09-ACCESS-CONTROL-DOWNLOAD-FLOW.excalidraw",
+      "mermaid": "mermaid/09-ACCESS-CONTROL-DOWNLOAD-FLOW.mmd",
+      "preview": "previews/09-ACCESS-CONTROL-DOWNLOAD-FLOW.svg"
+    },
+    {
+      "id": "10-SUBSCRIPTION-AND-ENTITLEMENT-LIFECYCLE",
+      "title": "SUBSCRIPTION & ENTITLEMENT LIFECYCLE",
+      "excalidraw": "excalidraw/10-SUBSCRIPTION-AND-ENTITLEMENT-LIFECYCLE.excalidraw",
+      "mermaid": "mermaid/10-SUBSCRIPTION-AND-ENTITLEMENT-LIFECYCLE.mmd",
+      "preview": "previews/10-SUBSCRIPTION-AND-ENTITLEMENT-LIFECYCLE.svg"
+    },
+    {
+      "id": "11-DEVELOPMENT-ROADMAP-VERTICAL-SLICES",
+      "title": "DEVELOPMENT ROADMAP — VERTICAL SLICES",
+      "excalidraw": "excalidraw/11-DEVELOPMENT-ROADMAP-VERTICAL-SLICES.excalidraw",
+      "mermaid": "mermaid/11-DEVELOPMENT-ROADMAP-VERTICAL-SLICES.mmd",
+      "preview": "previews/11-DEVELOPMENT-ROADMAP-VERTICAL-SLICES.svg"
+    },
+    {
+      "id": "12-BRAINSTORMING-DECISION-PARKING-LOT",
+      "title": "BRAINSTORMING PARKING LOT — OPEN DECISIONS",
+      "excalidraw": "excalidraw/12-BRAINSTORMING-DECISION-PARKING-LOT.excalidraw",
+      "mermaid": "mermaid/12-BRAINSTORMING-DECISION-PARKING-LOT.mmd",
+      "preview": "previews/12-BRAINSTORMING-DECISION-PARKING-LOT.svg"
+    },
+    {
+      "id": "13-REQUIREMENT-TO-IMPLEMENTATION-TRACEABILITY",
+      "title": "REQUIREMENT → DECISION → DESIGN → CODE → TEST",
+      "excalidraw": "excalidraw/13-REQUIREMENT-TO-IMPLEMENTATION-TRACEABILITY.excalidraw",
+      "mermaid": "mermaid/13-REQUIREMENT-TO-IMPLEMENTATION-TRACEABILITY.mmd",
+      "preview": "previews/13-REQUIREMENT-TO-IMPLEMENTATION-TRACEABILITY.svg"
+    },
+    {
+      "id": "14-PAGE-ANATOMY-AND-COMPONENT-MAP",
+      "title": "PAGE ANATOMY & COMPONENT MAP",
+      "excalidraw": "excalidraw/14-PAGE-ANATOMY-AND-COMPONENT-MAP.excalidraw",
+      "mermaid": "mermaid/14-PAGE-ANATOMY-AND-COMPONENT-MAP.mmd",
+      "preview": "previews/14-PAGE-ANATOMY-AND-COMPONENT-MAP.svg"
+    }
+  ],
+  "notes": [
+    "Grounded in user-provided PRD/PDD/SRS and prior documentation pack.",
+    "Baseline, proposed, TBD, optional and Phase 2 items are distinguished in labels and notes.",
+    "Resolve MVP boundary conflict before release-scope commitment.",
+    "Staff access to gated publication assets requires explicit policy."
+  ]
+}

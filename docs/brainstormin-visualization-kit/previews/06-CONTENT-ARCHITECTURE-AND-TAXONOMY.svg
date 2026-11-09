@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3300" height="1800" viewBox="0 0 3300 1800">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3300" height="1800" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">CONTENT ARCHITECTURE &amp; TAXONOMY</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Editorial concepts and relationships · validate cardinalities with real content samples</text>
+<path d="M 1560.0 140 L 1560.0 200.0 L 415.0 200.0 L 415.0 260" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1560.0 140 L 1560.0 200.0 L 1085.0 200.0 L 1085.0 260" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1560.0 140 L 1560.0 200.0 L 1755.0 200.0 L 1755.0 260" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1560.0 140 L 1560.0 200.0 L 2425.0 200.0 L 2425.0 260" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 415.0 385 L 415.0 472.5 L 1530.0 472.5 L 1530.0 560" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1085.0 385 L 1085.0 472.5 L 1530.0 472.5 L 1530.0 560" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1755.0 385 L 1755.0 472.5 L 1530.0 472.5 L 1530.0 560" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2425.0 385 L 2425.0 472.5 L 1530.0 472.5 L 1530.0 560" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1530.0 700 L 1530.0 800.0 L 340.0 800.0 L 340.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1530.0 700 L 1530.0 800.0 L 950.0 800.0 L 950.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1530.0 700 L 1530.0 800.0 L 1560.0 800.0 L 1560.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1530.0 700 L 1530.0 800.0 L 2170.0 800.0 L 2170.0 900" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1085.0 385 L 1085.0 642.5 L 2780.0 642.5 L 2780.0 900" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 415.0 385 L 415.0 642.5 L 2780.0 642.5 L 2780.0 900" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1530.0 700 L 1530.0 800.0 L 2780.0 800.0 L 2780.0 900" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<rect x="1230" y="40" width="660" height="100" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1560.0" y="94.32" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#FFFFFF">MAHIRA CONTENT UNIVERSE</text>
+<rect x="140" y="260" width="550" height="125" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="415.0" y="314.21999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">RESEARCH DESK</text>
+<text x="415.0" y="337.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Organizational research portfolio</text>
+<rect x="810" y="260" width="550" height="125" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1085.0" y="314.21999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">TOPIC</text>
+<text x="1085.0" y="337.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Subject / issue classification</text>
+<rect x="1480" y="260" width="550" height="125" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1755.0" y="314.21999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">PUBLICATION TYPE</text>
+<text x="1755.0" y="337.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Editorial genre / format</text>
+<rect x="2150" y="260" width="550" height="125" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2425.0" y="314.21999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">TAG [OPTIONAL]</text>
+<text x="2425.0" y="337.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Granular discovery label</text>
+<rect x="1150" y="560" width="760" height="140" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1530.0" y="609.1" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#FFFFFF">PUBLICATION</text>
+<text x="1530.0" y="633.4200000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#FFFFFF">Core research / analysis work</text>
+<text x="1530.0" y="657.74" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#FFFFFF">Title · summary · locale · slug · status · access level</text>
+<rect x="80" y="900" width="520" height="120" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="340.0" y="942.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">AUTHORS</text>
+<text x="340.0" y="962.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Many-to-many proposed</text>
+<text x="340.0" y="983.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Order + contribution role</text>
+<rect x="690" y="900" width="520" height="120" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="950.0" y="942.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PUBLICATION ASSETS</text>
+<text x="950.0" y="962.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">One publication → many assets</text>
+<text x="950.0" y="983.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Cover · preview · PDF · appendix</text>
+<rect x="1300" y="900" width="520" height="120" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1560.0" y="942.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">TRANSLATION GROUP</text>
+<text x="1560.0" y="962.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">ID / EN variants</text>
+<text x="1560.0" y="983.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Storage model TBD</text>
+<rect x="1910" y="900" width="520" height="120" rx="10" ry="10" fill="#FFF0E5" stroke="#FF6A00" stroke-width="1.5"/>
+<text x="2170.0" y="942.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">RIGHTS &amp; CITATION</text>
+<text x="2170.0" y="962.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Copyright · license · citation</text>
+<text x="2170.0" y="983.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Policy required</text>
+<rect x="2520" y="900" width="520" height="120" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2780.0" y="942.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">LEARNING RESOURCE</text>
+<text x="2780.0" y="962.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Video · playlist · reading</text>
+<text x="2780.0" y="983.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Related desk/topic/publication</text>
+<rect x="80" y="1190" width="2900" height="150" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1530.0" y="1268.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">TAXONOMY RULES: Desk ≠ Topic ≠ Publication Type ≠ Tag. Desk groups an organizational portfolio; Topic classifies a subject; Type describes editorial genre; Tag is optional and must not become a catch-all.</text>
+</svg>

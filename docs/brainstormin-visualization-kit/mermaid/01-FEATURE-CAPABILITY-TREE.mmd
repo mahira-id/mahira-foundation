@@ -1,0 +1,512 @@
+flowchart TB
+  root(["MAHIRA PRODUCT CAPABILITIES"])
+  public["A. PUBLIC EXPERIENCE"]
+  home["Homepage"]
+  home_0["Masthead & navigation"]
+  home_1["Hero / organization thesis"]
+  home_2["Featured publication"]
+  home_3["Latest publications"]
+  home_4["Research desk / topic entry"]
+  home_5["Learning Hub teaser"]
+  home_6["About / contact teaser"]
+  home_7["Footer & social links"]
+  catalog["Publication Discovery"]
+  catalog_0["Publication index"]
+  catalog_1["Keyword search"]
+  catalog_2["Filter: type / desk / topic / year"]
+  catalog_3["Sort: newest / relevance [TBD]"]
+  catalog_4["Pagination / query URL state"]
+  catalog_5["Empty / loading / error states"]
+  detail["Publication Detail"]
+  detail_0["Title & summary / abstract"]
+  detail_1["Author attribution"]
+  detail_2["Type / desk / topic metadata"]
+  detail_3["Published / updated date"]
+  detail_4["Access badge & access explanation"]
+  detail_5["Asset list / preview / download"]
+  detail_6["Related publications"]
+  detail_7["SEO / social metadata"]
+  taxonomy["Taxonomy Pages"]
+  taxonomy_0["Desk index / desk detail [TBD]"]
+  taxonomy_1["Topic index / topic detail [TBD]"]
+  taxonomy_2["Publication type browsing [TBD]"]
+  taxonomy_3["Tag pages only if useful [TBD]"]
+  institution["Institutional Pages"]
+  institution_0["About / mission / focus"]
+  institution_1["Team / authors [scope TBD]"]
+  institution_2["Partnerships [scope TBD]"]
+  institution_3["Contact [content required]"]
+  institution_4["Privacy / terms / copyright [legal review]"]
+  editorial["B. EDITORIAL OPERATIONS"]
+  pubcms["Publication CMS"]
+  pubcms_0["Create / edit / duplicate"]
+  pubcms_1["Metadata validation"]
+  pubcms_2["Localized variants"]
+  pubcms_3["Author / taxonomy relations"]
+  pubcms_4["Asset attach / reorder"]
+  pubcms_5["Draft / preview / publish"]
+  pubcms_6["Unpublish / archive / revision"]
+  workflow["Editorial Workflow"]
+  workflow_0["Draft"]
+  workflow_1["Submit for review [TBD]"]
+  workflow_2["Reviewer approve / request changes [TBD]"]
+  workflow_3["Schedule publish [TBD]"]
+  workflow_4["Publish / unpublish"]
+  workflow_5["Post-publication correction"]
+  assets["Media & Assets"]
+  assets_0["Cover image"]
+  assets_1["Preview / excerpt"]
+  assets_2["Full report PDF"]
+  assets_3["Appendix / dataset / supporting files"]
+  assets_4["Upload validation / processing"]
+  assets_5["Public vs private storage classification"]
+  taxonomycms["Taxonomy Management"]
+  taxonomycms_0["Authors"]
+  taxonomycms_1["Publication types"]
+  taxonomycms_2["Research desks"]
+  taxonomycms_3["Topics"]
+  taxonomycms_4["Tags [optional]"]
+  taxonomycms_5["Ordering / active status"]
+  localization["Localization Operations"]
+  localization_0["ID / EN content variants"]
+  localization_1["Translation completeness"]
+  localization_2["Translation review"]
+  localization_3["Locale-specific slug"]
+  localization_4["Fallback / no-translation state"]
+  account["C. USER IDENTITY & ACCESS"]
+  auth["Authentication"]
+  auth_0["Register"]
+  auth_1["Email verification [policy TBD]"]
+  auth_2["Login / logout"]
+  auth_3["Forgot / reset password"]
+  auth_4["Session refresh / expiry"]
+  auth_5["Account recovery"]
+  profile["Account Area"]
+  profile_0["Account overview"]
+  profile_1["Profile & locale preference"]
+  profile_2["Access / entitlement status"]
+  profile_3{"My available documents [proposed]"}
+  profile_4["Download history [optional]"]
+  profile_5["Bookmarks [optional]"]
+  entitle["Entitlement Operations"]
+  entitle_0["Manual grant"]
+  entitle_1["Grant scope: publication / plan [TBD]"]
+  entitle_2["Valid from / until"]
+  entitle_3["Revoke / expire"]
+  entitle_4["Reason & actor audit"]
+  entitle_5["Access reevaluation"]
+  download["Protected Access"]
+  download_0["Resolve publication + asset"]
+  download_1["Resolve effective access policy"]
+  download_2["Authenticate requester"]
+  download_3["Check entitlement window"]
+  download_4["Create short-lived signed URL"]
+  download_5["Record minimal audit event"]
+  subscription["Subscription — Phase 2"]
+  subscription_0["Plans & pricing [business decision]"]
+  subscription_1["Checkout / payment method"]
+  subscription_2["Verified webhook"]
+  subscription_3["Subscription state"]
+  subscription_4["Renewal / cancellation / expiry"]
+  subscription_5["Invoice / receipt [provider policy]"]
+  learning["D. LEARNING HUB"]
+  learncat["Learning Catalog"]
+  learncat_0["Learning Hub landing"]
+  learncat_1["Resource listing"]
+  learncat_2["Topic / desk filters"]
+  learncat_3["Resource type filters [TBD]"]
+  learncat_4["Search [scope TBD]"]
+  learnitem["Learning Resource Detail"]
+  learnitem_0["Title / description"]
+  learnitem_1["Resource type"]
+  learnitem_2["Video / playlist embed"]
+  learnitem_3["External resource link"]
+  learnitem_4["Related publications"]
+  learnitem_5["Related topic / desk"]
+  learnops["Learning CMS"]
+  learnops_0["Create / edit resource"]
+  learnops_1["Embed provider allowlist"]
+  learnops_2["Thumbnail / metadata"]
+  learnops_3["Related content"]
+  learnops_4["Publish / unpublish"]
+  futurelearn["Potential Expansion"]
+  futurelearn_0["Learning paths [not baseline]"]
+  futurelearn_1["Progress tracking [not baseline]"]
+  futurelearn_2["Quizzes / certificates [not baseline]"]
+  futurelearn_3["LMS functionality [separate scope]"]
+  platform["E. SHARED PLATFORM & QUALITY"]
+  i18n["Localization & Routing"]
+  i18n_0["Locale prefix /id and /en"]
+  i18n_1["Language switcher"]
+  i18n_2["Translation relationship"]
+  i18n_3["Canonical / hreflang"]
+  i18n_4["Localized UI messages"]
+  search["Search & Discovery"]
+  search_0["Postgres FTS"]
+  search_1["pg_trgm where justified"]
+  search_2["Locale-aware query"]
+  search_3["Ranking evaluation"]
+  search_4["PDF full-text extraction [TBD]"]
+  security["Security & Privacy"]
+  security_0["Server-side authorization"]
+  security_1["Payload staff access control"]
+  security_2["Supabase RLS for app tables"]
+  security_3["Private bucket policy"]
+  security_4["Secret management"]
+  security_5["Data minimization / retention"]
+  ops["Engineering & Operations"]
+  ops_0["Dev / staging / production"]
+  ops_1["Schema migrations"]
+  ops_2["CI / preview deployments"]
+  ops_3["Error / uptime monitoring"]
+  ops_4["Backup / restore"]
+  ops_5["Performance / accessibility"]
+  phase2["Payments & Growth"]
+  phase2_0["Payment gateway [TBD]"]
+  phase2_1["Idempotent webhook"]
+  phase2_2["Subscription reconciliation"]
+  phase2_3["Newsletter [optional provider]"]
+  phase2_4["Analytics [event & privacy policy]"]
+  root --> public
+  public --> home
+  home --> home_0
+  home --> home_1
+  home --> home_2
+  home --> home_3
+  home --> home_4
+  home --> home_5
+  home --> home_6
+  home --> home_7
+  public --> catalog
+  catalog --> catalog_0
+  catalog --> catalog_1
+  catalog --> catalog_2
+  catalog --> catalog_3
+  catalog --> catalog_4
+  catalog --> catalog_5
+  public --> detail
+  detail --> detail_0
+  detail --> detail_1
+  detail --> detail_2
+  detail --> detail_3
+  detail --> detail_4
+  detail --> detail_5
+  detail --> detail_6
+  detail --> detail_7
+  public --> taxonomy
+  taxonomy --> taxonomy_0
+  taxonomy --> taxonomy_1
+  taxonomy --> taxonomy_2
+  taxonomy --> taxonomy_3
+  public --> institution
+  institution --> institution_0
+  institution --> institution_1
+  institution --> institution_2
+  institution --> institution_3
+  institution --> institution_4
+  root --> editorial
+  editorial --> pubcms
+  pubcms --> pubcms_0
+  pubcms --> pubcms_1
+  pubcms --> pubcms_2
+  pubcms --> pubcms_3
+  pubcms --> pubcms_4
+  pubcms --> pubcms_5
+  pubcms --> pubcms_6
+  editorial --> workflow
+  workflow --> workflow_0
+  workflow --> workflow_1
+  workflow --> workflow_2
+  workflow --> workflow_3
+  workflow --> workflow_4
+  workflow --> workflow_5
+  editorial --> assets
+  assets --> assets_0
+  assets --> assets_1
+  assets --> assets_2
+  assets --> assets_3
+  assets --> assets_4
+  assets --> assets_5
+  editorial --> taxonomycms
+  taxonomycms --> taxonomycms_0
+  taxonomycms --> taxonomycms_1
+  taxonomycms --> taxonomycms_2
+  taxonomycms --> taxonomycms_3
+  taxonomycms --> taxonomycms_4
+  taxonomycms --> taxonomycms_5
+  editorial --> localization
+  localization --> localization_0
+  localization --> localization_1
+  localization --> localization_2
+  localization --> localization_3
+  localization --> localization_4
+  root --> account
+  account --> auth
+  auth --> auth_0
+  auth --> auth_1
+  auth --> auth_2
+  auth --> auth_3
+  auth --> auth_4
+  auth --> auth_5
+  account --> profile
+  profile --> profile_0
+  profile --> profile_1
+  profile --> profile_2
+  profile --> profile_3
+  profile --> profile_4
+  profile --> profile_5
+  account --> entitle
+  entitle --> entitle_0
+  entitle --> entitle_1
+  entitle --> entitle_2
+  entitle --> entitle_3
+  entitle --> entitle_4
+  entitle --> entitle_5
+  account --> download
+  download --> download_0
+  download --> download_1
+  download --> download_2
+  download --> download_3
+  download --> download_4
+  download --> download_5
+  account --> subscription
+  subscription --> subscription_0
+  subscription --> subscription_1
+  subscription --> subscription_2
+  subscription --> subscription_3
+  subscription --> subscription_4
+  subscription --> subscription_5
+  root --> learning
+  learning --> learncat
+  learncat --> learncat_0
+  learncat --> learncat_1
+  learncat --> learncat_2
+  learncat --> learncat_3
+  learncat --> learncat_4
+  learning --> learnitem
+  learnitem --> learnitem_0
+  learnitem --> learnitem_1
+  learnitem --> learnitem_2
+  learnitem --> learnitem_3
+  learnitem --> learnitem_4
+  learnitem --> learnitem_5
+  learning --> learnops
+  learnops --> learnops_0
+  learnops --> learnops_1
+  learnops --> learnops_2
+  learnops --> learnops_3
+  learnops --> learnops_4
+  learning --> futurelearn
+  futurelearn --> futurelearn_0
+  futurelearn --> futurelearn_1
+  futurelearn --> futurelearn_2
+  futurelearn --> futurelearn_3
+  root --> platform
+  platform --> i18n
+  i18n --> i18n_0
+  i18n --> i18n_1
+  i18n --> i18n_2
+  i18n --> i18n_3
+  i18n --> i18n_4
+  platform --> search
+  search --> search_0
+  search --> search_1
+  search --> search_2
+  search --> search_3
+  search --> search_4
+  platform --> security
+  security --> security_0
+  security --> security_1
+  security --> security_2
+  security --> security_3
+  security --> security_4
+  security --> security_5
+  platform --> ops
+  ops --> ops_0
+  ops --> ops_1
+  ops --> ops_2
+  ops --> ops_3
+  ops --> ops_4
+  ops --> ops_5
+  platform --> phase2
+  phase2 --> phase2_0
+  phase2 --> phase2_1
+  phase2 --> phase2_2
+  phase2 --> phase2_3
+  phase2 --> phase2_4
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class root root;
+  class public domain;
+  class home neutral;
+  class home_0 module;
+  class home_1 module;
+  class home_2 module;
+  class home_3 module;
+  class home_4 module;
+  class home_5 module;
+  class home_6 module;
+  class home_7 module;
+  class catalog neutral;
+  class catalog_0 module;
+  class catalog_1 module;
+  class catalog_2 module;
+  class catalog_3 future;
+  class catalog_4 module;
+  class catalog_5 module;
+  class detail neutral;
+  class detail_0 module;
+  class detail_1 module;
+  class detail_2 module;
+  class detail_3 module;
+  class detail_4 module;
+  class detail_5 module;
+  class detail_6 module;
+  class detail_7 module;
+  class taxonomy neutral;
+  class taxonomy_0 future;
+  class taxonomy_1 future;
+  class taxonomy_2 future;
+  class taxonomy_3 future;
+  class institution neutral;
+  class institution_0 module;
+  class institution_1 module;
+  class institution_2 module;
+  class institution_3 module;
+  class institution_4 module;
+  class editorial domain;
+  class pubcms neutral;
+  class pubcms_0 module;
+  class pubcms_1 module;
+  class pubcms_2 module;
+  class pubcms_3 module;
+  class pubcms_4 module;
+  class pubcms_5 module;
+  class pubcms_6 module;
+  class workflow neutral;
+  class workflow_0 module;
+  class workflow_1 future;
+  class workflow_2 future;
+  class workflow_3 future;
+  class workflow_4 module;
+  class workflow_5 module;
+  class assets neutral;
+  class assets_0 module;
+  class assets_1 module;
+  class assets_2 module;
+  class assets_3 module;
+  class assets_4 module;
+  class assets_5 module;
+  class taxonomycms neutral;
+  class taxonomycms_0 module;
+  class taxonomycms_1 module;
+  class taxonomycms_2 module;
+  class taxonomycms_3 module;
+  class taxonomycms_4 future;
+  class taxonomycms_5 module;
+  class localization neutral;
+  class localization_0 module;
+  class localization_1 module;
+  class localization_2 module;
+  class localization_3 module;
+  class localization_4 module;
+  class account domain;
+  class auth neutral;
+  class auth_0 module;
+  class auth_1 module;
+  class auth_2 module;
+  class auth_3 module;
+  class auth_4 module;
+  class auth_5 module;
+  class profile neutral;
+  class profile_0 module;
+  class profile_1 module;
+  class profile_2 module;
+  class profile_3 open;
+  class profile_4 future;
+  class profile_5 future;
+  class entitle neutral;
+  class entitle_0 module;
+  class entitle_1 future;
+  class entitle_2 module;
+  class entitle_3 module;
+  class entitle_4 module;
+  class entitle_5 module;
+  class download neutral;
+  class download_0 module;
+  class download_1 module;
+  class download_2 module;
+  class download_3 module;
+  class download_4 module;
+  class download_5 module;
+  class subscription neutral;
+  class subscription_0 module;
+  class subscription_1 module;
+  class subscription_2 module;
+  class subscription_3 module;
+  class subscription_4 module;
+  class subscription_5 module;
+  class learning domain;
+  class learncat neutral;
+  class learncat_0 module;
+  class learncat_1 module;
+  class learncat_2 module;
+  class learncat_3 future;
+  class learncat_4 module;
+  class learnitem neutral;
+  class learnitem_0 module;
+  class learnitem_1 module;
+  class learnitem_2 module;
+  class learnitem_3 module;
+  class learnitem_4 module;
+  class learnitem_5 module;
+  class learnops neutral;
+  class learnops_0 module;
+  class learnops_1 module;
+  class learnops_2 module;
+  class learnops_3 module;
+  class learnops_4 module;
+  class futurelearn neutral;
+  class futurelearn_0 future;
+  class futurelearn_1 future;
+  class futurelearn_2 future;
+  class futurelearn_3 module;
+  class platform domain;
+  class i18n neutral;
+  class i18n_0 module;
+  class i18n_1 module;
+  class i18n_2 module;
+  class i18n_3 module;
+  class i18n_4 module;
+  class search neutral;
+  class search_0 module;
+  class search_1 module;
+  class search_2 module;
+  class search_3 module;
+  class search_4 future;
+  class security neutral;
+  class security_0 module;
+  class security_1 module;
+  class security_2 module;
+  class security_3 module;
+  class security_4 module;
+  class security_5 module;
+  class ops neutral;
+  class ops_0 module;
+  class ops_1 module;
+  class ops_2 module;
+  class ops_3 module;
+  class ops_4 module;
+  class ops_5 module;
+  class phase2 neutral;
+  class phase2_0 future;
+  class phase2_1 module;
+  class phase2_2 module;
+  class phase2_3 future;
+  class phase2_4 module;

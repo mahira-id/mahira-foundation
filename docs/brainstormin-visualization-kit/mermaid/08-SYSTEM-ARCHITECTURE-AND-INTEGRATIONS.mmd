@@ -1,0 +1,53 @@
+flowchart TB
+  browser(["BROWSER / CLIENT<br/>Public visitor · registered user · staff"])
+  next["NEXT.JS APP ROUTER<br/>Public rendering · account UI · server routes/actions<br/>Locale routing · SEO · server-side authorization"]
+  payload["PAYLOAD CMS 3<br/>Embedded admin / editorial API<br/>Staff Auth · collections · versions · access control"]
+  auth["SUPABASE AUTH<br/>Public-user identity<br/>Session / JWT / recovery"]
+  appdb["SUPABASE APP TABLES<br/>Profiles · entitlements · download events<br/>RLS"]
+  storage["SUPABASE STORAGE<br/>Public assets bucket<br/>Private restricted-asset bucket"]
+  postgres["SUPABASE POSTGRESQL<br/>Payload schema + application schema<br/>Separate migration / ownership boundaries"]
+  publicfiles["Public assets<br/>public URL permitted"]
+  privatefiles["Private assets<br/>server-issued signed URL"]
+  email["EMAIL PROVIDER<br/>Resend / Brevo candidate<br/>SMTP & transactional email"]
+  video["VIDEO / EXTERNAL CONTENT<br/>YouTube or approved embed provider"]
+  monitor["OBSERVABILITY<br/>Sentry · uptime · structured logs"]
+  host["HOSTING / CI-CD<br/>Vercel proposed · GitHub"]
+  payment["PAYMENT PROVIDER · PHASE 2<br/>Xendit / Midtrans candidates"]
+  note_1["SECURITY BOUNDARY: browser never receives service-role secrets or a trusted access decision. Private assets are never placed in public buckets; every private download is authorized server-side before signing."]
+  browser --> next
+  next --> payload
+  next --> auth
+  next --> appdb
+  next --> storage
+  payload --> postgres
+  appdb --> postgres
+  storage --> publicfiles
+  storage --> privatefiles
+  next -.-> email
+  next -.-> video
+  next -.-> monitor
+  next -.-> host
+  next -.-> payment
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class browser root;
+  class next domain;
+  class payload domain;
+  class auth domain;
+  class appdb domain;
+  class storage domain;
+  class postgres dark;
+  class publicfiles action;
+  class privatefiles warning;
+  class email neutral;
+  class video neutral;
+  class monitor neutral;
+  class host neutral;
+  class payment future;
+  class note_1 danger;

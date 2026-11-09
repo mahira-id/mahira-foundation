@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3600" height="2000" viewBox="0 0 3600 2000">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3600" height="2000" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">BRAINSTORMING PARKING LOT — OPEN DECISIONS</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Use as a workshop board: decide, assign owner, record evidence, then update DECISIONS.md / ADR</text>
+<path d="M 1650.0 140 L 1650.0 185.0 L 370.0 185.0 L 370.0 230" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 370.0 320 L 370.0 340.0 L 370.0 340.0 L 370.0 360" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 370.0 320 L 370.0 425.0 L 370.0 425.0 L 370.0 530" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 370.0 320 L 370.0 510.0 L 370.0 510.0 L 370.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 370.0 320 L 370.0 595.0 L 370.0 595.0 L 370.0 870" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 370.0 320 L 370.0 680.0 L 370.0 680.0 L 370.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 185.0 L 1060.0 185.0 L 1060.0 230" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1060.0 320 L 1060.0 340.0 L 1060.0 340.0 L 1060.0 360" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1060.0 320 L 1060.0 425.0 L 1060.0 425.0 L 1060.0 530" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1060.0 320 L 1060.0 510.0 L 1060.0 510.0 L 1060.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1060.0 320 L 1060.0 595.0 L 1060.0 595.0 L 1060.0 870" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1060.0 320 L 1060.0 680.0 L 1060.0 680.0 L 1060.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 185.0 L 1750.0 185.0 L 1750.0 230" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1750.0 320 L 1750.0 340.0 L 1750.0 340.0 L 1750.0 360" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1750.0 320 L 1750.0 425.0 L 1750.0 425.0 L 1750.0 530" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1750.0 320 L 1750.0 510.0 L 1750.0 510.0 L 1750.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1750.0 320 L 1750.0 595.0 L 1750.0 595.0 L 1750.0 870" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1750.0 320 L 1750.0 680.0 L 1750.0 680.0 L 1750.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 185.0 L 2440.0 185.0 L 2440.0 230" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2440.0 320 L 2440.0 340.0 L 2440.0 340.0 L 2440.0 360" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2440.0 320 L 2440.0 425.0 L 2440.0 425.0 L 2440.0 530" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2440.0 320 L 2440.0 510.0 L 2440.0 510.0 L 2440.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2440.0 320 L 2440.0 595.0 L 2440.0 595.0 L 2440.0 870" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2440.0 320 L 2440.0 680.0 L 2440.0 680.0 L 2440.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 185.0 L 3130.0 185.0 L 3130.0 230" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3130.0 320 L 3130.0 340.0 L 3130.0 340.0 L 3130.0 360" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3130.0 320 L 3130.0 425.0 L 3130.0 425.0 L 3130.0 530" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3130.0 320 L 3130.0 510.0 L 3130.0 510.0 L 3130.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3130.0 320 L 3130.0 595.0 L 3130.0 595.0 L 3130.0 870" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3130.0 320 L 3130.0 680.0 L 3130.0 680.0 L 3130.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="1250" y="40" width="800" height="100" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1650.0" y="94.32" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#FFFFFF">MAHIRA — DECISION WORKSHOP</text>
+<rect x="80" y="230" width="580" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="370.0" y="278.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">PRODUCT &amp; MVP</text>
+<rect x="92" y="360" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="370.0" y="430.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Which features belong in first public release?</text>
+<rect x="92" y="530" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="370.0" y="600.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Is account registration required at launch?</text>
+<rect x="92" y="700" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="370.0" y="770.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Is gated download required at launch?</text>
+<rect x="92" y="870" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="370.0" y="940.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Which Learning Hub capabilities are in initial release?</text>
+<rect x="92" y="1040" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="370.0" y="1110.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Who are launch audiences and editorial users?</text>
+<rect x="770" y="230" width="580" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1060.0" y="278.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">CONTENT &amp; EDITORIAL</text>
+<rect x="782" y="360" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1060.0" y="430.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">What are final publication types?</text>
+<rect x="782" y="530" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1060.0" y="600.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Desk: one or many per publication?</text>
+<rect x="782" y="700" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1060.0" y="770.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Topic taxonomy and tag governance?</text>
+<rect x="782" y="870" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1060.0" y="940.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Required metadata per publication type?</text>
+<rect x="782" y="1040" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1060.0" y="1110.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Is review / approval mandatory?</text>
+<rect x="1460" y="230" width="580" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1750.0" y="278.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">DATA &amp; LOCALIZATION</text>
+<rect x="1472" y="360" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1750.0" y="430.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Linked translation records or field localization?</text>
+<rect x="1472" y="530" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1750.0" y="600.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Slug uniqueness: locale / entity / global?</text>
+<rect x="1472" y="700" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1750.0" y="770.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Publication Asset owner: Payload or app domain?</text>
+<rect x="1472" y="870" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1750.0" y="940.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">How to handle partial translations?</text>
+<rect x="1472" y="1040" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1750.0" y="1110.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">What is the cross-domain reference strategy?</text>
+<rect x="2150" y="230" width="580" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2440.0" y="278.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">IDENTITY &amp; ACCESS</text>
+<rect x="2162" y="360" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2440.0" y="430.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Staff access to gated files?</text>
+<rect x="2162" y="530" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2440.0" y="600.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Can each asset override publication access?</text>
+<rect x="2162" y="700" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2440.0" y="770.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Entitlement scope: item / collection / plan?</text>
+<rect x="2162" y="870" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2440.0" y="940.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Signed URL TTL and revocation semantics?</text>
+<rect x="2162" y="1040" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2440.0" y="1110.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Which actions require admin / reviewer?</text>
+<rect x="2840" y="230" width="580" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="3130.0" y="278.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">TECH &amp; OPERATIONS</text>
+<rect x="2852" y="360" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="3130.0" y="430.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Vercel or Hostinger after compatibility proof?</text>
+<rect x="2852" y="530" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="3130.0" y="600.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Bun package manager only or runtime too?</text>
+<rect x="2852" y="700" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="3130.0" y="770.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Which dev/staging/prod project layout?</text>
+<rect x="2852" y="870" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="3130.0" y="940.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Backup RPO/RTO and restore owner?</text>
+<rect x="2852" y="1040" width="556" height="135" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="3130.0" y="1110.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Privacy retention and deletion requirements?</text>
+<rect x="80" y="1280" width="3200" height="130" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="1680.0" y="1348.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">WORKSHOP OUTPUT FOR EACH ITEM: selected option · rationale · rejected alternatives · consequences · owner · status · evidence / spike · impacted docs · acceptance criteria.</text>
+</svg>

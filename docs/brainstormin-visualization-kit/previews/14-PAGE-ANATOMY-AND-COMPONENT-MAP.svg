@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3800" height="2000" viewBox="0 0 3800 2000">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3800" height="2000" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">PAGE ANATOMY &amp; COMPONENT MAP</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Block-level planning board · page structures are proposed wireframe inventories, not final visual design</text>
+<path d="M 385.0 442 L 385.0 458.5 L 385.0 458.5 L 385.0 475" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 385.0 587 L 385.0 603.5 L 385.0 603.5 L 385.0 620" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 385.0 732 L 385.0 748.5 L 385.0 748.5 L 385.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 385.0 877 L 385.0 893.5 L 385.0 893.5 L 385.0 910" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 385.0 1022 L 385.0 1038.5 L 385.0 1038.5 L 385.0 1055" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 385.0 1167 L 385.0 1183.5 L 385.0 1183.5 L 385.0 1200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 385.0 1312 L 385.0 1328.5 L 385.0 1328.5 L 385.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1105.0 442 L 1105.0 458.5 L 1105.0 458.5 L 1105.0 475" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1105.0 587 L 1105.0 603.5 L 1105.0 603.5 L 1105.0 620" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1105.0 732 L 1105.0 748.5 L 1105.0 748.5 L 1105.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1105.0 877 L 1105.0 893.5 L 1105.0 893.5 L 1105.0 910" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1105.0 1022 L 1105.0 1038.5 L 1105.0 1038.5 L 1105.0 1055" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1105.0 1167 L 1105.0 1183.5 L 1105.0 1183.5 L 1105.0 1200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1105.0 1312 L 1105.0 1328.5 L 1105.0 1328.5 L 1105.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1825.0 442 L 1825.0 458.5 L 1825.0 458.5 L 1825.0 475" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1825.0 587 L 1825.0 603.5 L 1825.0 603.5 L 1825.0 620" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1825.0 732 L 1825.0 748.5 L 1825.0 748.5 L 1825.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1825.0 877 L 1825.0 893.5 L 1825.0 893.5 L 1825.0 910" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1825.0 1022 L 1825.0 1038.5 L 1825.0 1038.5 L 1825.0 1055" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1825.0 1167 L 1825.0 1183.5 L 1825.0 1183.5 L 1825.0 1200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1825.0 1312 L 1825.0 1328.5 L 1825.0 1328.5 L 1825.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2545.0 442 L 2545.0 458.5 L 2545.0 458.5 L 2545.0 475" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2545.0 587 L 2545.0 603.5 L 2545.0 603.5 L 2545.0 620" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2545.0 732 L 2545.0 748.5 L 2545.0 748.5 L 2545.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2545.0 877 L 2545.0 893.5 L 2545.0 893.5 L 2545.0 910" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2545.0 1022 L 2545.0 1038.5 L 2545.0 1038.5 L 2545.0 1055" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2545.0 1167 L 2545.0 1183.5 L 2545.0 1183.5 L 2545.0 1200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2545.0 1312 L 2545.0 1328.5 L 2545.0 1328.5 L 2545.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3265.0 442 L 3265.0 458.5 L 3265.0 458.5 L 3265.0 475" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3265.0 587 L 3265.0 603.5 L 3265.0 603.5 L 3265.0 620" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3265.0 732 L 3265.0 748.5 L 3265.0 748.5 L 3265.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3265.0 877 L 3265.0 893.5 L 3265.0 893.5 L 3265.0 910" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3265.0 1022 L 3265.0 1038.5 L 3265.0 1038.5 L 3265.0 1055" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3265.0 1167 L 3265.0 1183.5 L 3265.0 1183.5 L 3265.0 1200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 3265.0 1312 L 3265.0 1328.5 L 3265.0 1328.5 L 3265.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1860.0 130 L 1860.0 160.0 L 385.0 160.0 L 385.0 190" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1860.0 130 L 1860.0 160.0 L 1105.0 160.0 L 1105.0 190" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1860.0 130 L 1860.0 160.0 L 1825.0 160.0 L 1825.0 190" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1860.0 130 L 1860.0 160.0 L 2545.0 160.0 L 2545.0 190" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1860.0 130 L 1860.0 160.0 L 3265.0 160.0 L 3265.0 190" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="60" y="190" width="650" height="95" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="385.0" y="229.22" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">HOME PAGE</text>
+<text x="385.0" y="252.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Public landing page</text>
+<rect x="78" y="330" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="388.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Global header / masthead / locale switch</text>
+<rect x="78" y="475" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="533.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Hero thesis + primary CTA</text>
+<rect x="78" y="620" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="678.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Featured publication lead</text>
+<rect x="78" y="765" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="823.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Latest / curated publications</text>
+<rect x="78" y="910" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="968.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Research desks / topics entry</text>
+<rect x="78" y="1055" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="1113.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Learning Hub feature</text>
+<rect x="78" y="1200" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="1258.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">About / collaboration content</text>
+<rect x="78" y="1345" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="385.0" y="1403.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Footer / contact / legal links</text>
+<rect x="780" y="190" width="650" height="95" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1105.0" y="229.22" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">PUBLICATION INDEX</text>
+<text x="1105.0" y="252.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Discovery &amp; filtering</text>
+<rect x="798" y="330" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1105.0" y="388.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Breadcrumb + page title + intro</text>
+<rect x="798" y="475" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1105.0" y="533.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Search input + clear action</text>
+<rect x="798" y="620" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1105.0" y="678.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Filters: type / desk / topic / year</text>
+<rect x="798" y="765" width="614" height="112" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1105.0" y="823.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Sort / result count [TBD]</text>
+<rect x="798" y="910" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1105.0" y="968.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Publication list / mixed editorial layout</text>
+<rect x="798" y="1055" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1105.0" y="1113.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Access badge + metadata per item</text>
+<rect x="798" y="1200" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1105.0" y="1258.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Pagination / query in URL</text>
+<rect x="798" y="1345" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1105.0" y="1403.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Loading / empty / no-results / error</text>
+<rect x="1500" y="190" width="650" height="95" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1825.0" y="229.22" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">PUBLICATION DETAIL</text>
+<text x="1825.0" y="252.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Reading &amp; asset access</text>
+<rect x="1518" y="330" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="388.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Breadcrumb + publication type + access label</text>
+<rect x="1518" y="475" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="533.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Title + summary / abstract</text>
+<rect x="1518" y="620" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="678.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Authors + date + locale + taxonomy</text>
+<rect x="1518" y="765" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="823.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Primary action: preview / download / login</text>
+<rect x="1518" y="910" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="968.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Main content / excerpt / table of contents</text>
+<rect x="1518" y="1055" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="1113.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Publication assets + file labels</text>
+<rect x="1518" y="1200" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="1258.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Related publications / related topics</text>
+<rect x="1518" y="1345" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1825.0" y="1403.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Citation / rights / share / SEO metadata</text>
+<rect x="2220" y="190" width="650" height="95" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2545.0" y="229.22" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">LEARNING HUB</text>
+<text x="2545.0" y="252.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Education and resource discovery</text>
+<rect x="2238" y="330" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2545.0" y="388.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Learning Hub intro / categories</text>
+<rect x="2238" y="475" width="614" height="112" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2545.0" y="533.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Search / filters [TBD]</text>
+<rect x="2238" y="620" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2545.0" y="678.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Resource listing / resource cards</text>
+<rect x="2238" y="765" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2545.0" y="823.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Resource type + provider metadata</text>
+<rect x="2238" y="910" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2545.0" y="968.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Resource detail / description</text>
+<rect x="2238" y="1055" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2545.0" y="1113.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Responsive video / playlist embed</text>
+<rect x="2238" y="1200" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2545.0" y="1258.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">External links + related content</text>
+<rect x="2238" y="1345" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2545.0" y="1403.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Empty / unavailable / embed error</text>
+<rect x="2940" y="190" width="650" height="95" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="3265.0" y="229.22" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">ACCOUNT OVERVIEW</text>
+<text x="3265.0" y="252.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">User service surface</text>
+<rect x="2958" y="330" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="3265.0" y="388.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Account navigation / identity</text>
+<rect x="2958" y="475" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="3265.0" y="533.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Profile summary / verification state</text>
+<rect x="2958" y="620" width="614" height="112" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="3265.0" y="678.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Access / entitlement status</text>
+<rect x="2958" y="765" width="614" height="112" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="3265.0" y="823.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Available publications / library [proposed]</text>
+<rect x="2958" y="910" width="614" height="112" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="3265.0" y="968.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Recent activity / downloads [optional]</text>
+<rect x="2958" y="1055" width="614" height="112" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="3265.0" y="1113.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Subscription summary [Phase 2]</text>
+<rect x="2958" y="1200" width="614" height="112" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="3265.0" y="1258.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Billing / invoices [Phase 2]</text>
+<rect x="2958" y="1345" width="614" height="112" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="3265.0" y="1403.7" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Security / session actions [proposed]</text>
+<rect x="1510" y="40" width="700" height="90" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1860.0" y="89.14" text-anchor="middle" font-family="Arial, sans-serif" font-size="23" fill="#FFFFFF">SHARED PAGE SYSTEM</text>
+<rect x="850" y="1550" width="900" height="170" rx="10" ry="10" fill="#FFF0E5" stroke="#FF6A00" stroke-width="1.5"/>
+<text x="1300.0" y="1616.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">EDITORIAL CREATE / EDIT FORM</text>
+<text x="1300.0" y="1638.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Locale &amp; translation status · metadata · authors · taxonomy</text>
+<text x="1300.0" y="1659.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Assets · access level · SEO · preview · draft / publish</text>
+<rect x="1950" y="1550" width="900" height="170" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2400.0" y="1616.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SHARED INTERACTION STATES</text>
+<text x="2400.0" y="1638.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Loading · empty · no results · validation · unauthorized</text>
+<text x="2400.0" y="1659.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">forbidden · locked · success · failure · retry</text>
+<rect x="80" y="1550" width="650" height="170" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="405.0" y="1616.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SHARED SHELL</text>
+<text x="405.0" y="1638.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Header · footer · breadcrumbs</text>
+<text x="405.0" y="1659.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">locale switch · responsive nav</text>
+<rect x="2980" y="1550" width="650" height="170" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="3305.0" y="1616.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">INTERNAL ADMIN SURFACE</text>
+<text x="3305.0" y="1638.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Collection list · filters · create/edit form</text>
+<text x="3305.0" y="1659.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">review queue / publish action [workflow TBD]</text>
+<rect x="80" y="1780" width="3500" height="85" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1830.0" y="1825.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Page specifications should define: user goal · entry points · data source · content blocks · actions · permissions · responsive behavior · SEO · accessibility · loading/empty/error/locked states.</text>
+</svg>

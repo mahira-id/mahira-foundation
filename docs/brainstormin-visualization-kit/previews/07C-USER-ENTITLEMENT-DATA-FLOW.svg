@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3400" height="1750" viewBox="0 0 3400 1750">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3400" height="1750" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">USER, ENTITLEMENT &amp; SUBSCRIPTION DATA RELATIONSHIPS</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Supabase application domain · subscription entities are Phase 2; content references stay policy-controlled</text>
+<path d="M 680 350.0 L 785.0 350.0 L 785.0 215.0 L 890 215.0" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="785.0" y="276.5" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">1 : 1</text>
+<path d="M 400.0 420 L 400.0 450.0 L 1170.0 450.0 L 1170.0 480" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="785.0" y="444.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">1 : N</text>
+<path d="M 400.0 420 L 400.0 635.0 L 1170.0 635.0 L 1170.0 850" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="785.0" y="629.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">0 : N</text>
+<path d="M 680 830.0 L 785.0 830.0 L 785.0 555.0 L 890 555.0" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="785.0" y="686.5" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">creates / revokes</text>
+<path d="M 1170.0 630 L 1170.0 555.0 L 2175.0 555.0 L 2175.0 480" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="1672.5" y="549.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">scope reference</text>
+<path d="M 1170.0 1000 L 1170.0 925.0 L 2175.0 925.0 L 2175.0 850" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="1672.5" y="919.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">event reference</text>
+<path d="M 680 350.0 L 1665.0 350.0 L 1665.0 290.0 L 2650 290.0" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="1665.0" y="314.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">1 : N</text>
+<path d="M 2935.0 360 L 2935.0 440.0 L 2935.0 440.0 L 2935.0 520" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="2935.0" y="434.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">1 : N</text>
+<path d="M 2935.0 660 L 2935.0 740.0 L 2935.0 740.0 L 2935.0 820" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="2935.0" y="734.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">provider events</text>
+<path d="M 2935.0 360 L 2935.0 420.0 L 1170.0 420.0 L 1170.0 480" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="2052.5" y="414.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">reconciles entitlement</text>
+<rect x="120" y="280" width="560" height="140" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="400.0" y="330.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#FFFFFF">SUPABASE AUTH USER</text>
+<text x="400.0" y="353.24" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#FFFFFF">auth.users</text>
+<text x="400.0" y="376.28" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#FFFFFF">Identity / email / session authority</text>
+<rect x="890" y="150" width="560" height="130" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1170.0" y="196.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">PUBLIC USER PROFILE</text>
+<text x="1170.0" y="218.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">1:1 with Auth user</text>
+<text x="1170.0" y="239.82000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Locale preference / minimal profile data</text>
+<rect x="890" y="480" width="560" height="150" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1170.0" y="535.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">ENTITLEMENT</text>
+<text x="1170.0" y="558.24" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Scope · source · status</text>
+<text x="1170.0" y="581.2800000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">valid_from / valid_until</text>
+<rect x="890" y="850" width="560" height="150" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1170.0" y="907.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">DOWNLOAD EVENT / AUDIT</text>
+<text x="1170.0" y="927.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">User nullable only if anonymous analytics approved</text>
+<text x="1170.0" y="948.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Asset/publication refs · decision · timestamp</text>
+<rect x="80" y="760" width="600" height="140" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="380.0" y="812.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">MANUAL GRANT / REVOKE</text>
+<text x="380.0" y="832.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Staff action with actor + reason</text>
+<text x="380.0" y="853.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Pre-payment entitlement source</text>
+<rect x="1850" y="480" width="650" height="150" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2175.0" y="536.3000000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">CONTENT SCOPE REFERENCE</text>
+<text x="2175.0" y="558.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Publication / collection / plan / asset ref</text>
+<text x="2175.0" y="579.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Stable ID · no client authority</text>
+<rect x="1850" y="850" width="650" height="150" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2175.0" y="907.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">DOWNLOAD TARGET REFERENCE</text>
+<text x="2175.0" y="927.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Publication ID + Asset ID</text>
+<text x="2175.0" y="948.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Opaque reference to Payload content</text>
+<rect x="2650" y="220" width="570" height="140" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2935.0" y="271.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SUBSCRIPTION · PHASE 2</text>
+<text x="2935.0" y="293.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Provider · plan · period</text>
+<text x="2935.0" y="314.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">status / cancellation / renewal</text>
+<rect x="2650" y="520" width="570" height="140" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2935.0" y="572.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PAYMENT TRANSACTION · PHASE 2</text>
+<text x="2935.0" y="592.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Provider reference · amount/currency</text>
+<text x="2935.0" y="613.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">status / reconciliation</text>
+<rect x="2650" y="820" width="570" height="140" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2935.0" y="872.4" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">WEBHOOK EVENT LEDGER · PHASE 2</text>
+<text x="2935.0" y="892.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Signature verified · idempotency key</text>
+<text x="2935.0" y="913.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">processed / retry / failure state</text>
+<rect x="80" y="1190" width="3100" height="150" rx="10" ry="10" fill="#FCE8E6" stroke="#C65B52" stroke-width="2"/>
+<text x="1630.0" y="1257.18" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">SECURITY / DATA RULES: Auth owns credentials and identity. Application tables store only necessary profile and entitlement data. Users may read only their own permitted rows. Payment events never grant access from a browser redirect; verified server-side events update entitlement. Retention and anonymous event collection</text>
+<text x="1630.0" y="1278.94" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">require privacy approval.</text>
+</svg>

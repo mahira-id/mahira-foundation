@@ -1,0 +1,41 @@
+flowchart TB
+  authuser(["SUPABASE AUTH USER<br/>auth.users<br/>Identity / email / session authority"])
+  profile["PUBLIC USER PROFILE<br/>1:1 with Auth user<br/>Locale preference / minimal profile data"]
+  entitlement["ENTITLEMENT<br/>Scope · source · status<br/>valid_from / valid_until"]
+  download["DOWNLOAD EVENT / AUDIT<br/>User nullable only if anonymous analytics approved<br/>Asset/publication refs · decision · timestamp"]
+  manual["MANUAL GRANT / REVOKE<br/>Staff action with actor + reason<br/>Pre-payment entitlement source"]
+  contentref{"CONTENT SCOPE REFERENCE<br/>Publication / collection / plan / asset ref<br/>Stable ID · no client authority"}
+  assetref["DOWNLOAD TARGET REFERENCE<br/>Publication ID + Asset ID<br/>Opaque reference to Payload content"]
+  subscription["SUBSCRIPTION · PHASE 2<br/>Provider · plan · period<br/>status / cancellation / renewal"]
+  payment["PAYMENT TRANSACTION · PHASE 2<br/>Provider reference · amount/currency<br/>status / reconciliation"]
+  webhook["WEBHOOK EVENT LEDGER · PHASE 2<br/>Signature verified · idempotency key<br/>processed / retry / failure state"]
+  note_1["SECURITY / DATA RULES: Auth owns credentials and identity. Application tables store only necessary profile and entitlement data. Users may read only their own permitted rows. Payment events never grant access from a browser redirect; verified server-side events update entitlement. Retention and anonymous event collection require privacy approval."]
+  authuser -->|1 : 1| profile
+  authuser -->|1 : N| entitlement
+  authuser -->|0 : N| download
+  manual -->|creates / revokes| entitlement
+  entitlement -.->|scope reference| contentref
+  download -.->|event reference| assetref
+  authuser -.->|1 : N| subscription
+  subscription -.->|1 : N| payment
+  payment -.->|provider events| webhook
+  subscription -.->|reconciles entitlement| entitlement
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class authuser root;
+  class profile domain;
+  class entitlement domain;
+  class download module;
+  class manual action;
+  class contentref open;
+  class assetref neutral;
+  class subscription future;
+  class payment future;
+  class webhook future;
+  class note_1 danger;

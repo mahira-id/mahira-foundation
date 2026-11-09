@@ -1,0 +1,49 @@
+flowchart TB
+  mvp["MVP / PRE-PAYMENT<br/>Admin grants or revokes entitlement manually<br/>Effective access still uses common evaluator"]
+  phase2["PHASE 2 · SUBSCRIPTION<br/>Commercial plan / provider / billing rules must be approved"]
+  manual["Staff grant action<br/>Scope + valid_from / until"]
+  manualaudit["Record actor + reason<br/>Revoke / expiry tracking"]
+  manualent["Entitlement record<br/>Status + validity"]
+  plan{"Plan / offer<br/>Price · duration · eligibility"}
+  checkout["Checkout<br/>Provider hosted/API"]
+  payment["Payment attempt / transaction<br/>Pending · paid · failed · refunded"]
+  webhook["Verified webhook<br/>Signature / authenticity"]
+  idempotent["Idempotency + event ledger<br/>Handle duplicate / delayed events"]
+  subscription["Subscription state<br/>Active / past_due / canceled / expired [TBD]"]
+  entitlement["Create / extend / revoke entitlement<br/>Server-side reconciliation"]
+  access["Same access evaluator<br/>No payment checks in each route"]
+  note_1{"NOT DECIDED: plan pricing, recurring vs manual renewal, payment methods, grace period, cancel/refund, tax/invoice, legal onboarding, and provider selection. Do not hard-code these into MVP."}
+  mvp --> manual
+  manual --> manualaudit
+  manualaudit --> manualent
+  phase2 --> plan
+  plan --> checkout
+  checkout --> payment
+  payment --> webhook
+  webhook --> idempotent
+  idempotent --> subscription
+  subscription --> entitlement
+  entitlement --> access
+  manualent -.->|same evaluator| access
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class mvp domain;
+  class phase2 future;
+  class manual module;
+  class manualaudit module;
+  class manualent action;
+  class plan open;
+  class checkout future;
+  class payment future;
+  class webhook future;
+  class idempotent future;
+  class subscription future;
+  class entitlement action;
+  class access domain;
+  class note_1 open;

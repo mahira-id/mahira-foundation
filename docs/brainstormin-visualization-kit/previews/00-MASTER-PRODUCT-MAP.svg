@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3100" height="2000" viewBox="0 0 3100 2000">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3100" height="2000" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">MAHIRA — MASTER PRODUCT MAP</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Conceptual product ecosystem · baseline domains plus proposed sub-capabilities</text>
+<path d="M 1500.0 180 L 1500.0 235.0 L 360.0 235.0 L 360.0 290" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 360.0 380 L 360.0 410.0 L 360.0 410.0 L 360.0 440" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 360.0 380 L 360.0 485.0 L 360.0 485.0 L 360.0 590" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 360.0 380 L 360.0 560.0 L 360.0 560.0 L 360.0 740" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 360.0 380 L 360.0 635.0 L 360.0 635.0 L 360.0 890" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 360.0 380 L 360.0 710.0 L 360.0 710.0 L 360.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1500.0 180 L 1500.0 235.0 L 1050.0 235.0 L 1050.0 290" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1050.0 380 L 1050.0 410.0 L 1050.0 410.0 L 1050.0 440" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1050.0 380 L 1050.0 485.0 L 1050.0 485.0 L 1050.0 590" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1050.0 380 L 1050.0 560.0 L 1050.0 560.0 L 1050.0 740" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1050.0 380 L 1050.0 635.0 L 1050.0 635.0 L 1050.0 890" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1050.0 380 L 1050.0 710.0 L 1050.0 710.0 L 1050.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1500.0 180 L 1500.0 235.0 L 1740.0 235.0 L 1740.0 290" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1740.0 380 L 1740.0 410.0 L 1740.0 410.0 L 1740.0 440" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1740.0 380 L 1740.0 485.0 L 1740.0 485.0 L 1740.0 590" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1740.0 380 L 1740.0 560.0 L 1740.0 560.0 L 1740.0 740" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1740.0 380 L 1740.0 635.0 L 1740.0 635.0 L 1740.0 890" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1740.0 380 L 1740.0 710.0 L 1740.0 710.0 L 1740.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1500.0 180 L 1500.0 235.0 L 2430.0 235.0 L 2430.0 290" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2430.0 380 L 2430.0 410.0 L 2430.0 410.0 L 2430.0 440" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2430.0 380 L 2430.0 485.0 L 2430.0 485.0 L 2430.0 590" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2430.0 380 L 2430.0 560.0 L 2430.0 560.0 L 2430.0 740" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2430.0 380 L 2430.0 635.0 L 2430.0 635.0 L 2430.0 890" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2430.0 380 L 2430.0 710.0 L 2430.0 710.0 L 2430.0 1040" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 360.0 380 L 360.0 820.0 L 1425.0 820.0 L 1425.0 1260" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1050.0 380 L 1050.0 820.0 L 1425.0 820.0 L 1425.0 1260" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1740.0 380 L 1740.0 820.0 L 1425.0 820.0 L 1425.0 1260" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 2430.0 380 L 2430.0 820.0 L 1425.0 820.0 L 1425.0 1260" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1425.0 1350 L 1425.0 1400.0 L 430.0 1400.0 L 430.0 1450" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1425.0 1350 L 1425.0 1400.0 L 1050.0 1400.0 L 1050.0 1450" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1425.0 1350 L 1425.0 1400.0 L 1670.0 1400.0 L 1670.0 1450" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1425.0 1350 L 1425.0 1400.0 L 2290.0 1400.0 L 2290.0 1450" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="1120" y="70" width="760" height="110" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1500.0" y="113.03999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#FFFFFF">MAHIRA</text>
+<text x="1500.0" y="146.32" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#FFFFFF">Digital Publication &amp; Knowledge Platform</text>
+<rect x="100" y="290" width="520" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="360.0" y="338.59999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#101010">PUBLICATION PLATFORM</text>
+<rect x="120" y="440" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="360.0" y="497.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Homepage &amp; institutional pages</text>
+<rect x="120" y="590" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="360.0" y="637.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Publication discovery</text>
+<text x="360.0" y="658.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Listing · filters · pagination</text>
+<rect x="120" y="740" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="360.0" y="787.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Publication detail</text>
+<text x="360.0" y="808.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Metadata · abstract · assets</text>
+<rect x="120" y="890" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="360.0" y="937.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Search &amp; taxonomy</text>
+<text x="360.0" y="958.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Desk · topic · type</text>
+<rect x="120" y="1040" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="360.0" y="1087.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">SEO &amp; distribution</text>
+<text x="360.0" y="1108.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Canonical · OG · sitemap</text>
+<rect x="790" y="290" width="520" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1050.0" y="338.59999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#101010">EDITORIAL MANAGEMENT</text>
+<rect x="810" y="440" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1050.0" y="487.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Publication CMS</text>
+<text x="1050.0" y="508.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Create · edit · archive</text>
+<rect x="810" y="590" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1050.0" y="637.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Editorial workflow</text>
+<text x="1050.0" y="658.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Draft · review · publish</text>
+<rect x="810" y="740" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1050.0" y="787.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Content taxonomy</text>
+<text x="1050.0" y="808.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Authors · desk · topic · type</text>
+<rect x="810" y="890" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1050.0" y="937.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Media &amp; asset library</text>
+<text x="1050.0" y="958.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Cover · PDF · appendix</text>
+<rect x="810" y="1040" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1050.0" y="1087.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Localization</text>
+<text x="1050.0" y="1108.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">ID · EN · translation review</text>
+<rect x="1480" y="290" width="520" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1740.0" y="338.59999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#101010">USER ACCOUNT &amp; ACCESS</text>
+<rect x="1500" y="440" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1740.0" y="487.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Authentication</text>
+<text x="1740.0" y="508.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Register · login · recovery</text>
+<rect x="1500" y="590" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1740.0" y="637.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Account dashboard</text>
+<text x="1740.0" y="658.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Profile · access status</text>
+<rect x="1500" y="740" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1740.0" y="787.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Entitlement management</text>
+<text x="1740.0" y="808.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Manual grant · revoke</text>
+<rect x="1500" y="890" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1740.0" y="937.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Protected downloads</text>
+<text x="1740.0" y="958.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Server authorization · signed URL</text>
+<rect x="1500" y="1040" width="480" height="110" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="1740.0" y="1087.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Subscription — Phase 2</text>
+<text x="1740.0" y="1108.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Plan · payment · renewal</text>
+<rect x="2170" y="290" width="520" height="90" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2430.0" y="338.59999999999997" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#101010">LEARNING HUB</text>
+<rect x="2190" y="440" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2430.0" y="487.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Learning catalog</text>
+<text x="2430.0" y="508.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Browse · filter</text>
+<rect x="2190" y="590" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2430.0" y="637.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Learning resource detail</text>
+<text x="2430.0" y="658.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Description · metadata</text>
+<rect x="2190" y="740" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2430.0" y="787.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Video / external resources</text>
+<text x="2430.0" y="808.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Embed · playlist · links</text>
+<rect x="2190" y="890" width="480" height="110" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2430.0" y="937.64" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Topic relationships</text>
+<text x="2430.0" y="958.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Connect to research content</text>
+<rect x="2190" y="1040" width="480" height="110" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2430.0" y="1087.6399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Learning expansion</text>
+<text x="2430.0" y="1108.12" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Progress / LMS only if approved</text>
+<rect x="160" y="1260" width="2530" height="90" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="1.5"/>
+<text x="1425.0" y="1308.6000000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#FFFFFF">SHARED FOUNDATIONS — identity boundaries · localization · content model · accessibility · observability · security · operations</text>
+<rect x="170" y="1450" width="520" height="140" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="430.0" y="1502.3999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">EXTERNAL / PLATFORM SERVICES</text>
+<text x="430.0" y="1522.8799999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Vercel · Supabase · email provider</text>
+<text x="430.0" y="1543.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">YouTube · payment gateway (future)</text>
+<rect x="790" y="1450" width="520" height="140" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1050.0" y="1502.3999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">GOVERNANCE</text>
+<text x="1050.0" y="1522.8799999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PRD · PDD · SRS · ADR</text>
+<text x="1050.0" y="1543.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Content policy · privacy · editorial rules</text>
+<rect x="1410" y="1450" width="520" height="140" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1670.0" y="1502.3999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">QUALITY &amp; DELIVERY</text>
+<text x="1670.0" y="1522.8799999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">CI/CD · unit/integration/E2E</text>
+<text x="1670.0" y="1543.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Security · SEO · accessibility · recovery</text>
+<rect x="2030" y="1450" width="520" height="140" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="2290.0" y="1502.3999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">RELEASE BOUNDARIES</text>
+<text x="2290.0" y="1522.8799999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">MVP scope to be decided</text>
+<text x="2290.0" y="1543.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Learning &amp; subscription phased</text>
+</svg>

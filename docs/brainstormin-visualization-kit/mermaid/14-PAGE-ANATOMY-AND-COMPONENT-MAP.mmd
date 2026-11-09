@@ -1,0 +1,151 @@
+flowchart TB
+  home["HOME PAGE<br/>Public landing page"]
+  home_0["Global header / masthead / locale switch"]
+  home_1["Hero thesis + primary CTA"]
+  home_2["Featured publication lead"]
+  home_3["Latest / curated publications"]
+  home_4["Research desks / topics entry"]
+  home_5["Learning Hub feature"]
+  home_6["About / collaboration content"]
+  home_7["Footer / contact / legal links"]
+  listing["PUBLICATION INDEX<br/>Discovery & filtering"]
+  listing_0["Breadcrumb + page title + intro"]
+  listing_1["Search input + clear action"]
+  listing_2["Filters: type / desk / topic / year"]
+  listing_3{"Sort / result count [TBD]"}
+  listing_4["Publication list / mixed editorial layout"]
+  listing_5["Access badge + metadata per item"]
+  listing_6["Pagination / query in URL"]
+  listing_7["Loading / empty / no-results / error"]
+  detail["PUBLICATION DETAIL<br/>Reading & asset access"]
+  detail_0["Breadcrumb + publication type + access label"]
+  detail_1["Title + summary / abstract"]
+  detail_2["Authors + date + locale + taxonomy"]
+  detail_3["Primary action: preview / download / login"]
+  detail_4["Main content / excerpt / table of contents"]
+  detail_5["Publication assets + file labels"]
+  detail_6["Related publications / related topics"]
+  detail_7["Citation / rights / share / SEO metadata"]
+  learning["LEARNING HUB<br/>Education and resource discovery"]
+  learning_0["Learning Hub intro / categories"]
+  learning_1{"Search / filters [TBD]"}
+  learning_2["Resource listing / resource cards"]
+  learning_3["Resource type + provider metadata"]
+  learning_4["Resource detail / description"]
+  learning_5["Responsive video / playlist embed"]
+  learning_6["External links + related content"]
+  learning_7["Empty / unavailable / embed error"]
+  account["ACCOUNT OVERVIEW<br/>User service surface"]
+  account_0["Account navigation / identity"]
+  account_1["Profile summary / verification state"]
+  account_2["Access / entitlement status"]
+  account_3{"Available publications / library [proposed]"}
+  account_4["Recent activity / downloads [optional]"]
+  account_5["Subscription summary [Phase 2]"]
+  account_6["Billing / invoices [Phase 2]"]
+  account_7{"Security / session actions [proposed]"}
+  root(["SHARED PAGE SYSTEM"])
+  editorform["EDITORIAL CREATE / EDIT FORM<br/>Locale & translation status · metadata · authors · taxonomy<br/>Assets · access level · SEO · preview · draft / publish"]
+  states["SHARED INTERACTION STATES<br/>Loading · empty · no results · validation · unauthorized<br/>forbidden · locked · success · failure · retry"]
+  shell["SHARED SHELL<br/>Header · footer · breadcrumbs<br/>locale switch · responsive nav"]
+  ops["INTERNAL ADMIN SURFACE<br/>Collection list · filters · create/edit form<br/>review queue / publish action [workflow TBD]"]
+  note_1{"Page specifications should define: user goal · entry points · data source · content blocks · actions · permissions · responsive behavior · SEO · accessibility · loading/empty/error/locked states."}
+  home_0 --> home_1
+  home_1 --> home_2
+  home_2 --> home_3
+  home_3 --> home_4
+  home_4 --> home_5
+  home_5 --> home_6
+  home_6 --> home_7
+  listing_0 --> listing_1
+  listing_1 --> listing_2
+  listing_2 --> listing_3
+  listing_3 --> listing_4
+  listing_4 --> listing_5
+  listing_5 --> listing_6
+  listing_6 --> listing_7
+  detail_0 --> detail_1
+  detail_1 --> detail_2
+  detail_2 --> detail_3
+  detail_3 --> detail_4
+  detail_4 --> detail_5
+  detail_5 --> detail_6
+  detail_6 --> detail_7
+  learning_0 --> learning_1
+  learning_1 --> learning_2
+  learning_2 --> learning_3
+  learning_3 --> learning_4
+  learning_4 --> learning_5
+  learning_5 --> learning_6
+  learning_6 --> learning_7
+  account_0 --> account_1
+  account_1 --> account_2
+  account_2 --> account_3
+  account_3 --> account_4
+  account_4 --> account_5
+  account_5 --> account_6
+  account_6 --> account_7
+  root --> home
+  root --> listing
+  root --> detail
+  root --> learning
+  root --> account
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class home domain;
+  class home_0 module;
+  class home_1 module;
+  class home_2 module;
+  class home_3 module;
+  class home_4 module;
+  class home_5 module;
+  class home_6 module;
+  class home_7 module;
+  class listing domain;
+  class listing_0 module;
+  class listing_1 module;
+  class listing_2 module;
+  class listing_3 open;
+  class listing_4 module;
+  class listing_5 module;
+  class listing_6 module;
+  class listing_7 module;
+  class detail domain;
+  class detail_0 module;
+  class detail_1 module;
+  class detail_2 module;
+  class detail_3 module;
+  class detail_4 module;
+  class detail_5 module;
+  class detail_6 module;
+  class detail_7 module;
+  class learning domain;
+  class learning_0 module;
+  class learning_1 open;
+  class learning_2 module;
+  class learning_3 module;
+  class learning_4 module;
+  class learning_5 module;
+  class learning_6 module;
+  class learning_7 module;
+  class account domain;
+  class account_0 module;
+  class account_1 module;
+  class account_2 module;
+  class account_3 open;
+  class account_4 future;
+  class account_5 future;
+  class account_6 future;
+  class account_7 open;
+  class root root;
+  class editorform warning;
+  class states neutral;
+  class shell action;
+  class ops future;
+  class note_1 open;

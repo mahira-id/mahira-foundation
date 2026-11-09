@@ -1,0 +1,35 @@
+flowchart TB
+  foundation["PHASE 1<br/>PRODUCT & ARCHITECTURE FOUNDATION<br/><br/>Decision register · content model · data model<br/>access policy · routing · MVP boundary"]
+  spike["PHASE 2<br/>TECHNICAL VALIDATION<br/><br/>Payload + Postgres · identity boundary<br/>Storage + gated PDF · deployment"]
+  slice1["SLICE 1<br/>PUBLICATION PLATFORM<br/><br/>CMS → publish → listing/detail → search/SEO<br/>public asset download · staging editor test"]
+  slice2["SLICE 2<br/>ACCOUNT & ENTITLEMENT<br/><br/>Register/login → account → manual grant<br/>private asset → signed URL → E2E tests"]
+  slice3["SLICE 3<br/>LEARNING HUB<br/><br/>Resource model → CMS → catalog/detail<br/>embed + topic relationships"]
+  hardening["PHASE 4 · RELEASE HARDENING<br/>Security review · SEO · accessibility<br/>performance · restore · monitoring · legal"]
+  phase2["PHASE 5 · SUBSCRIPTION<br/>Payment sandbox · verified webhook<br/>subscription state · entitlement reconciliation"]
+  decision{"MVP SCOPE GATE — Must be decided before committing slice acceptance:<br/>Option A: Publication-first (auth/gating later)  |  Option B: Publication + account + manual entitlement in first release. PRD §7 and PRD §13 / SRS P0 currently differ."}
+  foundation --> spike
+  spike --> slice1
+  slice1 --> slice2
+  slice2 --> slice3
+  slice1 -.-> hardening
+  slice2 -.-> hardening
+  slice3 -.-> hardening
+  hardening -.-> phase2
+  decision -.-> slice1
+  decision -.-> slice2
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class foundation domain;
+  class spike action;
+  class slice1 domain;
+  class slice2 domain;
+  class slice3 future;
+  class hardening warning;
+  class phase2 future;
+  class decision open;

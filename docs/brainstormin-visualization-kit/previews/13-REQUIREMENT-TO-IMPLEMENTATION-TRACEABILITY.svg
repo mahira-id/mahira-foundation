@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3300" height="1400" viewBox="0 0 3300 1400">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3300" height="1400" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">REQUIREMENT → DECISION → DESIGN → CODE → TEST</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">A traceability chain for consistency and change impact</text>
+<path d="M 350.0 520 L 350.0 430.0 L 970.0 430.0 L 970.0 340" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 970.0 520 L 970.0 430.0 L 1590.0 430.0 L 1590.0 340" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1590.0 520 L 1590.0 430.0 L 2210.0 430.0 L 2210.0 340" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2210.0 520 L 2210.0 430.0 L 2830.0 430.0 L 2830.0 340" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2830.0 520 L 2830.0 640.0 L 1620.0 640.0 L 1620.0 760" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2120 840.0 L 1100.0 840.0 L 1100.0 430.0 L 80 430.0" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="1100.0" y="629.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#5F6B76">feedback / change impact</text>
+<rect x="80" y="340" width="540" height="180" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="350.0" y="411.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">PRD / USER NEED</text>
+<text x="350.0" y="433.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010"></text>
+<text x="350.0" y="454.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">What outcome must exist?</text>
+<rect x="700" y="340" width="540" height="180" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="970.0" y="411.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">DECISION / ADR</text>
+<text x="970.0" y="433.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010"></text>
+<text x="970.0" y="454.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Why this solution?</text>
+<rect x="1320" y="340" width="540" height="180" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1590.0" y="411.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">ARCHITECTURE SPECS</text>
+<text x="1590.0" y="433.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010"></text>
+<text x="1590.0" y="454.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Data · access · integration</text>
+<rect x="1940" y="340" width="540" height="180" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2210.0" y="411.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">IMPLEMENTATION SPECS</text>
+<text x="2210.0" y="433.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010"></text>
+<text x="2210.0" y="454.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Page · API · workflow</text>
+<rect x="2560" y="340" width="540" height="180" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="2830.0" y="411.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">CODE / CONFIG</text>
+<text x="2830.0" y="433.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010"></text>
+<text x="2830.0" y="454.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Next · Payload · Supabase</text>
+<rect x="1120" y="760" width="1000" height="160" rx="10" ry="10" fill="#FFF0E5" stroke="#FF6A00" stroke-width="1.5"/>
+<text x="1620.0" y="831.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">TESTS &amp; ACCEPTANCE</text>
+<text x="1620.0" y="855.58" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">Unit · integration · E2E · security · SEO · accessibility</text>
+<rect x="80" y="1020" width="2900" height="110" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1530.0" y="1077.8799999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">When a requirement changes, update the linked decision/specification and rerun affected tests. Do not let chat history become the only record of an accepted decision.</text>
+</svg>

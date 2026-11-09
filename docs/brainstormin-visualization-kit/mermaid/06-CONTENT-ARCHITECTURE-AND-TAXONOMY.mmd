@@ -1,0 +1,48 @@
+flowchart TB
+  org(["MAHIRA CONTENT UNIVERSE"])
+  desk["RESEARCH DESK<br/>Organizational research portfolio"]
+  topic["TOPIC<br/>Subject / issue classification"]
+  ptype["PUBLICATION TYPE<br/>Editorial genre / format"]
+  tag["TAG [OPTIONAL]<br/>Granular discovery label"]
+  publication(["PUBLICATION<br/>Core research / analysis work<br/>Title · summary · locale · slug · status · access level"])
+  authors["AUTHORS<br/>Many-to-many proposed<br/>Order + contribution role"]
+  assets["PUBLICATION ASSETS<br/>One publication → many assets<br/>Cover · preview · PDF · appendix"]
+  translation{"TRANSLATION GROUP<br/>ID / EN variants<br/>Storage model TBD"}
+  rights["RIGHTS & CITATION<br/>Copyright · license · citation<br/>Policy required"]
+  learning["LEARNING RESOURCE<br/>Video · playlist · reading<br/>Related desk/topic/publication"]
+  note_1{"TAXONOMY RULES: Desk ≠ Topic ≠ Publication Type ≠ Tag. Desk groups an organizational portfolio; Topic classifies a subject; Type describes editorial genre; Tag is optional and must not become a catch-all."}
+  org --> desk
+  org --> topic
+  org --> ptype
+  org --> tag
+  desk --> publication
+  topic --> publication
+  ptype --> publication
+  tag --> publication
+  publication --> authors
+  publication --> assets
+  publication --> translation
+  publication --> rights
+  topic -.-> learning
+  desk -.-> learning
+  publication -.-> learning
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class org root;
+  class desk domain;
+  class topic domain;
+  class ptype domain;
+  class tag future;
+  class publication root;
+  class authors module;
+  class assets module;
+  class translation open;
+  class rights warning;
+  class learning future;
+  class note_1 open;

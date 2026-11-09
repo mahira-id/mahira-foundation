@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3500" height="2000" viewBox="0 0 3500 2000">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3500" height="2000" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">LOGICAL DATA MODEL &amp; OWNERSHIP</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Logical domains, relations and system-of-record boundaries · not physical schema freeze</text>
+<path d="M 1700.0 140 L 1700.0 195.0 L 815.0 195.0 L 815.0 250" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1700.0 140 L 1700.0 195.0 L 2585.0 195.0 L 2585.0 250" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 420.0 L 217.5 420.0 L 217.5 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 420.0 L 487.5 420.0 L 487.5 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 420.0 L 757.5 420.0 L 757.5 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 420.0 L 1027.5 420.0 L 1027.5 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 420.0 L 1297.5 420.0 L 1297.5 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 525.0 L 217.5 525.0 L 217.5 680" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 525.0 L 487.5 525.0 L 487.5 680" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 525.0 L 757.5 525.0 L 757.5 680" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 525.0 L 1027.5 525.0 L 1027.5 680" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 525.0 L 1297.5 525.0 L 1297.5 680" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 420.0 L 2090.0 420.0 L 2090.0 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 420.0 L 2520.0 420.0 L 2520.0 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 420.0 L 2950.0 420.0 L 2950.0 470" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 535.0 L 2090.0 535.0 L 2090.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 535.0 L 2520.0 535.0 L 2520.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 535.0 L 2950.0 535.0 L 2950.0 700" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 650.0 L 2090.0 650.0 L 2090.0 930" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 815.0 370 L 815.0 745.0 L 1680.0 745.0 L 1680.0 1120" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 2585.0 370 L 2585.0 745.0 L 1680.0 745.0 L 1680.0 1120" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<rect x="1290" y="40" width="820" height="100" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1700.0" y="79.42" text-anchor="middle" font-family="Arial, sans-serif" font-size="23" fill="#FFFFFF">SUPABASE POSTGRESQL</text>
+<text x="1700.0" y="108.86" text-anchor="middle" font-family="Arial, sans-serif" font-size="23" fill="#FFFFFF">Shared database platform · separated ownership</text>
+<rect x="140" y="250" width="1350" height="120" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="815.0" y="301.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">PAYLOAD-OWNED EDITORIAL DOMAIN</text>
+<text x="815.0" y="325.58" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">Payload schema + Payload access control</text>
+<rect x="1910" y="250" width="1350" height="120" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2585.0" y="301.26" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">APPLICATION-OWNED USER / ACCESS DOMAIN</text>
+<text x="2585.0" y="325.58" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">Supabase Auth + app tables + RLS</text>
+<rect x="100" y="470" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="217.5" y="537.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Publication</text>
+<rect x="370" y="470" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="487.5" y="528.0999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">PublicationAsset</text>
+<text x="487.5" y="547.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">owner TBD</text>
+<rect x="640" y="470" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="757.5" y="537.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Author</text>
+<rect x="910" y="470" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1027.5" y="537.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">ResearchDesk</text>
+<rect x="1180" y="470" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1297.5" y="537.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Topic</text>
+<rect x="100" y="680" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="217.5" y="747.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">PublicationType</text>
+<rect x="370" y="680" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="487.5" y="747.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Tag [optional]</text>
+<rect x="640" y="680" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="757.5" y="747.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">LearningResource</text>
+<rect x="910" y="680" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1027.5" y="747.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Page</text>
+<rect x="1180" y="680" width="235" height="130" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1297.5" y="747.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">StaffUser / Payload Auth</text>
+<rect x="1900" y="470" width="380" height="145" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2090.0" y="535.5999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">auth.users</text>
+<text x="2090.0" y="554.8" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Supabase Auth</text>
+<rect x="2330" y="470" width="380" height="145" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2520.0" y="545.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">public_user_profiles</text>
+<rect x="2760" y="470" width="380" height="145" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2950.0" y="545.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">entitlements</text>
+<rect x="1900" y="700" width="380" height="145" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2090.0" y="775.1999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">download_events</text>
+<rect x="2330" y="700" width="380" height="145" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2520.0" y="765.5999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">subscriptions</text>
+<text x="2520.0" y="784.8" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Phase 2</text>
+<rect x="2760" y="700" width="380" height="145" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2950.0" y="765.5999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">payment_transactions</text>
+<text x="2950.0" y="784.8" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Phase 2</text>
+<rect x="1900" y="930" width="380" height="145" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2090.0" y="995.5999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">payment_webhook_events</text>
+<text x="2090.0" y="1014.8" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Phase 2</text>
+<rect x="530" y="1120" width="2300" height="150" rx="10" ry="10" fill="#FCE8E6" stroke="#C65B52" stroke-width="2"/>
+<text x="1680.0" y="1176.3" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">OWNERSHIP BOUNDARY</text>
+<text x="1680.0" y="1198.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Payload migrations own Payload schema. Application migrations own app tables. Supabase Auth owns auth.users.</text>
+<text x="1680.0" y="1219.82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Cross-domain content references use stable IDs; do not assume RLS protects tables accessed through Payload database credentials.</text>
+<rect x="140" y="1350" width="2900" height="115" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1590.0" y="1410.3799999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">OPEN: PublicationAsset ownership, schema namespace, foreign-key strategy across domains, localization storage model, and Desk cardinality must be decided before production migrations.</text>
+</svg>

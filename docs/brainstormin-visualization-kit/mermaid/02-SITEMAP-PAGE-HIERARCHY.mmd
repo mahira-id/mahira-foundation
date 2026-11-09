@@ -1,0 +1,146 @@
+flowchart TB
+  root(["MAHIRA WEB APPLICATION"])
+  public["PUBLIC WEBSITE · /[locale]"]
+  home["Homepage<br/>/"]
+  publications["Publication index<br/>/publications"]
+  pubdetail["Publication detail<br/>/publications/[slug]"]
+  search["Search results<br/>/search?q="]
+  desks["Research desk index<br/>/desks"]
+  deskdetail{"Research desk detail [TBD]<br/>/desks/[slug]"}
+  topics{"Topic index [TBD]<br/>/topics"}
+  topicdetail{"Topic detail [TBD]<br/>/topics/[slug]"}
+  learning["Learning Hub index<br/>/learning-hub"]
+  learnitem["Learning resource detail<br/>/learning-hub/[slug]"]
+  about["About<br/>/about"]
+  contact{"Contact [content TBD]<br/>/contact"}
+  legal["Privacy · Terms · Copyright [legal review]<br/>/legal/*"]
+  account["PUBLIC ACCOUNT · /[locale]/account"]
+  register["Registration<br/>/register"]
+  login["Login<br/>/login"]
+  verify{"Email verification [policy TBD]<br/>/verify-email"}
+  forgot["Forgot password<br/>/forgot-password"]
+  reset["Reset password<br/>/reset-password"]
+  overview["Account overview<br/>/account"]
+  profile["Profile & preferences<br/>/account/profile"]
+  library{"Available / entitled content [proposed]<br/>/account/library"}
+  history["Download history [optional]<br/>/account/downloads"]
+  bookmarks["Bookmarks [optional]<br/>/account/bookmarks"]
+  sub["Subscription [Phase 2]<br/>/account/subscription"]
+  billing["Billing / invoices [Phase 2]<br/>/account/billing"]
+  admin["STAFF ADMIN · /admin (PAYLOAD)"]
+  adminhome["Payload admin home<br/>/admin"]
+  adminpub["Publications<br/>/admin/collections/publications"]
+  adminassets{"Publication assets [collection choice TBD]<br/>/admin/collections/publication-assets"}
+  adminauthors["Authors<br/>/admin/collections/authors"]
+  admintax["Desks · Topics · Types · Tags<br/>/admin/collections/taxonomy"]
+  adminlearning["Learning resources<br/>/admin/collections/learning-resources"]
+  adminpages["Institutional pages<br/>/admin/collections/pages"]
+  adminmedia["Media library<br/>/admin/collections/media"]
+  adminstaff["Staff users & roles<br/>/admin/collections/users"]
+  adminversions["Versions / drafts [CMS config]<br/>/admin/versions"]
+  ops["INTERNAL OPERATIONS · ROUTE /admin CUSTOM VIEW OR /internal [TBD]"]
+  opsusers{"Public user lookup [permission TBD]<br/>/internal/users"}
+  opsent["Grant / revoke entitlement<br/>/internal/entitlements"]
+  opsaudit["Access / admin audit<br/>/internal/audit"]
+  opsanalytics["Analytics [later]<br/>/internal/analytics"]
+  opssub["Subscription operations [Phase 2]<br/>/internal/subscriptions"]
+  opsfinance["Finance view [optional / restricted]<br/>/internal/finance"]
+  root --> public
+  public --> home
+  public --> publications
+  public --> pubdetail
+  public --> search
+  public --> desks
+  public --> deskdetail
+  public --> topics
+  public --> topicdetail
+  public --> learning
+  public --> learnitem
+  public --> about
+  public --> contact
+  public --> legal
+  root --> account
+  account --> register
+  account --> login
+  account --> verify
+  account --> forgot
+  account --> reset
+  account --> overview
+  account --> profile
+  account --> library
+  account --> history
+  account --> bookmarks
+  account --> sub
+  account --> billing
+  root --> admin
+  admin --> adminhome
+  admin --> adminpub
+  admin --> adminassets
+  admin --> adminauthors
+  admin --> admintax
+  admin --> adminlearning
+  admin --> adminpages
+  admin --> adminmedia
+  admin --> adminstaff
+  admin --> adminversions
+  root --> ops
+  ops --> opsusers
+  ops --> opsent
+  ops --> opsaudit
+  ops --> opsanalytics
+  ops --> opssub
+  ops --> opsfinance
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class root root;
+  class public domain;
+  class home module;
+  class publications module;
+  class pubdetail module;
+  class search module;
+  class desks module;
+  class deskdetail open;
+  class topics open;
+  class topicdetail open;
+  class learning module;
+  class learnitem module;
+  class about module;
+  class contact open;
+  class legal module;
+  class account domain;
+  class register module;
+  class login module;
+  class verify open;
+  class forgot module;
+  class reset module;
+  class overview module;
+  class profile module;
+  class library open;
+  class history future;
+  class bookmarks future;
+  class sub future;
+  class billing future;
+  class admin domain;
+  class adminhome module;
+  class adminpub module;
+  class adminassets open;
+  class adminauthors module;
+  class admintax module;
+  class adminlearning module;
+  class adminpages module;
+  class adminmedia module;
+  class adminstaff module;
+  class adminversions module;
+  class ops domain;
+  class opsusers open;
+  class opsent module;
+  class opsaudit module;
+  class opsanalytics future;
+  class opssub future;
+  class opsfinance future;

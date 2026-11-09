@@ -1,0 +1,141 @@
+# Page Specifications — Initial Public and Account Slices
+
+**ID:** SPEC-PAGE-001 · **Status:** Proposed baseline · **Version:** 0.1.0
+
+Dokumen ini adalah page-level contract awal, bukan pixel-perfect wireframe. Urutan blok, data, state, dan acceptance criteria menjadi dasar desain detail serta implementasi. Perubahan komposisi visual harus tetap mengikuti PDD.
+
+## 1. Shared page contract
+
+Setiap page specification harus menetapkan: route/locale, audience, access, data source, rendering/cache, content hierarchy, actions, states, SEO, accessibility, analytics events (bila disetujui), dan test cases.
+
+Shared states:
+- Loading/skeleton atau streaming state yang tidak menyebabkan layout shift besar.
+- Empty state dengan penjelasan dan next action.
+- No-results untuk hasil pencarian kosong.
+- Error dengan recovery path dan retry jika aman.
+- Locked state yang menjelaskan syarat akses.
+- Not found untuk konten yang tidak tersedia/published.
+- Locale unavailable untuk konten tanpa terjemahan.
+
+## 2. Homepage
+
+**Route:** `/{locale}` · **Audience:** public · **Auth:** none · **Indexing:** indexable.
+
+### Block order (proposed)
+1. Masthead/navigation: logo, primary navigation, locale switcher, CTA jika sudah disahkan.
+2. Hero thesis: identitas dan proposisi organisasi; copy final berasal dari stakeholder.
+3. Publication lead: satu publikasi unggulan dengan cover, type, title, summary, authors, date, access label.
+4. Latest publications: editorial list/feature layout; link ke katalog.
+5. Research desks/topics: tampilkan hanya taksonomi aktif dan terkurasi.
+6. Learning Hub teaser: hanya jika katalog memiliki materi nyata.
+7. About/impact: fakta dan klaim harus memiliki sumber/approval.
+8. Footer: legal, contact, social links yang valid.
+
+### Data
+CMS-owned page configuration, published publications, active desk/topic, published learning resources. Statistik seperti jumlah publikasi atau jumlah desk tidak boleh hardcoded sebagai klaim; tampilkan hanya dengan query yang tervalidasi atau hilangkan.
+
+### States
+- Jika belum ada featured item, gunakan layout latest publications tanpa placeholder klaim.
+- Jika learning hub kosong, sembunyikan blok atau tampilkan state editorial yang disetujui.
+- Error pada satu section tidak harus menjatuhkan seluruh homepage; tentukan graceful degradation.
+
+### SEO/a11y
+Unique title/description, canonical, OG, one primary H1, semantic landmarks, descriptive image alt, skip link, keyboard-operable navigation.
+
+## 3. Publication index
+
+**Route:** `/{locale}/publications` · **Audience:** public · **Indexing:** indexable canonical; arbitrary query variants noindex/canonical policy to be finalized.
+
+### Hierarchy
+1. Breadcrumb/page title/intro.
+2. Search input and clear control.
+3. Filter controls: publication type, desk, topic, year, access level only where useful and supported by data.
+4. Result count only if computed from actual query.
+5. Featured item or editorial lead (optional; avoid duplicate promotion).
+6. Publication list/grid with consistent metadata.
+7. Pagination.
+
+### Item metadata
+Title, short summary, publication type, desk/topic, author display, published date, locale, access label, optional cover, reading/download indication only if accurate.
+
+### Behavior
+- Search and committed filters are URL-addressable.
+- Filters can be combined only where semantics are defined.
+- Pagination resets when query/filter changes.
+- Stable ordering and page size.
+- Preserve locale and filters when opening detail and navigating back.
+
+### States
+Initial, loading, populated, no results, empty catalog, error, invalid filter, pagination boundary.
+
+### SEO/a11y
+Index page title; use links for navigation; labels for filters; announce result updates accessibly; avoid indexing infinite filter permutations.
+
+## 4. Publication detail
+
+**Route:** `/{locale}/publications/{slug}` · **Audience:** public · **Indexing:** published metadata page indexable unless policy says otherwise.
+
+### Hierarchy
+1. Breadcrumb.
+2. Type/access label and publication date.
+3. H1 title.
+4. Summary/abstract.
+5. Author list and affiliations where approved.
+6. Desk/topic taxonomy.
+7. Cover or editorial image.
+8. Download/preview panel per asset and access policy.
+9. Table of contents or body if available.
+10. References/citation metadata if available.
+11. Related publications based on explicit relation or transparent algorithm.
+12. Citation/share actions if included in scope.
+
+### Access behavior
+Metadata remains public according to PRD. Each downloadable asset resolves its effective access policy. Locked UI must say whether login or entitlement is required and must not imply a failure. Download authorization is always server-side.
+
+### States
+Published, unpublished/not found, translation unavailable, asset unavailable, public download, login required, entitlement required, storage error, archived/withdrawn notice.
+
+### SEO
+Locale-specific metadata, canonical, reciprocal hreflang only for valid translation pairs, OG image, publication structured data only when fields are reliable. Do not expose private file URL in metadata.
+
+## 5. Search results
+
+**Route:** `/{locale}/search?q=...` or query state on publication index; select one pattern before implementation.
+
+- Show query, result count, filters, sort, list, pagination.
+- Empty query should not trigger expensive unrestricted search; show discovery suggestions or recent publications.
+- No-results includes query correction/removal suggestions.
+- Escape/highlight matched terms safely; never render search HTML as trusted markup.
+- Search is initially locale-scoped per SRS recommendation; cross-locale mode is TBD.
+
+## 6. Locked content state
+
+This is a component/pattern reused in publication detail and resource cards.
+
+- State the actual requirement: sign in, registered account, active subscriber entitlement, or unavailable.
+- Provide one primary next action appropriate to state.
+- Do not reveal private storage path, entitlement internals, or staff-only metadata.
+- Do not show subscription price or purchase CTA until plan and legal terms are approved.
+- If the user is already entitled but download fails, show a service error, not an upsell.
+
+## 7. Account overview
+
+**Route:** `/{locale}/account` · **Audience:** authenticated public user · **Indexing:** noindex.
+
+- Account summary, verified-email status if available, profile actions.
+- Access/entitlement summary in user-friendly language.
+- Links to profile and library/download history only if shipped.
+- Do not show internal staff roles or other users' information.
+- Session-expired state redirects through approved auth flow with safe return URL.
+
+## 8. Publication CMS form (editorial specification)
+
+Not a public page, but a critical operational surface. Required groups: core metadata, locale/translation link, authors, taxonomy, publication type, lifecycle, access, assets, SEO, preview/publish controls. Exact fields come from DATA-MODEL.md. Inline field validation; unsaved-change warning; preview; clear draft/published state; permission-aware actions.
+
+## 9. Learning Hub index/detail (P1 baseline)
+
+Index: title/intro, topic/format filters only if data exists, resource listing, empty/error/loading. Detail: title, format, summary, thumbnail, external provider/source, embed with accessible title, related publications. External embeds must respect privacy/consent requirements and should not load third-party trackers before necessary consent if policy requires.
+
+## 10. Wireframe and review checklist
+
+Before high-fidelity UI, create low-fidelity wireframes for homepage, publication index, publication detail, search results, locked state, account overview, and CMS create/edit. Review content density with real publication examples in both locales. Confirm mobile flow, keyboard navigation, empty/error/locked states, and editorial usability with an actual editor.

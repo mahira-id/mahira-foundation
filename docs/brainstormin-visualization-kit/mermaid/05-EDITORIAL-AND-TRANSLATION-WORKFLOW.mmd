@@ -1,0 +1,51 @@
+flowchart TB
+  draft["DRAFT<br/>Editor creates / edits"]
+  review{"IN REVIEW<br/>Reviewer checks content"}
+  changes["CHANGES REQUESTED<br/>Return to editor"]
+  approved["APPROVED<br/>Ready to publish"]
+  scheduled["SCHEDULED<br/>Optional future publish"]
+  published["PUBLISHED<br/>Public page available"]
+  unpublished["UNPUBLISHED<br/>Temporarily removed"]
+  archived["ARCHIVED<br/>Retained, not active"]
+  translation["TRANSLATION TRACK<br/>Separate completeness / review per locale"]
+  source["Source locale content"]
+  translated["Translated variant"]
+  translationreview{"Translation review"}
+  translationpublished["Locale variant published<br/>only when required fields pass"]
+  note_1["Do not conflate content status (draft/published), locale completeness (missing/complete/reviewed), and access level (public/registered/subscriber)."]
+  draft -->|submit| review
+  review -->|request changes| changes
+  changes -->|revise| draft
+  review -->|approve| approved
+  approved -->|schedule| scheduled
+  approved -->|publish now| published
+  scheduled -->|scheduled time| published
+  published -->|unpublish| unpublished
+  unpublished -->|reopen| draft
+  published -->|archive| archived
+  translation --> source
+  source --> translated
+  translated --> translationreview
+  translationreview --> translationpublished
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class draft domain;
+  class review open;
+  class changes warning;
+  class approved action;
+  class scheduled future;
+  class published action;
+  class unpublished warning;
+  class archived neutral;
+  class translation domain;
+  class source module;
+  class translated module;
+  class translationreview open;
+  class translationpublished action;
+  class note_1 warning;

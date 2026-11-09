@@ -1,0 +1,49 @@
+flowchart TB
+  start(["User clicks download<br/>Client sends asset identifier only"])
+  resolve["Server resolves trusted Publication + Asset<br/>Do not trust client-supplied access level / object key"]
+  ready{"Asset processing status = ready?"}
+  notready["No → fail safely<br/>Unavailable / retry message"]
+  effective["Resolve effective policy<br/>Asset override vs publication inheritance [ADR]"]
+  public{"Effective access = public?"}
+  publicurl["Yes → return public asset URL<br/>No private signature needed"]
+  auth{"Private access requires valid public-user session?"}
+  login["No → authentication required<br/>Login / register return path"]
+  ent["Evaluate entitlement<br/>scope · source · status · valid_from · valid_until"]
+  allowed{"Entitlement allows asset?"}
+  deny["No → deny / locked state<br/>Explain requirement without leaking internals"]
+  sign["Yes → create short-lived signed URL<br/>Write minimal audit event"]
+  note_1{"STAFF ACCESS IS SEPARATE: Payload staff role does not automatically grant public subscriber entitlement. Define an explicit staff policy or separate, auditable public-user grant."}
+  start --> resolve
+  resolve --> ready
+  ready -->|No| notready
+  ready -->|Yes| effective
+  effective --> public
+  public -->|Yes| publicurl
+  public -->|No| auth
+  auth -->|No| login
+  auth -->|Yes| ent
+  ent --> allowed
+  allowed -->|No| deny
+  allowed -->|Yes| sign
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class start root;
+  class resolve domain;
+  class ready open;
+  class notready warning;
+  class effective domain;
+  class public open;
+  class publicurl action;
+  class auth open;
+  class login warning;
+  class ent domain;
+  class allowed open;
+  class deny danger;
+  class sign action;
+  class note_1 open;

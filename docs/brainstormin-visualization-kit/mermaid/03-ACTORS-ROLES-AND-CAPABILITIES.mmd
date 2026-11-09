@@ -1,0 +1,100 @@
+flowchart TB
+  root(["IDENTITY & AUTHORIZATION MODEL"])
+  visitor["VISITOR / ANONYMOUS<br/>Supabase session: none"]
+  visitor_0["Browse public pages"]
+  visitor_1["Search publications"]
+  visitor_2["Read public metadata / summary"]
+  visitor_3["Download public assets"]
+  visitor_4["Open public Learning Hub resources"]
+  registered["REGISTERED USER<br/>Supabase Auth"]
+  registered_0["All visitor capabilities"]
+  registered_1["Access registered-only assets"]
+  registered_2["View own account / profile"]
+  registered_3["See own access status"]
+  registered_4["Future: bookmarks / history"]
+  subscriber["SUBSCRIBER<br/>Supabase Auth + active entitlement"]
+  subscriber_0["All registered capabilities"]
+  subscriber_1["Access subscriber assets within validity"]
+  subscriber_2["View subscription status (Phase 2)"]
+  editor["EDITOR<br/>Payload Staff Auth"]
+  editor_0["Create / edit editorial content"]
+  editor_1["Manage metadata / assets"]
+  editor_2["Preview / submit / publish per policy"]
+  editor_3["Manage taxonomy if permitted"]
+  admin["ADMIN<br/>Payload Staff Auth"]
+  admin_0["Manage staff / roles"]
+  admin_1["System configuration"]
+  admin_2["Operational permissions"]
+  admin_3["Entitlement administration if approved"]
+  reviewer["REVIEWER · OPTIONAL"]
+  finance["FINANCE · OPTIONAL / PHASE 2"]
+  boundary["IDENTITY BOUNDARY<br/>Public users → Supabase Auth<br/>Staff users → Payload Auth<br/>No self-service public role escalation"]
+  note_1{"OPEN POLICY: Staff ability to read/download registered or subscriber assets is NOT implied by their CMS role. Define explicit permission or separate public-user grant."}
+  root --> visitor
+  visitor --> visitor_0
+  visitor --> visitor_1
+  visitor --> visitor_2
+  visitor --> visitor_3
+  visitor --> visitor_4
+  root --> registered
+  registered --> registered_0
+  registered --> registered_1
+  registered --> registered_2
+  registered --> registered_3
+  registered --> registered_4
+  root --> subscriber
+  subscriber --> subscriber_0
+  subscriber --> subscriber_1
+  subscriber --> subscriber_2
+  root --> editor
+  editor --> editor_0
+  editor --> editor_1
+  editor --> editor_2
+  editor --> editor_3
+  root --> admin
+  admin --> admin_0
+  admin --> admin_1
+  admin --> admin_2
+  admin --> admin_3
+  root -.-> reviewer
+  root -.-> finance
+  root --> boundary
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class root root;
+  class visitor module;
+  class visitor_0 neutral;
+  class visitor_1 neutral;
+  class visitor_2 neutral;
+  class visitor_3 neutral;
+  class visitor_4 neutral;
+  class registered domain;
+  class registered_0 neutral;
+  class registered_1 neutral;
+  class registered_2 neutral;
+  class registered_3 neutral;
+  class registered_4 neutral;
+  class subscriber future;
+  class subscriber_0 neutral;
+  class subscriber_1 neutral;
+  class subscriber_2 neutral;
+  class editor domain;
+  class editor_0 neutral;
+  class editor_1 neutral;
+  class editor_2 neutral;
+  class editor_3 neutral;
+  class admin warning;
+  class admin_0 neutral;
+  class admin_1 neutral;
+  class admin_2 neutral;
+  class admin_3 neutral;
+  class reviewer future;
+  class finance future;
+  class boundary danger;
+  class note_1 open;

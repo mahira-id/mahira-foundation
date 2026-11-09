@@ -1,0 +1,83 @@
+flowchart TB
+  lane1["JOURNEY A · PUBLIC DISCOVERY"]
+  a1["Arrive: homepage / search / topic"]
+  a2["Browse publication index"]
+  a3["Apply keyword / filters"]
+  a4["Open publication detail"]
+  a5["Read metadata + abstract"]
+  a6["Review asset and access label"]
+  a7["Download if asset is public"]
+  lane2["JOURNEY B · LOCKED CONTENT"]
+  b1["Click restricted asset"]
+  b2["Server resolves publication + asset"]
+  b3{"Is requester authenticated?"}
+  b4["No → explain lock; login / register"]
+  b5["Yes → evaluate access policy"]
+  b6{"Entitlement valid?"}
+  b7["No → explain requirement / next step"]
+  b8["Yes → issue short-lived signed URL"]
+  b9["Record minimal access event"]
+  lane3["JOURNEY C · ACCOUNT"]
+  c1["Choose register / login"]
+  c2["Supabase Auth flow"]
+  c3["Session established"]
+  c4["Account overview"]
+  c5["Profile / locale preference"]
+  c6["See access and entitlement status"]
+  c7["Later: subscription and billing"]
+  note_1["Important: Authentication does not equal authorization. A logged-in user can still be denied a subscriber-only asset when no valid entitlement exists."]
+  a1 --> a2
+  a2 --> a3
+  a3 --> a4
+  a4 --> a5
+  a5 --> a6
+  a6 --> a7
+  b1 --> b2
+  b2 --> b3
+  b3 --> b4
+  b3 --> b5
+  b5 --> b6
+  b6 --> b7
+  b6 --> b8
+  b8 --> b9
+  c1 --> c2
+  c2 --> c3
+  c3 --> c4
+  c4 --> c5
+  c5 --> c6
+  c6 --> c7
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class lane1 domain;
+  class a1 module;
+  class a2 module;
+  class a3 module;
+  class a4 module;
+  class a5 module;
+  class a6 module;
+  class a7 module;
+  class lane2 domain;
+  class b1 module;
+  class b2 module;
+  class b3 open;
+  class b4 module;
+  class b5 module;
+  class b6 open;
+  class b7 module;
+  class b8 action;
+  class b9 action;
+  class lane3 domain;
+  class c1 module;
+  class c2 module;
+  class c3 module;
+  class c4 module;
+  class c5 module;
+  class c6 module;
+  class c7 future;
+  class note_1 warning;

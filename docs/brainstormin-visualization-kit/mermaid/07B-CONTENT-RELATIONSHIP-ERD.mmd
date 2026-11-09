@@ -1,0 +1,51 @@
+flowchart TB
+  pubtype["PUBLICATION TYPE<br/>One type per publication initially [TBD]"]
+  publication(["PUBLICATION<br/>Core editorial record<br/>Locale / slug / status / access level"])
+  asset["PUBLICATION ASSET<br/>One publication → many assets<br/>Cover · preview · full PDF · appendix"]
+  author["AUTHOR<br/>Reusable person / institution credit"]
+  pubauthor["PUBLICATION_AUTHOR<br/>Join entity: order + contribution role"]
+  desk["RESEARCH DESK<br/>Organizational portfolio grouping"]
+  pubdesk{"PUBLICATION_DESK<br/>Join entity if multi-desk is approved"}
+  topic["TOPIC<br/>Subject / issue classification"]
+  pubtopic["PUBLICATION_TOPIC<br/>Join entity"]
+  tag["TAG [OPTIONAL]<br/>Granular discovery label"]
+  pubtag["PUBLICATION_TAG<br/>Join entity"]
+  translation{"TRANSLATION GROUP<br/>One logical work → locale variants<br/>Linked-record vs field localization TBD"}
+  learning["LEARNING RESOURCE<br/>Video · playlist · reading · external resource<br/>Related content links are optional"]
+  note_1{"CARDINALITY QUESTIONS: Author ↔ Publication is many-to-many; Topic ↔ Publication is proposed many-to-many; Desk ↔ Publication may be one or many; Publication Type is one-to-many initially. Confirm with actual editorial records before schema freeze."}
+  pubtype -->|1 : N| publication
+  publication -->|1 : N| asset
+  publication -->|1 : N| pubauthor
+  author -->|1 : N| pubauthor
+  publication -->|1 : N| pubdesk
+  desk -->|1 : N / TBD| pubdesk
+  publication -->|1 : N| pubtopic
+  topic -->|1 : N| pubtopic
+  publication -->|1 : N| pubtag
+  tag -->|1 : N| pubtag
+  publication -->|member of / locale variant| translation
+  learning -.->|optional related topic| topic
+  learning -.->|optional related desk| desk
+  learning -.->|optional related publication| publication
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class pubtype domain;
+  class publication root;
+  class asset module;
+  class author domain;
+  class pubauthor neutral;
+  class desk domain;
+  class pubdesk open;
+  class topic domain;
+  class pubtopic neutral;
+  class tag future;
+  class pubtag neutral;
+  class translation open;
+  class learning future;
+  class note_1 open;

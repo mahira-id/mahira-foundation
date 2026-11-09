@@ -1,0 +1,509 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3400" height="2300" viewBox="0 0 3400 2300">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3400" height="2300" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">FEATURE / CAPABILITY TREE</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Parent → domain → module → capability · [P] proposed detail, [TBD] needs validation</text>
+<path d="M 1650.0 140 L 1650.0 180.0 L 310.0 180.0 L 310.0 220" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 300 L 310.0 325.0 L 310.0 325.0 L 310.0 350" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 418.5 L 310.0 418.5 L 310.0 425" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 442.5 L 310.0 442.5 L 310.0 473" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 466.5 L 310.0 466.5 L 310.0 521" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 490.5 L 310.0 490.5 L 310.0 569" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 514.5 L 310.0 514.5 L 310.0 617" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 538.5 L 310.0 538.5 L 310.0 665" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 562.5 L 310.0 562.5 L 310.0 713" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 412 L 310.0 586.5 L 310.0 586.5 L 310.0 761" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 300 L 310.0 495.0 L 310.0 495.0 L 310.0 690" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 752 L 310.0 758.5 L 310.0 758.5 L 310.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 752 L 310.0 782.5 L 310.0 782.5 L 310.0 813" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 752 L 310.0 806.5 L 310.0 806.5 L 310.0 861" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 752 L 310.0 830.5 L 310.0 830.5 L 310.0 909" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 752 L 310.0 854.5 L 310.0 854.5 L 310.0 957" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 752 L 310.0 878.5 L 310.0 878.5 L 310.0 1005" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 300 L 310.0 665.0 L 310.0 665.0 L 310.0 1030" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1098.5 L 310.0 1098.5 L 310.0 1105" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1122.5 L 310.0 1122.5 L 310.0 1153" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1146.5 L 310.0 1146.5 L 310.0 1201" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1170.5 L 310.0 1170.5 L 310.0 1249" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1194.5 L 310.0 1194.5 L 310.0 1297" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1218.5 L 310.0 1218.5 L 310.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1242.5 L 310.0 1242.5 L 310.0 1393" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1092 L 310.0 1266.5 L 310.0 1266.5 L 310.0 1441" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 300 L 310.0 835.0 L 310.0 835.0 L 310.0 1370" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1432 L 310.0 1438.5 L 310.0 1438.5 L 310.0 1445" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1432 L 310.0 1462.5 L 310.0 1462.5 L 310.0 1493" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1432 L 310.0 1486.5 L 310.0 1486.5 L 310.0 1541" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1432 L 310.0 1510.5 L 310.0 1510.5 L 310.0 1589" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 300 L 310.0 1005.0 L 310.0 1005.0 L 310.0 1710" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1772 L 310.0 1778.5 L 310.0 1778.5 L 310.0 1785" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1772 L 310.0 1802.5 L 310.0 1802.5 L 310.0 1833" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1772 L 310.0 1826.5 L 310.0 1826.5 L 310.0 1881" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1772 L 310.0 1850.5 L 310.0 1850.5 L 310.0 1929" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 310.0 1772 L 310.0 1874.5 L 310.0 1874.5 L 310.0 1977" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 180.0 L 960.0 180.0 L 960.0 220" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 300 L 960.0 325.0 L 960.0 325.0 L 960.0 350" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 412 L 960.0 418.5 L 960.0 418.5 L 960.0 425" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 412 L 960.0 442.5 L 960.0 442.5 L 960.0 473" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 412 L 960.0 466.5 L 960.0 466.5 L 960.0 521" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 412 L 960.0 490.5 L 960.0 490.5 L 960.0 569" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 412 L 960.0 514.5 L 960.0 514.5 L 960.0 617" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 412 L 960.0 538.5 L 960.0 538.5 L 960.0 665" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 412 L 960.0 562.5 L 960.0 562.5 L 960.0 713" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 300 L 960.0 495.0 L 960.0 495.0 L 960.0 690" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 752 L 960.0 758.5 L 960.0 758.5 L 960.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 752 L 960.0 782.5 L 960.0 782.5 L 960.0 813" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 752 L 960.0 806.5 L 960.0 806.5 L 960.0 861" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 752 L 960.0 830.5 L 960.0 830.5 L 960.0 909" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 752 L 960.0 854.5 L 960.0 854.5 L 960.0 957" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 752 L 960.0 878.5 L 960.0 878.5 L 960.0 1005" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 300 L 960.0 665.0 L 960.0 665.0 L 960.0 1030" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1092 L 960.0 1098.5 L 960.0 1098.5 L 960.0 1105" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1092 L 960.0 1122.5 L 960.0 1122.5 L 960.0 1153" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1092 L 960.0 1146.5 L 960.0 1146.5 L 960.0 1201" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1092 L 960.0 1170.5 L 960.0 1170.5 L 960.0 1249" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1092 L 960.0 1194.5 L 960.0 1194.5 L 960.0 1297" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1092 L 960.0 1218.5 L 960.0 1218.5 L 960.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 300 L 960.0 835.0 L 960.0 835.0 L 960.0 1370" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1432 L 960.0 1438.5 L 960.0 1438.5 L 960.0 1445" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1432 L 960.0 1462.5 L 960.0 1462.5 L 960.0 1493" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1432 L 960.0 1486.5 L 960.0 1486.5 L 960.0 1541" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1432 L 960.0 1510.5 L 960.0 1510.5 L 960.0 1589" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1432 L 960.0 1534.5 L 960.0 1534.5 L 960.0 1637" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1432 L 960.0 1558.5 L 960.0 1558.5 L 960.0 1685" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 300 L 960.0 1005.0 L 960.0 1005.0 L 960.0 1710" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1772 L 960.0 1778.5 L 960.0 1778.5 L 960.0 1785" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1772 L 960.0 1802.5 L 960.0 1802.5 L 960.0 1833" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1772 L 960.0 1826.5 L 960.0 1826.5 L 960.0 1881" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1772 L 960.0 1850.5 L 960.0 1850.5 L 960.0 1929" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 960.0 1772 L 960.0 1874.5 L 960.0 1874.5 L 960.0 1977" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 180.0 L 1610.0 180.0 L 1610.0 220" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 300 L 1610.0 325.0 L 1610.0 325.0 L 1610.0 350" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 412 L 1610.0 418.5 L 1610.0 418.5 L 1610.0 425" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 412 L 1610.0 442.5 L 1610.0 442.5 L 1610.0 473" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 412 L 1610.0 466.5 L 1610.0 466.5 L 1610.0 521" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 412 L 1610.0 490.5 L 1610.0 490.5 L 1610.0 569" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 412 L 1610.0 514.5 L 1610.0 514.5 L 1610.0 617" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 412 L 1610.0 538.5 L 1610.0 538.5 L 1610.0 665" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 300 L 1610.0 495.0 L 1610.0 495.0 L 1610.0 690" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 752 L 1610.0 758.5 L 1610.0 758.5 L 1610.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 752 L 1610.0 782.5 L 1610.0 782.5 L 1610.0 813" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 752 L 1610.0 806.5 L 1610.0 806.5 L 1610.0 861" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 752 L 1610.0 830.5 L 1610.0 830.5 L 1610.0 909" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 752 L 1610.0 854.5 L 1610.0 854.5 L 1610.0 957" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 752 L 1610.0 878.5 L 1610.0 878.5 L 1610.0 1005" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 300 L 1610.0 665.0 L 1610.0 665.0 L 1610.0 1030" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1092 L 1610.0 1098.5 L 1610.0 1098.5 L 1610.0 1105" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1092 L 1610.0 1122.5 L 1610.0 1122.5 L 1610.0 1153" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1092 L 1610.0 1146.5 L 1610.0 1146.5 L 1610.0 1201" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1092 L 1610.0 1170.5 L 1610.0 1170.5 L 1610.0 1249" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1092 L 1610.0 1194.5 L 1610.0 1194.5 L 1610.0 1297" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1092 L 1610.0 1218.5 L 1610.0 1218.5 L 1610.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 300 L 1610.0 835.0 L 1610.0 835.0 L 1610.0 1370" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1432 L 1610.0 1438.5 L 1610.0 1438.5 L 1610.0 1445" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1432 L 1610.0 1462.5 L 1610.0 1462.5 L 1610.0 1493" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1432 L 1610.0 1486.5 L 1610.0 1486.5 L 1610.0 1541" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1432 L 1610.0 1510.5 L 1610.0 1510.5 L 1610.0 1589" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1432 L 1610.0 1534.5 L 1610.0 1534.5 L 1610.0 1637" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1432 L 1610.0 1558.5 L 1610.0 1558.5 L 1610.0 1685" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 300 L 1610.0 1005.0 L 1610.0 1005.0 L 1610.0 1710" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1772 L 1610.0 1778.5 L 1610.0 1778.5 L 1610.0 1785" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1772 L 1610.0 1802.5 L 1610.0 1802.5 L 1610.0 1833" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1772 L 1610.0 1826.5 L 1610.0 1826.5 L 1610.0 1881" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1772 L 1610.0 1850.5 L 1610.0 1850.5 L 1610.0 1929" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1772 L 1610.0 1874.5 L 1610.0 1874.5 L 1610.0 1977" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1610.0 1772 L 1610.0 1898.5 L 1610.0 1898.5 L 1610.0 2025" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 180.0 L 2260.0 180.0 L 2260.0 220" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 300 L 2260.0 325.0 L 2260.0 325.0 L 2260.0 350" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 412 L 2260.0 418.5 L 2260.0 418.5 L 2260.0 425" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 412 L 2260.0 442.5 L 2260.0 442.5 L 2260.0 473" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 412 L 2260.0 466.5 L 2260.0 466.5 L 2260.0 521" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 412 L 2260.0 490.5 L 2260.0 490.5 L 2260.0 569" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 412 L 2260.0 514.5 L 2260.0 514.5 L 2260.0 617" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 300 L 2260.0 495.0 L 2260.0 495.0 L 2260.0 690" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 752 L 2260.0 758.5 L 2260.0 758.5 L 2260.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 752 L 2260.0 782.5 L 2260.0 782.5 L 2260.0 813" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 752 L 2260.0 806.5 L 2260.0 806.5 L 2260.0 861" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 752 L 2260.0 830.5 L 2260.0 830.5 L 2260.0 909" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 752 L 2260.0 854.5 L 2260.0 854.5 L 2260.0 957" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 752 L 2260.0 878.5 L 2260.0 878.5 L 2260.0 1005" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 300 L 2260.0 665.0 L 2260.0 665.0 L 2260.0 1030" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1092 L 2260.0 1098.5 L 2260.0 1098.5 L 2260.0 1105" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1092 L 2260.0 1122.5 L 2260.0 1122.5 L 2260.0 1153" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1092 L 2260.0 1146.5 L 2260.0 1146.5 L 2260.0 1201" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1092 L 2260.0 1170.5 L 2260.0 1170.5 L 2260.0 1249" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1092 L 2260.0 1194.5 L 2260.0 1194.5 L 2260.0 1297" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 300 L 2260.0 835.0 L 2260.0 835.0 L 2260.0 1370" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1432 L 2260.0 1438.5 L 2260.0 1438.5 L 2260.0 1445" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1432 L 2260.0 1462.5 L 2260.0 1462.5 L 2260.0 1493" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1432 L 2260.0 1486.5 L 2260.0 1486.5 L 2260.0 1541" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2260.0 1432 L 2260.0 1510.5 L 2260.0 1510.5 L 2260.0 1589" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1650.0 140 L 1650.0 180.0 L 2910.0 180.0 L 2910.0 220" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 300 L 2910.0 325.0 L 2910.0 325.0 L 2910.0 350" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 412 L 2910.0 418.5 L 2910.0 418.5 L 2910.0 425" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 412 L 2910.0 442.5 L 2910.0 442.5 L 2910.0 473" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 412 L 2910.0 466.5 L 2910.0 466.5 L 2910.0 521" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 412 L 2910.0 490.5 L 2910.0 490.5 L 2910.0 569" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 412 L 2910.0 514.5 L 2910.0 514.5 L 2910.0 617" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 300 L 2910.0 495.0 L 2910.0 495.0 L 2910.0 690" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 752 L 2910.0 758.5 L 2910.0 758.5 L 2910.0 765" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 752 L 2910.0 782.5 L 2910.0 782.5 L 2910.0 813" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 752 L 2910.0 806.5 L 2910.0 806.5 L 2910.0 861" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 752 L 2910.0 830.5 L 2910.0 830.5 L 2910.0 909" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 752 L 2910.0 854.5 L 2910.0 854.5 L 2910.0 957" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 300 L 2910.0 665.0 L 2910.0 665.0 L 2910.0 1030" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1092 L 2910.0 1098.5 L 2910.0 1098.5 L 2910.0 1105" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1092 L 2910.0 1122.5 L 2910.0 1122.5 L 2910.0 1153" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1092 L 2910.0 1146.5 L 2910.0 1146.5 L 2910.0 1201" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1092 L 2910.0 1170.5 L 2910.0 1170.5 L 2910.0 1249" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1092 L 2910.0 1194.5 L 2910.0 1194.5 L 2910.0 1297" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1092 L 2910.0 1218.5 L 2910.0 1218.5 L 2910.0 1345" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 300 L 2910.0 835.0 L 2910.0 835.0 L 2910.0 1370" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1432 L 2910.0 1438.5 L 2910.0 1438.5 L 2910.0 1445" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1432 L 2910.0 1462.5 L 2910.0 1462.5 L 2910.0 1493" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1432 L 2910.0 1486.5 L 2910.0 1486.5 L 2910.0 1541" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1432 L 2910.0 1510.5 L 2910.0 1510.5 L 2910.0 1589" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1432 L 2910.0 1534.5 L 2910.0 1534.5 L 2910.0 1637" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1432 L 2910.0 1558.5 L 2910.0 1558.5 L 2910.0 1685" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 300 L 2910.0 1005.0 L 2910.0 1005.0 L 2910.0 1710" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1772 L 2910.0 1778.5 L 2910.0 1778.5 L 2910.0 1785" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1772 L 2910.0 1802.5 L 2910.0 1802.5 L 2910.0 1833" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1772 L 2910.0 1826.5 L 2910.0 1826.5 L 2910.0 1881" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1772 L 2910.0 1850.5 L 2910.0 1850.5 L 2910.0 1929" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2910.0 1772 L 2910.0 1874.5 L 2910.0 1874.5 L 2910.0 1977" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="1320" y="40" width="660" height="100" rx="10" ry="10" fill="#123B5D" stroke="#123B5D" stroke-width="2"/>
+<text x="1650.0" y="94.32" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#FFFFFF">MAHIRA PRODUCT CAPABILITIES</text>
+<rect x="60" y="220" width="500" height="80" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="310.0" y="263.42" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">A. PUBLIC EXPERIENCE</text>
+<rect x="75" y="350" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="310.0" y="384.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Homepage</text>
+<rect x="88" y="425" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="447.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Masthead &amp; navigation</text>
+<rect x="88" y="473" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="495.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Hero / organization thesis</text>
+<rect x="88" y="521" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="543.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Featured publication</text>
+<rect x="88" y="569" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="591.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Latest publications</text>
+<rect x="88" y="617" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="639.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Research desk / topic entry</text>
+<rect x="88" y="665" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="687.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Learning Hub teaser</text>
+<rect x="88" y="713" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="735.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">About / contact teaser</text>
+<rect x="88" y="761" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="783.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Footer &amp; social links</text>
+<rect x="75" y="690" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="310.0" y="724.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Publication Discovery</text>
+<rect x="88" y="765" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="787.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Publication index</text>
+<rect x="88" y="813" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="835.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Keyword search</text>
+<rect x="88" y="861" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="883.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Filter: type / desk / topic / year</text>
+<rect x="88" y="909" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="310.0" y="931.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Sort: newest / relevance [TBD]</text>
+<rect x="88" y="957" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="979.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Pagination / query URL state</text>
+<rect x="88" y="1005" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1027.34" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Empty / loading / error states</text>
+<rect x="75" y="1030" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="310.0" y="1064.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Publication Detail</text>
+<rect x="88" y="1105" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1127.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Title &amp; summary / abstract</text>
+<rect x="88" y="1153" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1175.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Author attribution</text>
+<rect x="88" y="1201" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1223.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Type / desk / topic metadata</text>
+<rect x="88" y="1249" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1271.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Published / updated date</text>
+<rect x="88" y="1297" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1319.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Access badge &amp; access explanation</text>
+<rect x="88" y="1345" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1367.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Asset list / preview / download</text>
+<rect x="88" y="1393" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1415.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Related publications</text>
+<rect x="88" y="1441" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1463.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">SEO / social metadata</text>
+<rect x="75" y="1370" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="310.0" y="1404.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Taxonomy Pages</text>
+<rect x="88" y="1445" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="310.0" y="1467.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Desk index / desk detail [TBD]</text>
+<rect x="88" y="1493" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="310.0" y="1515.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Topic index / topic detail [TBD]</text>
+<rect x="88" y="1541" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="310.0" y="1563.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Publication type browsing [TBD]</text>
+<rect x="88" y="1589" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="310.0" y="1611.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Tag pages only if useful [TBD]</text>
+<rect x="75" y="1710" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="310.0" y="1744.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Institutional Pages</text>
+<rect x="88" y="1785" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1807.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">About / mission / focus</text>
+<rect x="88" y="1833" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1855.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Team / authors [scope TBD]</text>
+<rect x="88" y="1881" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1903.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Partnerships [scope TBD]</text>
+<rect x="88" y="1929" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1951.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Contact [content required]</text>
+<rect x="88" y="1977" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="310.0" y="1999.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Privacy / terms / copyright [legal review]</text>
+<rect x="710" y="220" width="500" height="80" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="960.0" y="263.42" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">B. EDITORIAL OPERATIONS</text>
+<rect x="725" y="350" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="960.0" y="384.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Publication CMS</text>
+<rect x="738" y="425" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="447.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Create / edit / duplicate</text>
+<rect x="738" y="473" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="495.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Metadata validation</text>
+<rect x="738" y="521" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="543.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Localized variants</text>
+<rect x="738" y="569" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="591.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Author / taxonomy relations</text>
+<rect x="738" y="617" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="639.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Asset attach / reorder</text>
+<rect x="738" y="665" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="687.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Draft / preview / publish</text>
+<rect x="738" y="713" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="735.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Unpublish / archive / revision</text>
+<rect x="725" y="690" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="960.0" y="724.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Editorial Workflow</text>
+<rect x="738" y="765" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="787.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Draft</text>
+<rect x="738" y="813" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="960.0" y="835.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Submit for review [TBD]</text>
+<rect x="738" y="861" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="960.0" y="883.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Reviewer approve / request changes [TBD]</text>
+<rect x="738" y="909" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="960.0" y="931.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Schedule publish [TBD]</text>
+<rect x="738" y="957" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="979.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Publish / unpublish</text>
+<rect x="738" y="1005" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1027.34" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Post-publication correction</text>
+<rect x="725" y="1030" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="960.0" y="1064.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Media &amp; Assets</text>
+<rect x="738" y="1105" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1127.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Cover image</text>
+<rect x="738" y="1153" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1175.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Preview / excerpt</text>
+<rect x="738" y="1201" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1223.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Full report PDF</text>
+<rect x="738" y="1249" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1271.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Appendix / dataset / supporting files</text>
+<rect x="738" y="1297" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1319.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Upload validation / processing</text>
+<rect x="738" y="1345" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1367.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Public vs private storage classification</text>
+<rect x="725" y="1370" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="960.0" y="1404.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Taxonomy Management</text>
+<rect x="738" y="1445" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1467.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Authors</text>
+<rect x="738" y="1493" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1515.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Publication types</text>
+<rect x="738" y="1541" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1563.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Research desks</text>
+<rect x="738" y="1589" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1611.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Topics</text>
+<rect x="738" y="1637" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="960.0" y="1659.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Tags [optional]</text>
+<rect x="738" y="1685" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1707.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Ordering / active status</text>
+<rect x="725" y="1710" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="960.0" y="1744.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Localization Operations</text>
+<rect x="738" y="1785" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1807.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">ID / EN content variants</text>
+<rect x="738" y="1833" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1855.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Translation completeness</text>
+<rect x="738" y="1881" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1903.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Translation review</text>
+<rect x="738" y="1929" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1951.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Locale-specific slug</text>
+<rect x="738" y="1977" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="960.0" y="1999.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Fallback / no-translation state</text>
+<rect x="1360" y="220" width="500" height="80" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1610.0" y="263.42" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">C. USER IDENTITY &amp; ACCESS</text>
+<rect x="1375" y="350" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1610.0" y="384.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Authentication</text>
+<rect x="1388" y="425" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="447.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Register</text>
+<rect x="1388" y="473" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="495.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Email verification [policy TBD]</text>
+<rect x="1388" y="521" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="543.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Login / logout</text>
+<rect x="1388" y="569" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="591.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Forgot / reset password</text>
+<rect x="1388" y="617" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="639.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Session refresh / expiry</text>
+<rect x="1388" y="665" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="687.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Account recovery</text>
+<rect x="1375" y="690" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1610.0" y="724.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Account Area</text>
+<rect x="1388" y="765" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="787.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Account overview</text>
+<rect x="1388" y="813" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="835.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Profile &amp; locale preference</text>
+<rect x="1388" y="861" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="883.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Access / entitlement status</text>
+<rect x="1388" y="909" width="444" height="40" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1610.0" y="931.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">My available documents [proposed]</text>
+<rect x="1388" y="957" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="1610.0" y="979.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Download history [optional]</text>
+<rect x="1388" y="1005" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="1610.0" y="1027.34" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Bookmarks [optional]</text>
+<rect x="1375" y="1030" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1610.0" y="1064.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Entitlement Operations</text>
+<rect x="1388" y="1105" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1127.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Manual grant</text>
+<rect x="1388" y="1153" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="1610.0" y="1175.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Grant scope: publication / plan [TBD]</text>
+<rect x="1388" y="1201" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1223.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Valid from / until</text>
+<rect x="1388" y="1249" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1271.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Revoke / expire</text>
+<rect x="1388" y="1297" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1319.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Reason &amp; actor audit</text>
+<rect x="1388" y="1345" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1367.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Access reevaluation</text>
+<rect x="1375" y="1370" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1610.0" y="1404.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Protected Access</text>
+<rect x="1388" y="1445" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1467.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Resolve publication + asset</text>
+<rect x="1388" y="1493" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1515.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Resolve effective access policy</text>
+<rect x="1388" y="1541" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1563.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Authenticate requester</text>
+<rect x="1388" y="1589" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1611.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Check entitlement window</text>
+<rect x="1388" y="1637" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1659.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Create short-lived signed URL</text>
+<rect x="1388" y="1685" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1707.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Record minimal audit event</text>
+<rect x="1375" y="1710" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="1610.0" y="1744.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Subscription — Phase 2</text>
+<rect x="1388" y="1785" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1807.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Plans &amp; pricing [business decision]</text>
+<rect x="1388" y="1833" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1855.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Checkout / payment method</text>
+<rect x="1388" y="1881" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1903.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Verified webhook</text>
+<rect x="1388" y="1929" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1951.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Subscription state</text>
+<rect x="1388" y="1977" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="1999.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Renewal / cancellation / expiry</text>
+<rect x="1388" y="2025" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1610.0" y="2047.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Invoice / receipt [provider policy]</text>
+<rect x="2010" y="220" width="500" height="80" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2260.0" y="263.42" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">D. LEARNING HUB</text>
+<rect x="2025" y="350" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2260.0" y="384.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Learning Catalog</text>
+<rect x="2038" y="425" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="447.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Learning Hub landing</text>
+<rect x="2038" y="473" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="495.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Resource listing</text>
+<rect x="2038" y="521" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="543.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Topic / desk filters</text>
+<rect x="2038" y="569" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2260.0" y="591.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Resource type filters [TBD]</text>
+<rect x="2038" y="617" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="639.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Search [scope TBD]</text>
+<rect x="2025" y="690" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2260.0" y="724.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Learning Resource Detail</text>
+<rect x="2038" y="765" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="787.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Title / description</text>
+<rect x="2038" y="813" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="835.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Resource type</text>
+<rect x="2038" y="861" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="883.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Video / playlist embed</text>
+<rect x="2038" y="909" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="931.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">External resource link</text>
+<rect x="2038" y="957" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="979.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Related publications</text>
+<rect x="2038" y="1005" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="1027.34" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Related topic / desk</text>
+<rect x="2025" y="1030" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2260.0" y="1064.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Learning CMS</text>
+<rect x="2038" y="1105" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="1127.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Create / edit resource</text>
+<rect x="2038" y="1153" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="1175.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Embed provider allowlist</text>
+<rect x="2038" y="1201" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="1223.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Thumbnail / metadata</text>
+<rect x="2038" y="1249" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="1271.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Related content</text>
+<rect x="2038" y="1297" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="1319.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Publish / unpublish</text>
+<rect x="2025" y="1370" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2260.0" y="1404.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Potential Expansion</text>
+<rect x="2038" y="1445" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2260.0" y="1467.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Learning paths [not baseline]</text>
+<rect x="2038" y="1493" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2260.0" y="1515.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Progress tracking [not baseline]</text>
+<rect x="2038" y="1541" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2260.0" y="1563.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Quizzes / certificates [not baseline]</text>
+<rect x="2038" y="1589" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2260.0" y="1611.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">LMS functionality [separate scope]</text>
+<rect x="2660" y="220" width="500" height="80" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2910.0" y="263.42" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#101010">E. SHARED PLATFORM &amp; QUALITY</text>
+<rect x="2675" y="350" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2910.0" y="384.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Localization &amp; Routing</text>
+<rect x="2688" y="425" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="447.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Locale prefix /id and /en</text>
+<rect x="2688" y="473" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="495.34000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Language switcher</text>
+<rect x="2688" y="521" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="543.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Translation relationship</text>
+<rect x="2688" y="569" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="591.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Canonical / hreflang</text>
+<rect x="2688" y="617" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="639.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Localized UI messages</text>
+<rect x="2675" y="690" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2910.0" y="724.0600000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Search &amp; Discovery</text>
+<rect x="2688" y="765" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="787.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Postgres FTS</text>
+<rect x="2688" y="813" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="835.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">pg_trgm where justified</text>
+<rect x="2688" y="861" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="883.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Locale-aware query</text>
+<rect x="2688" y="909" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="931.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Ranking evaluation</text>
+<rect x="2688" y="957" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2910.0" y="979.3399999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">PDF full-text extraction [TBD]</text>
+<rect x="2675" y="1030" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2910.0" y="1064.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Security &amp; Privacy</text>
+<rect x="2688" y="1105" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1127.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Server-side authorization</text>
+<rect x="2688" y="1153" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1175.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Payload staff access control</text>
+<rect x="2688" y="1201" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1223.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Supabase RLS for app tables</text>
+<rect x="2688" y="1249" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1271.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Private bucket policy</text>
+<rect x="2688" y="1297" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1319.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Secret management</text>
+<rect x="2688" y="1345" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1367.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Data minimization / retention</text>
+<rect x="2675" y="1370" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2910.0" y="1404.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Engineering &amp; Operations</text>
+<rect x="2688" y="1445" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1467.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Dev / staging / production</text>
+<rect x="2688" y="1493" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1515.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Schema migrations</text>
+<rect x="2688" y="1541" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1563.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">CI / preview deployments</text>
+<rect x="2688" y="1589" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1611.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Error / uptime monitoring</text>
+<rect x="2688" y="1637" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1659.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Backup / restore</text>
+<rect x="2688" y="1685" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1707.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Performance / accessibility</text>
+<rect x="2675" y="1710" width="470" height="62" rx="10" ry="10" fill="#F6F7F8" stroke="#B7C0C8" stroke-width="1.5"/>
+<text x="2910.0" y="1744.06" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Payments &amp; Growth</text>
+<rect x="2688" y="1785" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2910.0" y="1807.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Payment gateway [TBD]</text>
+<rect x="2688" y="1833" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1855.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Idempotent webhook</text>
+<rect x="2688" y="1881" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1903.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Subscription reconciliation</text>
+<rect x="2688" y="1929" width="444" height="40" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2910.0" y="1951.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Newsletter [optional provider]</text>
+<rect x="2688" y="1977" width="444" height="40" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2910.0" y="1999.3400000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#101010">Analytics [event &amp; privacy policy]</text>
+</svg>

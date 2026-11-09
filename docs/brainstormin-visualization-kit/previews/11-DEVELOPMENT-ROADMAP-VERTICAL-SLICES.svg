@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3640" height="1700" viewBox="0 0 3640 1700">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3640" height="1700" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">DEVELOPMENT ROADMAP — VERTICAL SLICES</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Docs → technical proof → end-to-end slices → hardening → expansion</text>
+<path d="M 390.0 490 L 390.0 385.0 L 1100.0 385.0 L 1100.0 280" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1100.0 490 L 1100.0 385.0 L 1810.0 385.0 L 1810.0 280" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1810.0 490 L 1810.0 385.0 L 2520.0 385.0 L 2520.0 280" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2520.0 490 L 2520.0 385.0 L 3230.0 385.0 L 3230.0 280" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1810.0 490 L 1810.0 625.0 L 1220.0 625.0 L 1220.0 760" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 2520.0 490 L 2520.0 625.0 L 1220.0 625.0 L 1220.0 760" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 3230.0 490 L 3230.0 625.0 L 1220.0 625.0 L 1220.0 760" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 1220.0 950 L 1220.0 855.0 L 2290.0 855.0 L 2290.0 760" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 3130 1150.0 L 2315.0 1150.0 L 2315.0 385.0 L 1500 385.0" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<path d="M 3130 1150.0 L 2670.0 1150.0 L 2670.0 385.0 L 2210 385.0" fill="none" stroke="#8795A1" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<rect x="80" y="280" width="620" height="210" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="390.0" y="346.92" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PHASE 1</text>
+<text x="390.0" y="367.40000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PRODUCT &amp; ARCHITECTURE FOUNDATION</text>
+<text x="390.0" y="387.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010"></text>
+<text x="390.0" y="408.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Decision register · content model · data model</text>
+<text x="390.0" y="428.84000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">access policy · routing · MVP boundary</text>
+<rect x="790" y="280" width="620" height="210" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="1100.0" y="346.92" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PHASE 2</text>
+<text x="1100.0" y="367.40000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">TECHNICAL VALIDATION</text>
+<text x="1100.0" y="387.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010"></text>
+<text x="1100.0" y="408.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Payload + Postgres · identity boundary</text>
+<text x="1100.0" y="428.84000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Storage + gated PDF · deployment</text>
+<rect x="1500" y="280" width="620" height="210" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="1810.0" y="346.92" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">SLICE 1</text>
+<text x="1810.0" y="367.40000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">PUBLICATION PLATFORM</text>
+<text x="1810.0" y="387.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010"></text>
+<text x="1810.0" y="408.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">CMS → publish → listing/detail → search/SEO</text>
+<text x="1810.0" y="428.84000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">public asset download · staging editor test</text>
+<rect x="2210" y="280" width="620" height="210" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="2520.0" y="346.92" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">SLICE 2</text>
+<text x="2520.0" y="367.40000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">ACCOUNT &amp; ENTITLEMENT</text>
+<text x="2520.0" y="387.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010"></text>
+<text x="2520.0" y="408.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Register/login → account → manual grant</text>
+<text x="2520.0" y="428.84000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">private asset → signed URL → E2E tests</text>
+<rect x="2920" y="280" width="620" height="210" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="3230.0" y="346.92" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">SLICE 3</text>
+<text x="3230.0" y="367.40000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">LEARNING HUB</text>
+<text x="3230.0" y="387.88" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010"></text>
+<text x="3230.0" y="408.36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">Resource model → CMS → catalog/detail</text>
+<text x="3230.0" y="428.84000000000003" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#101010">embed + topic relationships</text>
+<rect x="830" y="760" width="780" height="190" rx="10" ry="10" fill="#FFF0E5" stroke="#FF6A00" stroke-width="1.5"/>
+<text x="1220.0" y="835.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">PHASE 4 · RELEASE HARDENING</text>
+<text x="1220.0" y="858.24" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Security review · SEO · accessibility</text>
+<text x="1220.0" y="881.2800000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">performance · restore · monitoring · legal</text>
+<rect x="1900" y="760" width="780" height="190" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2290.0" y="835.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">PHASE 5 · SUBSCRIPTION</text>
+<text x="2290.0" y="858.24" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Payment sandbox · verified webhook</text>
+<text x="2290.0" y="881.2800000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">subscription state · entitlement reconciliation</text>
+<rect x="80" y="1080" width="3050" height="140" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1605.0" y="1141.72" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">MVP SCOPE GATE — Must be decided before committing slice acceptance:</text>
+<text x="1605.0" y="1164.76" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">Option A: Publication-first (auth/gating later)  |  Option B: Publication + account + manual entitlement in first release. PRD §7 and PRD §13 / SRS P0 currently differ.</text>
+</svg>

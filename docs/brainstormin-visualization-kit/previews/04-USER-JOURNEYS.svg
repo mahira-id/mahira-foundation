@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3500" height="2000" viewBox="0 0 3500 2000">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8795A1"/></marker></defs>
+<rect x="0" y="0" width="3500" height="2000" fill="#FFFFFF"/>
+<text x="50" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#123B5D">USER JOURNEYS — DISCOVER, READ, REGISTER &amp; ACCESS</text>
+<text x="50" y="75" font-family="Arial" font-size="15" fill="#5F6B76">Three journeys · public discovery, gated access, and account lifecycle</text>
+<path d="M 255.0 300 L 255.0 250.0 L 710.0 250.0 L 710.0 200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 710.0 300 L 710.0 250.0 L 1165.0 250.0 L 1165.0 200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1165.0 300 L 1165.0 250.0 L 1620.0 250.0 L 1620.0 200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1620.0 300 L 1620.0 250.0 L 2075.0 250.0 L 2075.0 200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2075.0 300 L 2075.0 250.0 L 2530.0 250.0 L 2530.0 200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2530.0 300 L 2530.0 250.0 L 2985.0 250.0 L 2985.0 200" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 340.0 690 L 340.0 630.0 L 990.0 630.0 L 990.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 990.0 690 L 990.0 630.0 L 1640.0 630.0 L 1640.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 690 L 1640.0 630.0 L 2290.0 630.0 L 2290.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 690 L 1640.0 630.0 L 2940.0 630.0 L 2940.0 570" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2940.0 690 L 2940.0 725.0 L 340.0 725.0 L 340.0 760" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 340.0 880 L 340.0 820.0 L 990.0 820.0 L 990.0 760" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 340.0 880 L 340.0 820.0 L 1640.0 820.0 L 1640.0 760" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1640.0 880 L 1640.0 820.0 L 2290.0 820.0 L 2290.0 760" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 255.0 1235 L 255.0 1182.5 L 710.0 1182.5 L 710.0 1130" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 710.0 1235 L 710.0 1182.5 L 1165.0 1182.5 L 1165.0 1130" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1165.0 1235 L 1165.0 1182.5 L 1620.0 1182.5 L 1620.0 1130" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 1620.0 1235 L 1620.0 1182.5 L 2075.0 1182.5 L 2075.0 1130" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2075.0 1235 L 2075.0 1182.5 L 2530.0 1182.5 L 2530.0 1130" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M 2530.0 1235 L 2530.0 1182.5 L 2985.0 1182.5 L 2985.0 1130" fill="none" stroke="#8795A1" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="60" y="80" width="500" height="75" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="310.0" y="120.74000000000001" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">JOURNEY A · PUBLIC DISCOVERY</text>
+<rect x="60" y="200" width="390" height="100" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="255.0" y="252.70000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Arrive: homepage / search / topic</text>
+<rect x="515" y="200" width="390" height="100" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="710.0" y="252.70000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Browse publication index</text>
+<rect x="970" y="200" width="390" height="100" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1165.0" y="252.70000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Apply keyword / filters</text>
+<rect x="1425" y="200" width="390" height="100" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1620.0" y="252.70000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Open publication detail</text>
+<rect x="1880" y="200" width="390" height="100" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2075.0" y="252.70000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Read metadata + abstract</text>
+<rect x="2335" y="200" width="390" height="100" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2530.0" y="252.70000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Review asset and access label</text>
+<rect x="2790" y="200" width="390" height="100" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2985.0" y="252.70000000000002" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Download if asset is public</text>
+<rect x="60" y="440" width="500" height="75" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="310.0" y="480.74" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">JOURNEY B · LOCKED CONTENT</text>
+<rect x="60" y="570" width="560" height="120" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="340.0" y="632.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Click restricted asset</text>
+<rect x="710" y="570" width="560" height="120" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="990.0" y="632.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Server resolves publication + asset</text>
+<rect x="1360" y="570" width="560" height="120" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="1640.0" y="632.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Is requester authenticated?</text>
+<rect x="2010" y="570" width="560" height="120" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2290.0" y="632.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">No → explain lock; login / register</text>
+<rect x="2660" y="570" width="560" height="120" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2940.0" y="632.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Yes → evaluate access policy</text>
+<rect x="60" y="760" width="560" height="120" rx="10" ry="10" fill="#FFF5D6" stroke="#C89A22" stroke-width="1.5"/>
+<text x="340.0" y="822.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Entitlement valid?</text>
+<rect x="710" y="760" width="560" height="120" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="990.0" y="822.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">No → explain requirement / next step</text>
+<rect x="1360" y="760" width="560" height="120" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="1640.0" y="822.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Yes → issue short-lived signed URL</text>
+<rect x="2010" y="760" width="560" height="120" rx="10" ry="10" fill="#E4F2EC" stroke="#1B684C" stroke-width="1.5"/>
+<text x="2290.0" y="822.6999999999999" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Record minimal access event</text>
+<rect x="60" y="1010" width="500" height="75" rx="10" ry="10" fill="#DCEBFA" stroke="#1E6FB7" stroke-width="2"/>
+<text x="310.0" y="1050.74" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#101010">JOURNEY C · ACCOUNT</text>
+<rect x="60" y="1130" width="390" height="105" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="255.0" y="1185.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Choose register / login</text>
+<rect x="515" y="1130" width="390" height="105" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="710.0" y="1185.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Supabase Auth flow</text>
+<rect x="970" y="1130" width="390" height="105" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1165.0" y="1185.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Session established</text>
+<rect x="1425" y="1130" width="390" height="105" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="1620.0" y="1185.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Account overview</text>
+<rect x="1880" y="1130" width="390" height="105" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2075.0" y="1185.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Profile / locale preference</text>
+<rect x="2335" y="1130" width="390" height="105" rx="10" ry="10" fill="#EFF6FC" stroke="#A8C6E3" stroke-width="1.5"/>
+<text x="2530.0" y="1185.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">See access and entitlement status</text>
+<rect x="2790" y="1130" width="390" height="105" rx="10" ry="10" fill="#EEE9FA" stroke="#7A68A6" stroke-width="1.5"/>
+<text x="2985.0" y="1185.2" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#101010">Later: subscription and billing</text>
+<rect x="60" y="1390" width="3000" height="115" rx="10" ry="10" fill="#FFF0E5" stroke="#FF6A00" stroke-width="1.5"/>
+<text x="1560.0" y="1450.56" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#101010">Important: Authentication does not equal authorization. A logged-in user can still be denied a subscriber-only asset when no valid entitlement exists.</text>
+</svg>

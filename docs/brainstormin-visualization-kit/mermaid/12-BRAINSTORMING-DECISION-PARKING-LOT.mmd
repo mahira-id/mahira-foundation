@@ -1,0 +1,103 @@
+flowchart TB
+  root(["MAHIRA — DECISION WORKSHOP"])
+  product["PRODUCT & MVP"]
+  product_0{"Which features belong in first public release?"}
+  product_1{"Is account registration required at launch?"}
+  product_2{"Is gated download required at launch?"}
+  product_3{"Which Learning Hub capabilities are in initial release?"}
+  product_4{"Who are launch audiences and editorial users?"}
+  content["CONTENT & EDITORIAL"]
+  content_0{"What are final publication types?"}
+  content_1{"Desk: one or many per publication?"}
+  content_2{"Topic taxonomy and tag governance?"}
+  content_3{"Required metadata per publication type?"}
+  content_4{"Is review / approval mandatory?"}
+  data["DATA & LOCALIZATION"]
+  data_0{"Linked translation records or field localization?"}
+  data_1{"Slug uniqueness: locale / entity / global?"}
+  data_2{"Publication Asset owner: Payload or app domain?"}
+  data_3{"How to handle partial translations?"}
+  data_4{"What is the cross-domain reference strategy?"}
+  security["IDENTITY & ACCESS"]
+  security_0{"Staff access to gated files?"}
+  security_1{"Can each asset override publication access?"}
+  security_2{"Entitlement scope: item / collection / plan?"}
+  security_3{"Signed URL TTL and revocation semantics?"}
+  security_4{"Which actions require admin / reviewer?"}
+  ops["TECH & OPERATIONS"]
+  ops_0{"Vercel or Hostinger after compatibility proof?"}
+  ops_1{"Bun package manager only or runtime too?"}
+  ops_2{"Which dev/staging/prod project layout?"}
+  ops_3{"Backup RPO/RTO and restore owner?"}
+  ops_4{"Privacy retention and deletion requirements?"}
+  note_1["WORKSHOP OUTPUT FOR EACH ITEM: selected option · rationale · rejected alternatives · consequences · owner · status · evidence / spike · impacted docs · acceptance criteria."]
+  root --> product
+  product --> product_0
+  product --> product_1
+  product --> product_2
+  product --> product_3
+  product --> product_4
+  root --> content
+  content --> content_0
+  content --> content_1
+  content --> content_2
+  content --> content_3
+  content --> content_4
+  root --> data
+  data --> data_0
+  data --> data_1
+  data --> data_2
+  data --> data_3
+  data --> data_4
+  root --> security
+  security --> security_0
+  security --> security_1
+  security --> security_2
+  security --> security_3
+  security --> security_4
+  root --> ops
+  ops --> ops_0
+  ops --> ops_1
+  ops --> ops_2
+  ops --> ops_3
+  ops --> ops_4
+  classDef root fill:#123B5D,stroke:#123B5D,color:#fff,stroke-width:2px;
+  classDef domain fill:#DCEBFA,stroke:#1E6FB7,color:#101010,stroke-width:1.5px;
+  classDef module fill:#EFF6FC,stroke:#A8C6E3,color:#101010;
+  classDef action fill:#E4F2EC,stroke:#1B684C,color:#101010;
+  classDef future fill:#EEE9FA,stroke:#7A68A6,color:#101010;
+  classDef open fill:#FFF5D6,stroke:#C89A22,color:#101010;
+  classDef warning fill:#FFF0E5,stroke:#FF6A00,color:#101010;
+  classDef danger fill:#FCE8E6,stroke:#C65B52,color:#101010;
+  class root root;
+  class product domain;
+  class product_0 open;
+  class product_1 open;
+  class product_2 open;
+  class product_3 open;
+  class product_4 open;
+  class content domain;
+  class content_0 open;
+  class content_1 open;
+  class content_2 open;
+  class content_3 open;
+  class content_4 open;
+  class data domain;
+  class data_0 open;
+  class data_1 open;
+  class data_2 open;
+  class data_3 open;
+  class data_4 open;
+  class security domain;
+  class security_0 open;
+  class security_1 open;
+  class security_2 open;
+  class security_3 open;
+  class security_4 open;
+  class ops domain;
+  class ops_0 open;
+  class ops_1 open;
+  class ops_2 open;
+  class ops_3 open;
+  class ops_4 open;
+  class note_1 action;
