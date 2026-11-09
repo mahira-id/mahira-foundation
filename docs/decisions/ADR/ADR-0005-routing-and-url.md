@@ -72,9 +72,12 @@ Test locale switching, missing translation, duplicate slug, renamed slug redirec
 
 Status validasi (2026-11-08): belum dijalankan. Prototipe Spike A (spec 03 design Revision 3 §22, tahap P3 sampai P5) menguji aturan di bagian "Decision".
 
+Status validasi (2026-11-10): dijalankan di M2-02 pada branch spike/m2-payload-postgres; hasil di SPIKE-001 §7.6; rekomendasi di DECISIONS §2.3. Status ADR tidak berubah.
+
 ## Change history
 
 | Date | Change |
 |---|---|
 | 2026-11-05 | Initial proposed ADR. |
 | 2026-11-08 | Status Accepted for the rules in "Decision", approver Haidar (Product Owner). "Still open" section added. Earlier lists kept and labelled historical. |
+| 2026-11-10 | Validation pointer to M2-02 results (SPIKE-001 §7.6, DECISIONS §2.3) added. Status unchanged. |

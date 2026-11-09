@@ -4,7 +4,7 @@
 |---|---|
 | Status dokumen | Canonical (dokumen utama #1; pasangannya: `CHANGELOG.md`) |
 | Owner | Haidar (Product Owner) |
-| Terakhir diperbarui | 2026-11-09 |
+| Terakhir diperbarui | 2026-11-10 |
 | Menggantikan | `STATUS.md` (tidak ada lagi di repo) |
 
 ## 0. Aturan pakai (singkat)
@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE | — |
 | M1 | Rekonsiliasi dokumen & keputusan | Requirements | DONE (M1-08 ditunda ke M4-05) | — |
-| M2 | Validasi teknis (spike) | Design / arsitektur | TODO (siap mulai) | DEC-006, DEC-007, DEC-012 (DEC-018 Accepted) |
+| M2 | Validasi teknis (spike) | Design / arsitektur | DOING (bukti spike tercatat; menunggu keputusan Owner) | DEC-006, DEC-007, DEC-012 (DEC-018 Accepted) |
 | M3 | MVP — Platform publikasi | Implementasi | BLOCKED (M2) | DEC-013, DEC-017, DEC-024 |
 | M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3) | DEC-020, DEC-022, DEC-023 |
 | M5 | MVP+ — Akses pengguna | Implementasi lanjutan | BLOCKED | DEC-008–011, DEC-019, DEC-020 |
@@ -55,11 +55,11 @@
 **Exit:** tidak ada konflik terbuka antar PRD/SRS/arsitektur untuk scope M2–M3.
 
 ### M2 — Validasi teknis (Design)
-- [ ] M2-01 SPIKE-001 Payload 3 + Postgres embedded di Next.js 16.4.4 (DEC-006, DEC-007); runtime Node.js (DEC-018). Lingkungan: CMS `mahira-cms`, APP `mahira.id` (`DECISIONS.md` §2.2)
-- [ ] M2-02 Uji localization hybrid DEC-004 & slug DEC-005 (unik per locale, tanpa kebocoran draft, hreflang)
-- [ ] M2-03 SPIKE-003 storage objek + file publik (DEC-012); bagian gated menunggu M5
-- [ ] M2-04 Build + deploy preview berhasil; pin versi Node.js (`engines.node` + setting Vercel); pilih region produksi (bukti untuk DEC-017)
-- [ ] M2-05 Catat hasil di spike report; ubah DEC terkait ke Accepted/Rejected
+- [x] M2-01 SPIKE-001 Payload 3 + Postgres embedded di Next.js 16.4.4 (DEC-006, DEC-007); runtime Node.js (DEC-018). Lingkungan: CMS `mahira-cms`, APP `mahira.id` (`DECISIONS.md` §2.2) — bukti: branch `spike/m2-payload-postgres`, commit `17fdf0c`, `3b1ff83`, SPIKE-001 §7.1–§7.5
+- [x] M2-02 Uji localization hybrid DEC-004 & slug DEC-005 (unik per locale, tanpa kebocoran draft, hreflang) — bukti: branch `spike/m2-payload-postgres`, commit `c8b783b`, SPIKE-001 §7.6 (pass=41 fail=0; check 4 PARTIAL: temuan `fallback-locale` untuk M3)
+- [x] M2-03 SPIKE-003 storage objek + file publik (DEC-012); bagian gated menunggu M5 — bukti: branch `spike/m2-payload-postgres`, commit `c19a774`, SPIKE-003 §7.2–§7.5
+- [ ] M2-04 Build + deploy preview berhasil; pin versi Node.js (`engines.node` + setting Vercel); pilih region produksi (bukti untuk DEC-017) — DOING: `bun run build` exit 0 di setiap commit spike, `engines.node` `26.x` (commit `17fdf0c`, SPIKE-001 §7.7); deploy preview & region menunggu keputusan Owner (DECISIONS §2.3)
+- [ ] M2-05 Catat hasil di spike report; ubah DEC terkait ke Accepted/Rejected — DOING: bukti & rekomendasi dicatat (SPIKE-001, SPIKE-003, DECISIONS §2.3); perubahan status DEC menunggu persetujuan Owner
 
 **Exit:** DEC-006/007/012/018 Accepted dengan bukti spike.
 
@@ -102,7 +102,8 @@
 
 | ID | Blocker | Memblokir | Owner |
 |---|---|---|---|
-| B-01 | DEC-007 kepemilikan skema DB (Open — critical); lingkungan spike sudah ada, tinggal bukti SPIKE-001 | M3 | Engineering |
+| B-01 | DEC-007 kepemilikan skema DB (Open — critical); bukti SPIKE-001 §7.2–§7.3 sudah ada, menunggu keputusan Owner atas DEC-007 dan penyelarasan ADR-0002 (DECISIONS §2.3) | M3 | PO |
+| B-06 | Bukti deploy M2-04: branch `spike/*` dilewati Ignored Build Step Vercel; cara memperoleh bukti deploy belum dipilih (DECISIONS §2.3 poin a) | M2-04 | PO |
 | B-05 | Project Supabase spike ada di Eropa (`eu-west-1`, `eu-central-1`); region produksi belum dipilih | M4 | PO (DEC-017, DEC-020) |
 | B-03 | Belum ada Editorial Lead / Security owner / SEO owner | M1-08, M4 | PO |
 | B-04 | Nilai taksonomi belum ada; M3 memakai nilai fixture berlabel, nilai final saat M4-05 | M4-05 | Editorial Lead |
