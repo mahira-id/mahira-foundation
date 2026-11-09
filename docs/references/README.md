@@ -20,3 +20,9 @@ status: non-normative
 supports: DEC-008
 verification_required: true
 ```
+
+## Index
+
+| ID | File | Source | Captured | Status | Supports |
+|---|---|---|---|---|---|
+| REF-001 | `CHAT_WITH_CLAUDE.md` | Claude conversation export | TBD | non-normative; verification required | Early stack, hosting, and access discussion (DEC-006, DEC-010, DEC-017) |

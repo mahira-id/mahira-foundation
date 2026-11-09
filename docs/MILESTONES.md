@@ -20,7 +20,7 @@
 
 | ID | Milestone | Fase SDLC | Status | Gate keputusan |
 |---|---|---|---|---|
-| M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE sebagian (dokumen belum di-commit) | — |
+| M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE | — |
 | M1 | Rekonsiliasi dokumen & keputusan | Requirements | TODO | DEC-002 penerapan, DEC-003, DEC-009 |
 | M2 | Validasi teknis (spike) | Design / arsitektur | TODO (siap mulai) | DEC-006, DEC-007, DEC-012 (DEC-018 Accepted) |
 | M3 | MVP — Platform publikasi | Implementasi | BLOCKED (M2) | DEC-013, DEC-017, DEC-024 |
@@ -36,8 +36,8 @@
 - [x] M0-02 Aset logo Mahira (`public/logo/`) — commit `70f85dc`
 - [x] M0-03 Paket dokumen `docs/` + `.kiro/steering`, `.kiro/skills`
 - [x] M0-04 Commit paket dokumen & `.kiro/` — commit `2da3510`
-- [ ] M0-05 Bersihkan file sisa pack: `INTEGRATE-INTO-REPOSITORY.md`, `PACKAGE-MANIFEST.json`; pindahkan `docs/CHAT_WITH_CLAUDE.md` ke `docs/references/`
-- [ ] M0-06 Ganti root `README.md` (boilerplate create-next-app) dengan petunjuk singkat Bun + tautan ke dokumen ini
+- [x] M0-05 Hapus `INTEGRATE-INTO-REPOSITORY.md`, `PACKAGE-MANIFEST.json`; pindahkan `CHAT_WITH_CLAUDE.md` ke `docs/references/` (REF-001) — branch `chore/m0-cleanup`
+- [x] M0-06 Root `README.md` diganti: stack, perintah Bun, alur kerja branch/PR — branch `chore/m0-cleanup`
 
 **Exit:** semua dokumen ter-commit; root bersih.
 
