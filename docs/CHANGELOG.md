@@ -16,6 +16,18 @@
 
 ## [Unreleased]
 
+### Decisions
+- DEC-009 → Accepted 2026-11-09: role hanya Public user, Editor, Admin; tanpa bypass staf di unduhan publik — bukti: `decisions/DECISIONS.md` §2.1
+
+### Changed
+- [M1-01] PRD §13 AC 5–6 dan SRS FR-009–013 → MVP+ (DEC-002) — bukti: branch `docs/m1-reconciliation`
+- [M1-03] SRS: aktor Reviewer/Finance tidak dipakai; "Staf" = Editor + Admin (DEC-009) — bukti: branch `docs/m1-reconciliation`
+- [M1-07] PRD/SRS title block & document control mengikuti DEC-001 dan Owner Haidar — bukti: branch `docs/m1-reconciliation`
+- `.gitignore`: `public/publications/` (PDF pihak ketiga, fixture lokal) agar tidak ter-deploy — bukti: branch `docs/m1-reconciliation`
+
+### Fixed
+- [M1-05] ADR-0001: heading "Opsi terpilih: Opsi B" (Vite) yang bertentangan dengan keputusan diusulkan dihapus — bukti: branch `docs/m1-reconciliation`
+
 ### Removed
 - [M0-05] `INTEGRATE-INTO-REPOSITORY.md`, `PACKAGE-MANIFEST.json` (sisa paket dokumen; langkahnya sudah tercakup di MILESTONES M1–M2) — bukti: branch `chore/m0-cleanup`
 

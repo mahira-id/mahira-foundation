@@ -42,14 +42,15 @@
 **Exit:** semua dokumen ter-commit; root bersih.
 
 ### M1 — Rekonsiliasi (Requirements)
-- [ ] M1-01 Terapkan DEC-002 (MVP publication-only) ke PRD §7/§13 dan SRS FR-009–013 (prioritas pindah ke MVP+)
+- [x] M1-01 DEC-002 diterapkan: PRD §13 AC 5–6 dan SRS FR-009–013 ditandai MVP+ — branch `docs/m1-reconciliation`
 - [ ] M1-02 Terapkan DEC-003 (2 sumbu: Publication Type + Topic "Bidang Kerja"; Desk ditunda) ke `CONTENT-ARCHITECTURE`, `DATA-MODEL`, `ERD`
-- [ ] M1-03 Putuskan DEC-009 (akses staf ke file eksklusif) — konflik SRS §4.1/§12.1 vs `ACCESS-POLICY` §6
+- [x] M1-03 DEC-009 Accepted (role: Public user, Editor, Admin); SRS aktor & glosarium diperbarui
+- [ ] M1-03b Sinkronkan SRS §4.1/§12.1 dan TEST-PLAN §4 dengan DEC-009 (hapus bypass Admin)
 - [ ] M1-04 Selaraskan pola URL search & type page (`IA-ROUTING-I18N` vs ADR-0005); hapus route/param Desk
-- [ ] M1-05 Perbaiki heading "Opsi terpilih: Opsi B" (Vite) di ADR-0001
+- [x] M1-05 Heading keliru "Opsi terpilih: Opsi B" dihapus dari ADR-0001
 - [ ] M1-06 Perbaiki tautan DEC di SPIKE-001/002/003
-- [ ] M1-07 Perbarui PRD document control (Owner = Haidar; nama brand sesuai DEC-001)
-- [ ] M1-08 Inventaris konten nyata (10–20 publikasi) untuk menguji nilai taksonomi DEC-003
+- [x] M1-07 PRD/SRS: Owner = Haidar, nama brand sesuai DEC-001
+- [ ] M1-08 BLOCKED — 10 PDF RFID pihak ketiga di `public/publications/` (git-ignored) dipakai sebagai fixture tes. Bukan publikasi Mahira, jadi belum menguji nilai Topic DEC-003; menunggu konfirmasi Owner
 
 **Exit:** tidak ada konflik terbuka antar PRD/SRS/arsitektur untuk scope M2–M3.
 

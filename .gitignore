@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# third-party PDFs used as local test fixtures; never publish via public/
+/public/publications/
