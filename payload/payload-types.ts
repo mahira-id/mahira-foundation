@@ -73,6 +73,7 @@ export interface Config {
     topics: Topic;
     'publication-types': PublicationType;
     'translation-groups': TranslationGroup;
+    media: Media;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     topics: TopicsSelect<false> | TopicsSelect<true>;
     'publication-types': PublicationTypesSelect<false> | PublicationTypesSelect<true>;
     'translation-groups': TranslationGroupsSelect<false> | TranslationGroupsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -167,6 +169,7 @@ export interface Publication {
   authors: (number | Author)[];
   accessLevel: 'public' | 'registered' | 'subscriber';
   publishedAt?: string | null;
+  coverImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -219,6 +222,27 @@ export interface Author {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  alt: string;
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -264,6 +288,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'translation-groups';
         value: number | TranslationGroup;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -345,6 +373,7 @@ export interface PublicationsSelect<T extends boolean = true> {
   authors?: T;
   accessLevel?: T;
   publishedAt?: T;
+  coverImage?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -390,6 +419,26 @@ export interface TranslationGroupsSelect<T extends boolean = true> {
   label?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

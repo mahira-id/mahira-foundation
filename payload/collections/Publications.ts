@@ -105,5 +105,11 @@ export const Publications: CollectionConfig = {
       name: "publishedAt",
       type: "date",
     },
+    {
+      // Per-record (not in DEC-004's shared-field list), optional, public file.
+      name: "coverImage",
+      type: "upload",
+      relationTo: "media",
+    },
   ],
 };
