@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE sebagian (dokumen belum di-commit) | — |
 | M1 | Rekonsiliasi dokumen & keputusan | Requirements | TODO | DEC-002 penerapan, DEC-003, DEC-009 |
-| M2 | Validasi teknis (spike) | Design / arsitektur | TODO | DEC-006, DEC-007, DEC-012, DEC-018 |
+| M2 | Validasi teknis (spike) | Design / arsitektur | TODO (siap mulai) | DEC-006, DEC-007, DEC-012 (DEC-018 Accepted) |
 | M3 | MVP — Platform publikasi | Implementasi | BLOCKED (M2) | DEC-013, DEC-017, DEC-024 |
 | M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3) | DEC-020, DEC-022, DEC-023 |
 | M5 | MVP+ — Akses pengguna | Implementasi lanjutan | BLOCKED | DEC-008–011, DEC-019, DEC-020 |
@@ -35,7 +35,7 @@
 - [x] M0-01 Homepage statis Next.js 16 + Tailwind 4 (`app/page.tsx`, konten sampel `lib/landing-content.ts`) — commit `024c69c`
 - [x] M0-02 Aset logo Mahira (`public/logo/`) — commit `70f85dc`
 - [x] M0-03 Paket dokumen `docs/` + `.kiro/steering`, `.kiro/skills`
-- [ ] M0-04 Commit paket dokumen & `.kiro/` (saat ini untracked)
+- [x] M0-04 Commit paket dokumen & `.kiro/` — commit `2da3510`
 - [ ] M0-05 Bersihkan file sisa pack: `INTEGRATE-INTO-REPOSITORY.md`, `PACKAGE-MANIFEST.json`; pindahkan `docs/CHAT_WITH_CLAUDE.md` ke `docs/references/`
 - [ ] M0-06 Ganti root `README.md` (boilerplate create-next-app) dengan petunjuk singkat Bun + tautan ke dokumen ini
 
@@ -54,10 +54,10 @@
 **Exit:** tidak ada konflik terbuka antar PRD/SRS/arsitektur untuk scope M2–M3.
 
 ### M2 — Validasi teknis (Design)
-- [ ] M2-01 SPIKE-001 Payload 3 + Postgres embedded di Next.js 16.4.4 (DEC-006, DEC-007, DEC-018 runtime Node vs Bun)
+- [ ] M2-01 SPIKE-001 Payload 3 + Postgres embedded di Next.js 16.4.4 (DEC-006, DEC-007); runtime Node.js (DEC-018). Lingkungan: CMS `mahira-cms`, APP `mahira.id` (`DECISIONS.md` §2.2)
 - [ ] M2-02 Uji localization hybrid DEC-004 & slug DEC-005 (unik per locale, tanpa kebocoran draft, hreflang)
 - [ ] M2-03 SPIKE-003 storage objek + file publik (DEC-012); bagian gated menunggu M5
-- [ ] M2-04 Build + deploy preview berhasil (bukti untuk DEC-017)
+- [ ] M2-04 Build + deploy preview berhasil; pin versi Node.js (`engines.node` + setting Vercel); pilih region produksi (bukti untuk DEC-017)
 - [ ] M2-05 Catat hasil di spike report; ubah DEC terkait ke Accepted/Rejected
 
 **Exit:** DEC-006/007/012/018 Accepted dengan bukti spike.
@@ -101,7 +101,8 @@
 
 | ID | Blocker | Memblokir | Owner |
 |---|---|---|---|
-| B-01 | DEC-007 kepemilikan skema DB (Open — critical) | M2, M3 | Engineering |
+| B-01 | DEC-007 kepemilikan skema DB (Open — critical); lingkungan spike sudah ada, tinggal bukti SPIKE-001 | M3 | Engineering |
+| B-05 | Project Supabase spike ada di Eropa (`eu-west-1`, `eu-central-1`); region produksi belum dipilih | M4 | PO (DEC-017, DEC-020) |
 | B-02 | DEC-009 akses staf (Open — critical) | M1-03, M5 | PO + Security owner |
 | B-03 | Belum ada Editorial Lead / Security owner / SEO owner | M1-08, M4 | PO |
 | B-04 | Nilai taksonomi belum ada (butuh konten nyata) | M3-02 | Editorial Lead |
