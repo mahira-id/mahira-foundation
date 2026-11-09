@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    publications: Publication;
     authors: Author;
     topics: Topic;
     'publication-types': PublicationType;
@@ -80,6 +81,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    publications: PublicationsSelect<false> | PublicationsSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     topics: TopicsSelect<false> | TopicsSelect<true>;
     'publication-types': PublicationTypesSelect<false> | PublicationTypesSelect<true>;
@@ -151,25 +153,31 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "authors".
+ * via the `definition` "publications".
  */
-export interface Author {
+export interface Publication {
   id: number;
-  displayName: string;
+  title: string;
   slug: string;
-  biography?: string | null;
+  locale: 'id' | 'en';
+  translationGroup: number | TranslationGroup;
+  summary: string;
+  publicationType: number | PublicationType;
+  topics: (number | Topic)[];
+  authors: (number | Author)[];
+  accessLevel: 'public' | 'registered' | 'subscriber';
+  publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "topics".
+ * via the `definition` "translation-groups".
  */
-export interface Topic {
+export interface TranslationGroup {
   id: number;
-  name: string;
-  slug: string;
-  description?: string | null;
+  label: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -187,11 +195,25 @@ export interface PublicationType {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "translation-groups".
+ * via the `definition` "topics".
  */
-export interface TranslationGroup {
+export interface Topic {
   id: number;
-  label: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors".
+ */
+export interface Author {
+  id: number;
+  displayName: string;
+  slug: string;
+  biography?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -222,6 +244,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'publications';
+        value: number | Publication;
       } | null)
     | ({
         relationTo: 'authors';
@@ -303,6 +329,25 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publications_select".
+ */
+export interface PublicationsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  locale?: T;
+  translationGroup?: T;
+  summary?: T;
+  publicationType?: T;
+  topics?: T;
+  authors?: T;
+  accessLevel?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

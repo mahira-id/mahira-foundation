@@ -2,7 +2,7 @@ import type { TextField, TextFieldSingleValidation } from "payload";
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-const validateSlug: TextFieldSingleValidation = (value) => {
+export const validateSlug: TextFieldSingleValidation = (value) => {
   if (!value) {
     return "Slug is required.";
   }

@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { buildConfig } from "payload";
 import { Authors } from "./collections/Authors";
+import { Publications } from "./collections/Publications";
 import { PublicationTypes } from "./collections/PublicationTypes";
 import { Topics } from "./collections/Topics";
 import { TranslationGroups } from "./collections/TranslationGroups";
@@ -21,7 +22,7 @@ export default buildConfig({
       importMapFile: path.resolve(repoRoot, "app", "(payload)", "admin", "importMap.js"),
     },
   },
-  collections: [Users, Authors, Topics, PublicationTypes, TranslationGroups],
+  collections: [Users, Publications, Authors, Topics, PublicationTypes, TranslationGroups],
   localization: {
     locales: [
       { code: "id", label: "Bahasa Indonesia" },
@@ -42,6 +43,11 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: resolveDatabaseUri(),
+      // Without this, node-postgres talks to the Supabase pooler in plaintext
+      // (the URI has no sslmode). Verifying against the system CA store fails
+      // with SELF_SIGNED_CERT_IN_CHAIN (M2-01 evidence).
+      // SPIKE ONLY: production must pin the Supabase CA certificate (Dashboard → Database Settings → SSL Configuration)
+      ssl: { rejectUnauthorized: false },
     },
     // Schema changes only through committed migrations; never dev push.
     push: false,
