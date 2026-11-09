@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { validateSlug } from "../fields/slug";
+import { enforceSharedFields } from "../hooks/enforce-shared-fields";
 
 /**
  * Publication (DEC-004 linked-record model): one record per language, linked
@@ -25,6 +26,10 @@ export const Publications: CollectionConfig = {
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
     readVersions: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    // DEC-004: shared fields stay equal across the Translation Group.
+    beforeChange: [enforceSharedFields],
   },
   indexes: [
     { fields: ["locale", "slug"], unique: true },
