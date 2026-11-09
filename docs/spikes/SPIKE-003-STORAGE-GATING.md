@@ -97,7 +97,7 @@ Media → Create New → pilih `fixture-m2-cover.png`, alt `[FIXTURE] admin uplo
 - **CDN menyajikan objek lama** di URL lama sesaat setelah replace/delete. Untuk file publik efeknya terbatas (replace mengganti nama file). Untuk file terbatas (M5) ini alasan memakai signed URL di bucket privat, bukan URL publik.
 - **Objek hilang menjawab 400**, bukan 404.
 - **Key internal adapter** (`prefix`, `_objectKey`) terlihat di respons anonim.
-- **`down()` migrasi `media`** hasil generate belum dijaga `IF EXISTS` dan belum dieksekusi (pola masalah sama dengan SPIKE-001 §8).
+- **`down()` migrasi `media`** hasil generate gagal dengan pola yang sama seperti SPIKE-001 §8; sudah dijaga `IF EXISTS` dan diuji `migrate:down` → `migrate` (commit `119a131`, SPIKE-001 §7.2).
 - **Region:** bucket di `eu-central-1`; region produksi terbuka (DEC-017/DEC-020).
 - **Bucket `spike-m2-public` dibiarkan** di project `mahira.id` untuk Owner; menghapusnya adalah pilihan Owner.
 - `coverImage` tidak termasuk shared fields DEC-004, jadi record ID dan EN boleh punya cover berbeda.

@@ -99,6 +99,7 @@ Semua perintah dijalankan di worktree branch spike. Bukti mentah disimpan di lua
 | `migrate:down` (down asli) | FAIL: `DROP CONSTRAINT` setelah `CASCADE`; transaksi di-rollback | 20 s |
 | Dengan guard `IF EXISTS` di `down()`: `migrate:reset` → `migrate` → `migrate:down` → `migrate` | semua exit 0; `public` kembali 0 relasi/0 type setelah reset | up ~5 s per migrasi, down ~0.5 s, clean install ~28–29 s wall |
 | Migrasi `media` (M2-03) di DB berisi 18 publikasi | exit 0 (lalu exit 9 libuv); status ketiga migrasi Ran=Yes; jumlah data tidak berubah | up 5.6 s |
+| Integrasi: `down()` migrasi `media` diberi guard `IF EXISTS` (commit `119a131`), lalu `migrate:down` (hanya `media`) → `migrate` | keduanya berhasil (down exit 9 libuv setelah "Done."); `migrate:status` 3/3 Ran=Yes; RLS 20/20 tabel; publications 18 tetap; seed-count 5/5 PASS | down 0.55 s, up 5.4 s |
 
 Setiap panggilan CLI Payload punya start-up tetap ~13–16 s (tsx + load config).
 
@@ -156,7 +157,7 @@ Sumber delapan pemeriksaan: brief task (workshop 2026-11-06), diverifikasi terha
 - **Bun tidak tercantum** sebagai package manager di dokumentasi Payload (pnpm/npm/yarn). Bun 1.3.14 me-resolve semua peer tanpa warning; 3 postinstall esbuild diblokir (tidak di-trust) dan tidak mengganggu `payload run`/`generate:*`.
 - **cacheComponents:** dokumentasi Payload menyebut kompatibilitasnya "not guaranteed". Build lulus dan admin berfungsi, tetapi setiap request admin terautentikasi mencatat error `Route "/admin/[[...segments]]": Next.js encountered the unstable value new Date() while prerendering` (40× dalam satu sesi, dari `authenticate` Payload). Ini akan membanjiri log produksi. Opsi M3: biarkan dan filter, tunggu perbaikan Payload, atau `cacheComponents: false` (trade-off DEC-006).
 - **TLS:** konfigurasi awal (URI tanpa `sslmode`, tanpa `pool.ssl`) tersambung **tanpa enkripsi**. Verifikasi dengan CA sistem gagal `SELF_SIGNED_CERT_IN_CHAIN`. Spike memakai `ssl: { rejectUnauthorized: false }` (ditandai SPIKE ONLY). Produksi wajib pin CA Supabase.
-- **Migrasi:** `down()` hasil drizzle-kit gagal (DROP CONSTRAINT setelah CASCADE) dan harus direview sebelum commit; `down()` migrasi `media` juga belum dijaga dan belum dieksekusi. `migrate:reset` di 3.93.0 me-rollback migrasi **tertua dulu** (bug; laporkan ke upstream) → jangan pakai untuk multi-migrasi. Jangan pernah `migrate:fresh`.
+- **Migrasi:** `down()` hasil drizzle-kit gagal (DROP CONSTRAINT setelah CASCADE) dan harus direview sebelum commit; `down()` migrasi `media` sudah dijaga `IF EXISTS` dan diuji `migrate:down` → `migrate` (commit `119a131`, §7.2). `migrate:reset` di 3.93.0 me-rollback migrasi **tertua dulu** (bug; laporkan ke upstream) → jangan pakai untuk multi-migrasi. Jangan pernah `migrate:fresh`.
 - **Exit code:** di Windows + Node v26.4.0, `payload migrate` dan skrip kadang abort setelah sukses dengan assertion libuv (`src\win\async.c` line 94, exit 9). CI harus memeriksa `migrate:status`, bukan hanya exit code; uji ulang di Node ≥ 26.12.1 / Linux.
 - **Nama compound index** tidak diberi prefix tabel (`locale_slug_idx`); koleksi kedua dengan field compound yang sama akan bentrok.
 - **Draft save melewati validasi `required`.** Hook shared fields tidak membandingkan nilai yang kosong; sibling draft dengan field bersama kosong bisa berdampingan dengan sibling published sampai diisi.

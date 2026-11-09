@@ -39,6 +39,7 @@
 - `.gitignore`: `public/publications/` (PDF pihak ketiga, fixture lokal) agar tidak ter-deploy — bukti: branch `docs/m1-reconciliation`
 
 ### Fixed
+- [M2-03] `down()` migrasi `media` diberi guard `IF EXISTS`; mode `SPIKE_MODE=count` di seed hanya menghitung grup seed (sebelumnya FAIL karena grup fixture M2-02/M2-03) — bukti: commit `119a131`; `migrate:down` → `migrate` berhasil, `migrate:status` 3/3 Ran=Yes, RLS 20/20, seed-count 5/5 PASS; lint + build exit 0; SPIKE-001 §7.2
 - [M1-05] ADR-0001: heading "Opsi terpilih: Opsi B" (Vite) yang bertentangan dengan keputusan diusulkan dihapus — bukti: branch `docs/m1-reconciliation`
 
 ### Removed
