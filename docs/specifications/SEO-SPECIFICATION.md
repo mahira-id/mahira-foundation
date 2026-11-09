@@ -36,7 +36,7 @@ Menjadikan publikasi mudah ditemukan dan dibagikan tanpa membuka aset/file yang 
 - OG image: approved cover or generated brand template using public assets only.
 - Author/date/type: use actual verified metadata.
 
-### Desk/topic/type page
+### Topic/type page
 - Title and description must explain the collection, not duplicate a generic template.
 - Index only if it contains enough useful, curated content.
 

@@ -17,11 +17,17 @@
 ## [Unreleased]
 
 ### Decisions
+- DEC-005 addendum → Accepted 2026-11-09: search `/{locale}/publications?q=`, type `/{locale}/publications/type/{slug}` — bukti: `decisions/DECISIONS.md` §2.1
+- [M1-08] Owner: 10 PDF RFID = contoh sementara; uji nilai taksonomi ditunda ke M4-05
 - DEC-009 → Accepted 2026-11-09: role hanya Public user, Editor, Admin; tanpa bypass staf di unduhan publik — bukti: `decisions/DECISIONS.md` §2.1
 
 ### Changed
 - [M1-01] PRD §13 AC 5–6 dan SRS FR-009–013 → MVP+ (DEC-002) — bukti: branch `docs/m1-reconciliation`
 - [M1-03] SRS: aktor Reviewer/Finance tidak dipakai; "Staf" = Editor + Admin (DEC-009) — bukti: branch `docs/m1-reconciliation`
+- [M1-02] DEC-003 diterapkan ke CONTENT-ARCHITECTURE, DATA-MODEL, ERD, EDITORIAL-WORKFLOW, SEO-SPECIFICATION, SRS (Desk/Tag keluar dari MVP) — bukti: branch `docs/m1-reconciliation`
+- [M1-03b] SRS matriks akses + T-06 dan TEST-PLAN matriks mengikuti DEC-009 — bukti: branch `docs/m1-reconciliation`
+- [M1-04] Route search/type disatukan di ADR-0005, IA-ROUTING-I18N, API-SPECIFICATION, PAGE-SPECIFICATIONS; route & param Desk dihapus — bukti: branch `docs/m1-reconciliation`
+- [M1-06] Tautan DEC di SPIKE-001/002/003 diperbaiki — bukti: branch `docs/m1-reconciliation`
 - [M1-07] PRD/SRS title block & document control mengikuti DEC-001 dan Owner Haidar — bukti: branch `docs/m1-reconciliation`
 - `.gitignore`: `public/publications/` (PDF pihak ketiga, fixture lokal) agar tidak ter-deploy — bukti: branch `docs/m1-reconciliation`
 

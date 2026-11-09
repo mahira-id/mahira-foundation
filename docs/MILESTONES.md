@@ -21,7 +21,7 @@
 | ID | Milestone | Fase SDLC | Status | Gate keputusan |
 |---|---|---|---|---|
 | M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE | — |
-| M1 | Rekonsiliasi dokumen & keputusan | Requirements | TODO | DEC-002 penerapan, DEC-003, DEC-009 |
+| M1 | Rekonsiliasi dokumen & keputusan | Requirements | DONE (M1-08 ditunda ke M4-05) | — |
 | M2 | Validasi teknis (spike) | Design / arsitektur | TODO (siap mulai) | DEC-006, DEC-007, DEC-012 (DEC-018 Accepted) |
 | M3 | MVP — Platform publikasi | Implementasi | BLOCKED (M2) | DEC-013, DEC-017, DEC-024 |
 | M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3) | DEC-020, DEC-022, DEC-023 |
@@ -43,14 +43,14 @@
 
 ### M1 — Rekonsiliasi (Requirements)
 - [x] M1-01 DEC-002 diterapkan: PRD §13 AC 5–6 dan SRS FR-009–013 ditandai MVP+ — branch `docs/m1-reconciliation`
-- [ ] M1-02 Terapkan DEC-003 (2 sumbu: Publication Type + Topic "Bidang Kerja"; Desk ditunda) ke `CONTENT-ARCHITECTURE`, `DATA-MODEL`, `ERD`
+- [x] M1-02 DEC-003 (2 sumbu) diterapkan: banner + Desk/Tag ditandai Not in MVP di `CONTENT-ARCHITECTURE`, `DATA-MODEL`; Desk/Tag dihapus dari `ERD`; "desk" dihapus dari spesifikasi
 - [x] M1-03 DEC-009 Accepted (role: Public user, Editor, Admin); SRS aktor & glosarium diperbarui
-- [ ] M1-03b Sinkronkan SRS §4.1/§12.1 dan TEST-PLAN §4 dengan DEC-009 (hapus bypass Admin)
-- [ ] M1-04 Selaraskan pola URL search & type page (`IA-ROUTING-I18N` vs ADR-0005); hapus route/param Desk
+- [x] M1-03b SRS matriks akses (§4/§12), T-06, dan TEST-PLAN matriks disinkronkan dengan DEC-009 (bypass Admin dihapus)
+- [x] M1-04 Route diputuskan (DEC-005 addendum): search `/{locale}/publications?q=`, type `/{locale}/publications/type/{slug}`; route/param Desk dihapus dari ADR-0005, IA, API, PAGE spec
 - [x] M1-05 Heading keliru "Opsi terpilih: Opsi B" dihapus dari ADR-0001
-- [ ] M1-06 Perbaiki tautan DEC di SPIKE-001/002/003
+- [x] M1-06 Tautan DEC spike diperbaiki: SPIKE-001 → DEC-004/005/006/007/018; SPIKE-002 → DEC-008/009/016; SPIKE-003 → DEC-009/010/011/012
 - [x] M1-07 PRD/SRS: Owner = Haidar, nama brand sesuai DEC-001
-- [ ] M1-08 BLOCKED — 10 PDF RFID pihak ketiga di `public/publications/` (git-ignored) dipakai sebagai fixture tes. Bukan publikasi Mahira, jadi belum menguji nilai Topic DEC-003; menunggu konfirmasi Owner
+- [ ] M1-08 DITUNDA ke M4-05 — Owner 2026-11-09: 10 PDF RFID di `public/publications/` (git-ignored) hanya contoh sementara. Dipakai sebagai fixture berlabel di M2–M3; nilai Topic diuji dengan konten nyata Mahira saat migrasi konten. Tidak memblokir exit M1.
 
 **Exit:** tidak ada konflik terbuka antar PRD/SRS/arsitektur untuk scope M2–M3.
 
@@ -104,6 +104,5 @@
 |---|---|---|---|
 | B-01 | DEC-007 kepemilikan skema DB (Open — critical); lingkungan spike sudah ada, tinggal bukti SPIKE-001 | M3 | Engineering |
 | B-05 | Project Supabase spike ada di Eropa (`eu-west-1`, `eu-central-1`); region produksi belum dipilih | M4 | PO (DEC-017, DEC-020) |
-| B-02 | DEC-009 akses staf (Open — critical) | M1-03, M5 | PO + Security owner |
 | B-03 | Belum ada Editorial Lead / Security owner / SEO owner | M1-08, M4 | PO |
-| B-04 | Nilai taksonomi belum ada (butuh konten nyata) | M3-02 | Editorial Lead |
+| B-04 | Nilai taksonomi belum ada; M3 memakai nilai fixture berlabel, nilai final saat M4-05 | M4-05 | Editorial Lead |

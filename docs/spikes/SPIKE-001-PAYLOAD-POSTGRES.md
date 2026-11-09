@@ -1,6 +1,6 @@
 # SPIKE-001 — Payload CMS with Supabase PostgreSQL
 
-**Status:** Planned · **Decision links:** DEC-005, DEC-006, DEC-008 · **ADR:** 0002 · **Owner:** TBD
+**Status:** Planned · **Decision links:** DEC-004, DEC-005, DEC-006, DEC-007, DEC-018 · **ADR:** 0002 · **Owner:** TBD
 
 ## Question
 Can the pinned Payload CMS 3 integration and selected PostgreSQL adapter run reliably against the intended Supabase database configuration, with isolated schema ownership and repeatable migrations, in local development and the proposed deployment environment?

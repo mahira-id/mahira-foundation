@@ -26,13 +26,13 @@ Shared states:
 2. Hero thesis: identitas dan proposisi organisasi; copy final berasal dari stakeholder.
 3. Publication lead: satu publikasi unggulan dengan cover, type, title, summary, authors, date, access label.
 4. Latest publications: editorial list/feature layout; link ke katalog.
-5. Research desks/topics: tampilkan hanya taksonomi aktif dan terkurasi.
+5. Topics (Bidang Kerja, DEC-003): tampilkan hanya taksonomi aktif dan terkurasi.
 6. Learning Hub teaser: hanya jika katalog memiliki materi nyata.
 7. About/impact: fakta dan klaim harus memiliki sumber/approval.
 8. Footer: legal, contact, social links yang valid.
 
 ### Data
-CMS-owned page configuration, published publications, active desk/topic, published learning resources. Statistik seperti jumlah publikasi atau jumlah desk tidak boleh hardcoded sebagai klaim; tampilkan hanya dengan query yang tervalidasi atau hilangkan.
+CMS-owned page configuration, published publications, active topic, published learning resources. Statistik seperti jumlah publikasi atau jumlah topik tidak boleh hardcoded sebagai klaim; tampilkan hanya dengan query yang tervalidasi atau hilangkan.
 
 ### States
 - Jika belum ada featured item, gunakan layout latest publications tanpa placeholder klaim.
@@ -49,14 +49,14 @@ Unique title/description, canonical, OG, one primary H1, semantic landmarks, des
 ### Hierarchy
 1. Breadcrumb/page title/intro.
 2. Search input and clear control.
-3. Filter controls: publication type, desk, topic, year, access level only where useful and supported by data.
+3. Filter controls: publication type, topic, year, access level only where useful and supported by data.
 4. Result count only if computed from actual query.
 5. Featured item or editorial lead (optional; avoid duplicate promotion).
 6. Publication list/grid with consistent metadata.
 7. Pagination.
 
 ### Item metadata
-Title, short summary, publication type, desk/topic, author display, published date, locale, access label, optional cover, reading/download indication only if accurate.
+Title, short summary, publication type, topic, author display, published date, locale, access label, optional cover, reading/download indication only if accurate.
 
 ### Behavior
 - Search and committed filters are URL-addressable.
@@ -81,7 +81,7 @@ Index page title; use links for navigation; labels for filters; announce result 
 3. H1 title.
 4. Summary/abstract.
 5. Author list and affiliations where approved.
-6. Desk/topic taxonomy.
+6. Topic taxonomy (DEC-003).
 7. Cover or editorial image.
 8. Download/preview panel per asset and access policy.
 9. Table of contents or body if available.
@@ -100,7 +100,7 @@ Locale-specific metadata, canonical, reciprocal hreflang only for valid translat
 
 ## 5. Search results
 
-**Route:** `/{locale}/search?q=...` or query state on publication index; select one pattern before implementation.
+**Route:** `/{locale}/publications?q=...` (query state on the publication index; decided 2026-11-09, DEC-005 addendum). Page is `noindex` (DEC-021).
 
 - Show query, result count, filters, sort, list, pagination.
 - Empty query should not trigger expensive unrestricted search; show discovery suggestions or recent publications.

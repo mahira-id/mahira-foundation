@@ -38,13 +38,13 @@ Priority values must be reconciled with the final MVP decision in PRD/SRS.
 | Asset/access | Visitor | Registered no grant | Subscriber active | Subscriber expired | Editor | Admin |
 |---|---|---|---|---|---|---|
 | Public metadata | Allow | Allow | Allow | Allow | Allow | Allow |
-| Public asset | Allow | Allow | Allow | Allow | Policy | Allow |
-| Registered asset | Deny | Allow | Allow | Allow | Policy | Allow |
-| Subscriber asset | Deny | Deny | Allow | Deny | Policy TBD | Policy TBD |
+| Public asset | Allow | Allow | Allow | Allow | Allow | Allow |
+| Registered asset | Deny | Allow | Allow | Allow | Deny (DEC-009) | Deny (DEC-009) |
+| Subscriber asset | Deny | Deny | Allow | Deny | Deny (DEC-009) | Deny (DEC-009) |
 | Draft metadata | Deny | Deny | Deny | Deny | According to CMS access | According to CMS access |
 | Change staff role | Deny | Deny | Deny | Deny | Deny | Allow |
 
-Important: “Editor/Admin allow” for private public-asset downloads is not assumed. Staff access to subscriber assets must be a separately approved policy. Until then, deny-by-default for staff file access outside CMS preview workflow.
+DEC-009 (Accepted 2026-11-09): Editor/Admin columns describe the public download endpoint. A CMS session gives no bypass there; only the public account's entitlement counts. Editor/Admin handle assets inside the CMS under Payload access control.
 
 ## 5. Unit test cases — access evaluator
 

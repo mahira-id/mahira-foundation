@@ -41,7 +41,7 @@ Least privilege applies. If the team is very small, one person may perform multi
 
 ### 4.2 Submit for review
 
-- Editor runs completeness validation (title, summary, author, type, desk/topic policy, rights, access level, primary asset where required).
+- Editor runs completeness validation (title, summary, author, type, topic policy (DEC-003), rights, access level, primary asset where required).
 - Reviewer assignment and due date are optional until organization decides they are needed.
 - Submitted snapshot/version is identifiable.
 - Reviewer can approve, request changes, or reject/return with reason.
@@ -96,7 +96,7 @@ For all state changes, invalidate public caches and search/sitemap entries. Priv
 
 - Title and summary are accurate and useful.
 - Authors, affiliations, dates, and type are verified.
-- Desk/topic/type taxonomy follows controlled vocabularies.
+- Topic/type taxonomy follows controlled vocabularies.
 - Citations/references are formatted consistently.
 - Publication rights, licenses, and third-party permissions are recorded.
 - Access level and each asset's effective access are confirmed.

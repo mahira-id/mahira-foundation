@@ -1,6 +1,6 @@
 # SPIKE-003 — Supabase Storage and Gated Publication Assets
 
-**Status:** Planned · **Decision links:** DEC-007, DEC-008, DEC-009 · **ADR:** 0006 · **Owner:** TBD
+**Status:** Planned · **Decision links:** DEC-009, DEC-010, DEC-011, DEC-012 · **ADR:** 0006 · **Owner:** TBD
 
 ## Question
 Can the selected upload/storage integration support public and private publication assets without persisting uploads on ephemeral application filesystem, and can the server enforce asset-level entitlement before issuing access?
