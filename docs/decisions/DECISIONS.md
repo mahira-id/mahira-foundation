@@ -1,8 +1,8 @@
 # Decision Register
 
-**Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-018 was Accepted on 2026-11-09 (§2.1). Every other row keeps its earlier status.  
+**Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-009 and DEC-018 were Accepted on 2026-11-09; DEC-006, DEC-007, and DEC-013 on 2026-11-10 (§2.1). Every other row keeps its earlier status.  
 **Canonical IDs:** `DEC-NNN`. Historical PRD `D-xx` and SRS `T-xx` are retained for traceability.  
-**Last updated:** 2026-11-10 (M2 spike evidence proposal §2.3; no status changed). Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
+**Last updated:** 2026-11-10 (DEC-006, DEC-007, DEC-013 Accepted; DEC-004/005 evidence and DEC-018 Node pin recorded; §2.1). Earlier the same day: M2 spike evidence proposal §2.3. Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
 
 ## 1. How to use this register
 
@@ -20,16 +20,16 @@
 | DEC-001 | Organization, product, repository and domain naming | PRD D-01 | Confirm separate legal name, public brand, working title, repo slug, primary domain. | Accepted (public brand name and canonical host; see §2.1) | Branding, SEO, legal pages, metadata | PO / organization lead | Haidar (Product Owner) | 2026-11-08 |
 | DEC-002 | MVP boundary and release acceptance | PRD §7/§13; SRS FR priorities / §14 | Resolve publication-only vs publication + public auth + manual entitlement. | Accepted (publication-only MVP; see §2.1) | Roadmap, FR priorities, estimates, QA | PO | Haidar (Product Owner) | 2026-11-08 |
 | DEC-003 | Research taxonomy | PRD D-02 | Model Desk, Topic, Publication Type, Tag as distinct concepts until editorial validation. | Accepted (structure only; taxonomy values stay Open; see §2.1) | Content architecture, data model, IA, filters | Editorial Lead / PO | Haidar (Product Owner) | 2026-11-08 |
-| DEC-004 | Localization storage model | PRD D-03; SRS T-02 | Compare Payload field localization vs linked translation records using editorial and URL requirements. | Accepted (Option C hybrid; validation evidence pending Spike A prototype; see §2.1) | Publication, author/topic schema, search, routing | PO + Engineering | Haidar (Product Owner) | 2026-11-08 |
-| DEC-005 | Public URL and slug policy | SRS T-02 | Use locale-prefixed routes; define locale-specific slug uniqueness and redirects before content migration. | Accepted (validation evidence pending Spike A prototype; see §2.1) | IA, SEO, migrations | Engineering + SEO owner | Haidar (Product Owner) | 2026-11-08 |
-| DEC-006 | CMS selection and application topology | PRD D-09; SRS T-01 | Payload CMS 3 embedded in the Next.js application remains the baseline candidate; prove via spike. | Proposed | Admin, collection design, deployment | Engineering + PO | — | — |
-| DEC-007 | Database schema ownership and migration | SRS T-01 | Payload owns CMS collections; application schema owner/migration process must be explicit; no shared ad-hoc migrations. | Open — critical (spike environment set 2026-11-09; see §2.2) | All schema, backup, access, deployment | Engineering | — | — |
+| DEC-004 | Localization storage model | PRD D-03; SRS T-02 | Compare Payload field localization vs linked translation records using editorial and URL requirements. | Accepted (Option C hybrid; validated by M2 spike, check 4 partial; see §2.1) | Publication, author/topic schema, search, routing | PO + Engineering | Haidar (Product Owner) | 2026-11-08 |
+| DEC-005 | Public URL and slug policy | SRS T-02 | Use locale-prefixed routes; define locale-specific slug uniqueness and redirects before content migration. | Accepted (slug per locale validated by M2 spike; route rules tested in M3; see §2.1) | IA, SEO, migrations | Engineering + SEO owner | Haidar (Product Owner) | 2026-11-08 |
+| DEC-006 | CMS selection and application topology | PRD D-09; SRS T-01 | Payload CMS 3 embedded in the Next.js application remains the baseline candidate; prove via spike. | Accepted (Payload 3 embedded, one Next.js app; see §2.1) | Admin, collection design, deployment | Engineering + PO | Haidar (Product Owner) | 2026-11-10 |
+| DEC-007 | Database schema ownership and migration | SRS T-01 | Payload owns CMS collections; application schema owner/migration process must be explicit; no shared ad-hoc migrations. | Accepted (separate CMS project, committed Payload migrations; see §2.1) | All schema, backup, access, deployment | Engineering | Haidar (Product Owner) | 2026-11-10 |
 | DEC-008 | Public and staff identity boundary | PRD §6.4; SRS T-06 | Supabase Auth for public users; Payload staff auth for staff; no implicit role promotion or shared session assumption. | Proposed | Auth, account, admin, access policy | Security owner + PO | — | — |
-| DEC-009 | Staff access to exclusive publications | SRS access matrix / T-06 | Deny-by-default; define whether staff use separate public account or an audited staff grant. | Accepted (roles: Public user, Editor, Admin; see §2.1) | Access evaluator, audit, tests | PO + Security owner | — | — |
+| DEC-009 | Staff access to exclusive publications | SRS access matrix / T-06 | Deny-by-default; define whether staff use separate public account or an audited staff grant. | Accepted (roles: Public user, Editor, Admin; see §2.1) | Access evaluator, audit, tests | PO + Security owner | Haidar (Product Owner) | 2026-11-09 |
 | DEC-010 | Authorization and entitlement model | PRD D-06; SRS §4 | Server-side authorization; explicit entitlement; RLS for app-user data; Payload access control for CMS. | Proposed | Access policy, APIs, storage, tests | Security owner | — | — |
 | DEC-011 | Publication-level vs asset-level access | PRD §8; SRS Publication model | Preserve publication `access_level`; evaluate per-asset override with effective access as the stricter of inherited and asset rules. | Proposed — needs approval | Asset schema, CMS, storage, access tests | PO + Engineering | — | — |
 | DEC-012 | File storage and private delivery | SRS T-03 | Object storage; public files only in public locations; exclusive files private and served after server authorization. Validate Payload adapter. | Proposed | Upload, download, backup, provider cost | Engineering + Security | — | — |
-| DEC-013 | Search scope and engine | PRD §9; SRS T-04 | Start with PostgreSQL FTS; `pg_trgm` only where tests justify; PDF full text remains out until extraction spike. | Proposed | Search schema, indexing, UX | Engineering + PO | — | — |
+| DEC-013 | Search scope and engine | PRD §9; SRS T-04 | Start with PostgreSQL FTS; `pg_trgm` only where tests justify; PDF full text remains out until extraction spike. | Accepted (start with PostgreSQL FTS; see §2.1) | Search schema, indexing, UX | Engineering + PO | Haidar (Product Owner) | 2026-11-10 |
 | DEC-014 | Learning Hub MVP scope | PRD D-04 | Catalog + external embeds as baseline; no LMS progress, certificates, or assessments unless approved. | Proposed | Scope, schema, page specs | PO / Learning Lead | — | — |
 | DEC-015 | Editorial workflow | PRD D-05 | Define draft, review, approval, schedule, publish, unpublish, revise, archive and responsibility. | Accepted (minimum workflow; see §2.1) | Payload workflow, role, content guide | Editorial Lead | Haidar (Product Owner) | 2026-11-08 |
 | DEC-016 | Staff roles and operational admin scope | PRD D-07; SRS T-07 | Minimum Admin and Editor; Reviewer/Finance only if workflow justifies. Separate editorial and entitlement permissions. | Accepted (Admin and Editor; both may publish; see §2.1) | CMS access, dashboard routes | PO + Security owner | Haidar (Product Owner) | 2026-11-08 |
@@ -130,8 +130,18 @@ Common fields for every record below:
 - **Status:** Accepted. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-09, Owner chat session ("sesuai rekomendasi dan best-practices").
 - **Decision:** Bun (`packageManager: bun@1.3.14`, `bun.lock`) is the package manager only. Node.js is the runtime for build, CI, and production. Bun is not used as the production runtime.
 - **Evidence:** `next.config.ts` enables `cacheComponents`; the installed Next.js doc `cacheComponents.md` states it requires the Node.js runtime.
-- **Not decided:** the exact Node.js version pin (`engines.node`, Vercel setting). Set in MILESTONES M2-04.
+- **Node.js pin (approved 2026-11-10):** `engines.node` `26.x` (spike commit `17fdf0c`, SPIKE-001 §7.7). The Owner reports the Vercel Node.js Version is set to match; no Vercel build evidence yet (first M3 PR preview).
 - **Review trigger:** Next.js or the host officially supports Bun as runtime for the features in use, and the Owner wants to switch.
+
+#### Records approved 2026-11-10 (M2 spike results)
+
+Common fields: **Status:** Accepted. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-10, Owner chat session, approving the recommendations in §2.3. Evidence is in `docs/spikes/SPIKE-001-PAYLOAD-POSTGRES.md` and `SPIKE-003-STORAGE-GATING.md`; code lives on the archived branch `spike/m2-payload-postgres` (pushed, not merged).
+
+- **DEC-006 — CMS selection and application topology.** Payload CMS 3 (3.93.0 tested) embedded in the single Next.js 16.4.4 application. *Not decided:* how to handle the `cacheComponents` log noise in the admin (SPIKE-001 §8); resolve in M3-02.
+- **DEC-007 — Database schema ownership and migration.** Separate Supabase projects: `mahira-cms` holds only Payload's Postgres schema; `mahira.id` holds Auth, Storage, and app tables (§2.2). The CMS schema changes only through committed Payload migrations (`push: false`); every `up()` enables RLS on new tables; every `down()` is reviewed; CI checks `migrate:status`; `migrate:reset` and `migrate:fresh` are never run against shared or production databases. App-schema migration tooling for `mahira.id` is decided when M5 adds app tables. *Consequence:* ADR-0002's single-database text is superseded by this record.
+- **DEC-013 — Search scope and engine.** Start with PostgreSQL full-text search using the `indonesian` text-search configuration (present on Supabase; stemming works, stop words do not). `pg_trgm` only where tests justify it. Relevance is tested in M3-06.
+- **DEC-004 and DEC-005 — validation evidence added.** DEC-004: checks 1–3 and 5–7 PASS, check 4 PARTIAL (a client can force fallback with `?fallback-locale=` on REST; fix in M3). DEC-005: per-locale slug uniqueness proven by index `locale_slug_idx`; route rules (308, 404, trailing slash, `/id`/`/en`) are tested in M3-01/M3-07. Both stay Accepted.
+- **DEC-012** is unchanged (Proposed): the public part is proven; private delivery waits for M5-04.
 
 ### 2.2 Spike environment for DEC-007 (not a decision)
 
@@ -148,7 +158,7 @@ Recorded 2026-11-09 from the Owner; project facts read through the Supabase Mana
 
 ### 2.3 Bukti spike M2 dan rekomendasi (usulan, bukan keputusan)
 
-Dicatat 2026-11-10 dari spike M2 di branch `spike/m2-payload-postgres` (commit `17fdf0c`, `3b1ff83`, `c8b783b`, `c19a774`). Bagian ini tidak mengubah kolom Status di §2 maupun record di §2.1. Perubahan status hanya terjadi setelah Haidar (Product Owner) menyetujuinya.
+Dicatat 2026-11-10 dari spike M2 di branch `spike/m2-payload-postgres` (commit `17fdf0c`, `3b1ff83`, `c8b783b`, `c19a774`). Bagian ini tidak mengubah kolom Status di §2 maupun record di §2.1. Perubahan status hanya terjadi setelah Haidar (Product Owner) menyetujuinya. **Update 2026-11-10:** Owner menyetujui rekomendasi DEC-004, 005, 006, 007, 013, 018; hasilnya dicatat di §2.1 ("Records approved 2026-11-10"). Tabel di bawah dipertahankan sebagai histori.
 
 | DEC | Status saat ini (tidak berubah) | Bukti | Rekomendasi | Tindakan Owner |
 |---|---|---|---|---|
@@ -229,3 +239,4 @@ A decision is only `Accepted` after the approver is known and the decision has a
 | 2026-11-09 | DEC-009 Accepted (roles: Public user, Editor, Admin; no staff bypass on public downloads). |
 | 2026-11-09 | DEC-005 addendum Accepted (search via `/{locale}/publications?q=`, type pages `/{locale}/publications/type/{slug}`). |
 | 2026-11-10 | M2 spike evidence and recommendations added as proposal (§2.3); no status changed. |
+| 2026-11-10 | DEC-006, DEC-007, DEC-013 Accepted from M2 spike evidence; DEC-004/005 evidence and DEC-018 `engines.node` 26.x recorded; DEC-009 row approver/date filled. |

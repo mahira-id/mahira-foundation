@@ -1,6 +1,6 @@
 # ADR-0002 — Payload and Supabase Database Ownership
 
-- **Status:** Proposed
+- **Status:** Proposed — partly superseded. DEC-006 and DEC-007 were Accepted on 2026-11-10 (`DECISIONS.md` §2.1): two separate Supabase projects, not the single database proposed below. The rest of this ADR (DEC-010, DEC-012) stays Proposed.
 - **Related decisions:** DEC-006, DEC-007, DEC-010, DEC-012
 - **Decision owner / approver:** Engineering Lead — TBD
 

@@ -16,13 +16,16 @@
 
 ## [Unreleased]
 
+> Entri [M2-*] merujuk commit di branch arsip `spike/m2-payload-postgres` (sudah di-push, tidak di-merge). Kodenya belum ada di `master`; dibawa lewat M3-00.
+
 ### Added
-- [M2-01] Payload 3.93.0 embedded di Next.js 16.4.4 (`app/(payload)`, homepage ke `app/(site)`), Postgres adapter ke `mahira-cms` (session pooler, TLS), migrasi `initial` + `publications` dengan RLS di setiap tabel, admin `/admin`, REST `/api` — bukti: branch `spike/m2-payload-postgres` commit `17fdf0c`, `3b1ff83`; lint + build exit 0; upgrade, reset dan clean install exit 0; seed-count 5/5 PASS di setiap run; Data API probe 15/15 PASS (`rows=0`); RLS 19/19; konkurensi 50+10 paralel 0 error; restart persistence OK; SPIKE-001 §7.1–§7.5
+- [M2-01] Payload 3.93.0 embedded di Next.js 16.4.4 (`app/(payload)`, homepage ke `app/(site)`), Postgres adapter ke `mahira-cms` (session pooler, TLS), migrasi `initial` + `publications` dengan RLS di setiap tabel, admin `/admin`, REST `/api` — bukti: branch `spike/m2-payload-postgres` commit `17fdf0c`, `3b1ff83`; lint + build exit 0; upgrade, reset dan clean install exit 0; seed-count 5/5 PASS setelah fix `119a131` (run integrasi pada `35abfbe` sempat FAIL); Data API probe 15/15 PASS (`rows=0`); RLS 19/19; konkurensi 50+10 paralel 0 error; restart persistence OK; SPIKE-001 §7.1–§7.5
 - [M2-02] Hook shared fields DEC-004, `updateSharedFields()`, helper hreflang, skrip localization checks 1–8 — bukti: commit `c8b783b`; `m2-02-localization-checks.ts` 2 run, masing-masing `pass=41 fail=0 observed=3`; check 4 PARTIAL (`fallback-locale`); lint + build exit 0; SPIKE-001 §7.6
 - [M2-03] Koleksi `media` + `@payloadcms/storage-s3` 3.93.0 ke bucket publik `spike-m2-public` (Supabase `mahira.id`), `coverImage` di Publications — bukti: commit `c19a774`; `m2-03-storage-checks.ts` `pass=6 fail=0 observed=5`; durabilitas setelah restart OK; upload admin UI OK; secret-scan `.next/static` bersih; lint + build exit 0; SPIKE-003 §7
 - [M2-04] Sebagian: `engines.node` `26.x`; `bun run build` exit 0 di setiap commit spike; proses runtime = `node` — bukti: commit `17fdf0c`, SPIKE-001 §7.7. Deploy preview dan region belum (DECISIONS §2.3 poin a, b)
 
 ### Decisions
+- [M2-05] DEC-006, DEC-007, DEC-013 → Accepted 2026-11-10; bukti spike ditambahkan ke DEC-004/005; pin `engines.node` 26.x (DEC-018) disetujui, versi Node di Vercel di-set Owner; DEC-012 tetap Proposed — bukti: `decisions/DECISIONS.md` §2.1, ADR-0002 ditandai partly superseded
 - DEC-004/005/006/007/012/013/018: rekomendasi M2 dicatat sebagai usulan (bukan keputusan) — bukti: decisions/DECISIONS.md §2.3
 - DEC-005 addendum → Accepted 2026-11-09: search `/{locale}/publications?q=`, type `/{locale}/publications/type/{slug}` — bukti: `decisions/DECISIONS.md` §2.1
 - [M1-08] Owner: 10 PDF RFID = contoh sementara; uji nilai taksonomi ditunda ke M4-05
