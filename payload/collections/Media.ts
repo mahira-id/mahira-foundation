@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { isStaff, isStaffOrAnonymousLocalRead } from "../access/roles";
 
 /**
  * Public files (M2-03, DEC-012). Files are stored in Supabase Storage through
@@ -9,10 +10,12 @@ import type { CollectionConfig } from "payload";
 export const Media: CollectionConfig = {
   slug: "media",
   access: {
-    read: () => true,
-    create: ({ req }) => Boolean(req.user),
-    update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
+    // Metadata: anonymous REST denied (P1 A); public pages use the Local API.
+    // The files themselves are public bucket URLs (disablePayloadAccessControl).
+    read: isStaffOrAnonymousLocalRead,
+    create: isStaff,
+    update: isStaff,
+    delete: isStaff,
   },
   upload: {
     mimeTypes: ["application/pdf", "image/png", "image/jpeg", "image/webp"],

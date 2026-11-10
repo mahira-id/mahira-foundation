@@ -133,6 +133,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  role: 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -168,7 +169,14 @@ export interface Publication {
   topics: (number | Topic)[];
   authors: (number | Author)[];
   accessLevel: 'public' | 'registered' | 'subscriber';
+  /**
+   * Diisi otomatis saat terbit bila kosong; boleh diubah.
+   */
   publishedAt?: string | null;
+  /**
+   * Diisi sistem. Versi bahasa yang pernah terbit hanya boleh dihapus Admin (DEC-016).
+   */
+  everPublished?: boolean | null;
   coverImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
@@ -193,6 +201,10 @@ export interface PublicationType {
   name: string;
   slug: string;
   description?: string | null;
+  /**
+   * Term aktif wajib punya nama Bahasa Indonesia dan English (DEC-004).
+   */
+  isActive?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -205,6 +217,10 @@ export interface Topic {
   name: string;
   slug: string;
   description?: string | null;
+  /**
+   * Term aktif wajib punya nama Bahasa Indonesia dan English (DEC-004).
+   */
+  isActive?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -340,6 +356,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -373,6 +390,7 @@ export interface PublicationsSelect<T extends boolean = true> {
   authors?: T;
   accessLevel?: T;
   publishedAt?: T;
+  everPublished?: T;
   coverImage?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -397,6 +415,7 @@ export interface TopicsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   description?: T;
+  isActive?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -408,6 +427,7 @@ export interface PublicationTypesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   description?: T;
+  isActive?: T;
   updatedAt?: T;
   createdAt?: T;
 }

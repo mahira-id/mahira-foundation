@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { isStaff, isStaffOrAnonymousLocalRead } from "../access/roles";
 import { slugField } from "../fields/slug";
 
 export const Authors: CollectionConfig = {
@@ -7,10 +8,11 @@ export const Authors: CollectionConfig = {
     useAsTitle: "displayName",
   },
   access: {
-    read: () => true,
-    create: ({ req }) => Boolean(req.user),
-    update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
+    // Anonymous REST denied (P1 A); public pages read via the Local API.
+    read: isStaffOrAnonymousLocalRead,
+    create: isStaff,
+    update: isStaff,
+    delete: isStaff,
   },
   fields: [
     {

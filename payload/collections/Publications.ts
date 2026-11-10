@@ -1,6 +1,13 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionConfig, Where } from "payload";
+import { isAnonymousLocalRead, isStaff, staffRoleOf } from "../access/roles";
 import { validateSlug } from "../fields/slug";
 import { enforceSharedFields } from "../hooks/enforce-shared-fields";
+import { setPublicationLifecycleFields } from "../hooks/publication-lifecycle";
+
+/** What an anonymous Local API read may see (DEC-002). */
+const PUBLIC_READ: Where = {
+  and: [{ _status: { equals: "published" } }, { accessLevel: { equals: "public" } }],
+};
 
 /**
  * Publication (DEC-004 linked-record model): one record per language, linked
@@ -20,16 +27,29 @@ export const Publications: CollectionConfig = {
     maxPerDoc: 25,
   },
   access: {
-    // Anonymous readers see published records only; staff see drafts too.
-    read: ({ req }) => (req.user ? true : { _status: { equals: "published" } }),
-    create: ({ req }) => Boolean(req.user),
-    update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
-    readVersions: ({ req }) => Boolean(req.user),
+    // Staff see everything, drafts included. Public pages read through the
+    // server-side Local API and see published + public records only
+    // (DEC-002); anonymous REST is denied (Owner 2026-11-10, P1 A).
+    read: ({ req }) => {
+      if (staffRoleOf(req) !== null) return true;
+      if (isAnonymousLocalRead(req)) return PUBLIC_READ;
+      return false;
+    },
+    create: isStaff,
+    update: isStaff,
+    readVersions: isStaff,
+    // DEC-016: only Admin deletes a language version that was ever published.
+    delete: ({ req }) => {
+      const role = staffRoleOf(req);
+      if (role === "admin") return true;
+      if (role === "editor") return { everPublished: { equals: false } };
+      return false;
+    },
   },
   hooks: {
-    // DEC-004: shared fields stay equal across the Translation Group.
-    beforeChange: [enforceSharedFields],
+    // Lifecycle fields first (P3 B, DEC-016), then DEC-004: shared fields
+    // stay equal across the Translation Group.
+    beforeChange: [setPublicationLifecycleFields, enforceSharedFields],
   },
   indexes: [
     { fields: ["locale", "slug"], unique: true },
@@ -104,6 +124,24 @@ export const Publications: CollectionConfig = {
     {
       name: "publishedAt",
       type: "date",
+      admin: {
+        description: "Diisi otomatis saat terbit bila kosong; boleh diubah.",
+      },
+    },
+    {
+      // System flag, set by setPublicationLifecycleFields; clients cannot write it.
+      name: "everPublished",
+      type: "checkbox",
+      defaultValue: false,
+      access: {
+        create: () => false,
+        update: () => false,
+      },
+      admin: {
+        readOnly: true,
+        position: "sidebar",
+        description: "Diisi sistem. Versi bahasa yang pernah terbit hanya boleh dihapus Admin (DEC-016).",
+      },
     },
     {
       // Per-record (not in DEC-004's shared-field list), optional, public file.
