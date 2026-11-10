@@ -42,3 +42,6 @@ next-env.d.ts
 
 # third-party PDFs used as local test fixtures; never publish via public/
 /public/publications/
+
+# Playwright MCP browser snapshots (local tooling output)
+/.playwright-mcp/
