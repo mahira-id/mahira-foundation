@@ -41,6 +41,30 @@ Do not point preview deployments at production database by default. A preview br
 
 The exact variable names must follow pinned SDK versions. Never expose database URLs or server secrets with `NEXT_PUBLIC_` prefix.
 
+### 3.1 Variabel yang dipakai kode saat ini (M3-00, 2026-11-10)
+
+Tabel §3 di atas tetap ilustratif. Tabel ini mencatat variabel yang benar-benar dibaca kode (`payload/env.ts`), sesuai keputusan Owner 2026-11-10 (Opsi A, lihat MILESTONES M3-00).
+
+| Variable | Server-only / secret | Vercel Preview | Vercel Production | Lokal |
+|---|---|---|---|---|
+| `PAYLOAD_SECRET` | Server-only; secret | Ya (nilai khusus Preview) | Tidak | Opsional (semua atau tidak sama sekali) |
+| `CMS_SUPABASE_DATABASE_URI` | Server-only; secret (berisi password DB `mahira-cms`) | Ya | Tidak | Opsional (semua atau tidak sama sekali) |
+| `APP_SUPABASE_URL` | Server-only; bukan secret (endpoint project `mahira.id`) | Ya | Tidak | Opsional (semua atau tidak sama sekali) |
+| `APP_SUPABASE_S3_ACCESS_KEY_ID` | Server-only; secret (melewati Storage RLS) | Ya (key khusus Preview) | Tidak | Opsional (semua atau tidak sama sekali) |
+| `APP_SUPABASE_S3_SECRET_ACCESS_KEY` | Server-only; secret (melewati Storage RLS) | Ya (key khusus Preview) | Tidak | Opsional (semua atau tidak sama sekali) |
+
+Aturan set:
+- Kelima variabel terisi: CMS (Payload `/admin`, `/api/*`) hidup.
+- Kelimanya kosong: CMS mati. Build tetap lulus.
+- Hanya sebagian terisi: build dan start gagal; pesan error menyebut nama variabel yang hilang, tidak pernah nilainya.
+- `VERCEL_ENV=production`: CMS selalu mati, apa pun yang di-set. Menghidupkan CMS di Production memerlukan PR yang di-review (M4).
+
+Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`. Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku.
+
+TLS ke database: CA Supabase Root 2021 di-pin di `payload/db/supabase-root-ca.ts` (sertifikat publik, bukan secret). Tidak ada variabel `CMS_SUPABASE_DB_CA_CERT`. `CMS_SUPABASE_DATABASE_URI` tidak boleh berisi parameter `sslmode`, karena `pg` akan mengganti objek `ssl` yang memuat CA tersebut.
+
+Key lain di `.env.local` (`CMS_SUPABASE_URL`, `*_PUBLISHABLE_KEY`, `*_SECRET_KEY`, `APP_SUPABASE_SERVICE_ROLE_KEY`, `OPENALEX_API_KEY`) tidak dipakai kode dan tidak di-set di Vercel.
+
 ## 4. Database and storage separation
 
 - Separate Supabase projects are recommended for development, staging, and production.

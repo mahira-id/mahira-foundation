@@ -23,7 +23,7 @@
 | M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE | — |
 | M1 | Rekonsiliasi dokumen & keputusan | Requirements | DONE (M1-08 ditunda ke M4-05) | — |
 | M2 | Validasi teknis (spike) | Design / arsitektur | DONE (2026-11-10) | — |
-| M3 | MVP — Platform publikasi | Implementasi | TODO (siap mulai) | DEC-017, DEC-024 (DEC-013 Accepted) |
+| M3 | MVP — Platform publikasi | Implementasi | DOING (M3-00 selesai) | DEC-017, DEC-024 (DEC-013 Accepted) |
 | M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3) | DEC-020, DEC-022, DEC-023 |
 | M5 | MVP+ — Akses pengguna | Implementasi lanjutan | BLOCKED | DEC-008–011, DEC-019, DEC-020 |
 | M6 | Expansion — Learning Hub & engagement | Evolusi | BLOCKED | DEC-014 |
@@ -65,7 +65,7 @@
 
 ### M3 — MVP Publikasi (Implementasi, vertical slice)
 Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10, merge di luar rencana; Owner memilih maju, bukan revert). Build produksi Vercel untuk `e7f6876` ERROR (`Missing required environment variable APP_SUPABASE_URL` dari `payload/payload.config.ts`); `mahira.id` masih melayani deploy `3839725`.
-- [ ] M3-00 Pulihkan `master`: build Vercel hijau tanpa mengaktifkan `/admin` produksi ke database spike; buang skrip cek dan konfigurasi bertanda "SPIKE ONLY"; bukti build di Vercel Preview + Node 26.x (sisa M2-04) — branch `feat/m3-00-master-cleanup`
+- [x] M3-00 Pulihkan `master`: build Vercel hijau tanpa mengaktifkan `/admin` produksi ke database spike; buang skrip cek dan konfigurasi bertanda "SPIKE ONLY"; bukti build di Vercel Preview + Node 26.x (sisa M2-04) — branch `feat/m3-00-master-cleanup`, commit `8d0ea3c`; Owner 2026-11-10: Opsi A (Payload mati di Vercel Production, hidup di Preview); build lulus tanpa env dan dengan env lengkap (CHANGELOG [M3-00]). Sisa: bukti build Vercel Preview + Node 26.x dari PR (langkah Owner, sisa M2-04)
 - [ ] M3-01 Routing locale `/id` `/en`, language switcher, fallback eksplisit (DEC-004/005); tutup celah `?fallback-locale=` di REST publik (temuan C4c)
 - [ ] M3-02 Koleksi CMS: Publication, Author, Topic, Publication Type, Media; role Admin/Editor (DEC-016). Dari review M2: manajemen user staf hanya Admin; perbaiki race di hook shared-field DEC-004; tentukan penanganan log `cacheComponents` di admin (DEC-006)
 - [ ] M3-03 Workflow editorial minimum: draft → publish/unpublish (DEC-015)
