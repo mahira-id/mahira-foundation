@@ -19,6 +19,7 @@
 > Entri [M2-*] merujuk commit dari branch `spike/m2-payload-postgres`, yang masuk ke `master` lewat PR #3 (`e7f6876`).
 
 ### Fixed
+- [M3-00] Bukti Preview dengan CMS aktif: `dpl_HdrgFNmF49qwQ53vUjjGBSc2ms2N` (redeploy `644833c`, Preview, Node 26.x, 5 env CMS) — login `/admin` berhasil, `/api/publications?limit=1` 200 dengan data fixture. Nama env sempat salah (`SUPABASE_URL`); build Preview `dpl_9B3vL6etqPgbfSdJFNCJfoNKVD3Y` gagal dengan pesan "set tidak lengkap" sesuai desain, lalu diperbaiki Owner — bukti: uji Owner 2026-11-10
 - [M3-00] Build produksi pulih: `644833c` READY dan dipromosikan; `mahira.id/` 200 (homepage), `/admin` 404, `/api/publications` 404 (CMS mati di Production, Opsi A) — bukti: Vercel `dpl_CEo1P2xzx6phTQPPmicCuHH8ZnSk`, cek HTTP 2026-11-10. Catatan: commit M3-00 ter-push langsung ke `master` tanpa PR karena branch lokal melacak `origin/master`
 
 ### Changed
