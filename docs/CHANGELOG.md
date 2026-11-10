@@ -18,6 +18,9 @@
 
 > Entri [M2-*] merujuk commit dari branch `spike/m2-payload-postgres`, yang masuk ke `master` lewat PR #3 (`e7f6876`).
 
+### Fixed
+- [M3-00] Build produksi pulih: `644833c` READY dan dipromosikan; `mahira.id/` 200 (homepage), `/admin` 404, `/api/publications` 404 (CMS mati di Production, Opsi A) — bukti: Vercel `dpl_CEo1P2xzx6phTQPPmicCuHH8ZnSk`, cek HTTP 2026-11-10. Catatan: commit M3-00 ter-push langsung ke `master` tanpa PR karena branch lokal melacak `origin/master`
+
 ### Changed
 - [M3-00] Keputusan Owner 2026-11-10: Opsi A; U1 S1, U2 keep, U3 keep, U4 M, U5 keep, U6 (a). TLS ke pooler `mahira-cms` kini diverifikasi terhadap Supabase Root 2021 CA yang di-pin di `payload/db/supabase-root-ca.ts` (sertifikat publik), menggantikan `rejectUnauthorized: false`. `scripts/spike/secret-scan.mjs` → `scripts/secret-scan.mjs`. Bucket `spike-m2-public` dan prefix `spike-m2` dipertahankan sampai M3-08. Owner menghapus admin spike (`users` = 0, cek read-only); data fixture dipertahankan — bukti: commit `2dc2e19`; `migrate:status` 3/3 Ran=Yes dengan CA ter-pin
 - PR #3 me-merge branch spike ke `master` (di luar rencana; ikut membawa commit M1). Build produksi Vercel `e7f6876` ERROR karena env CMS tidak ada saat build; produksi tetap di deploy `3839725`. Owner memilih maju lewat M3-00, bukan revert — bukti: GitHub PR #3, Vercel deployment `dpl_DjWwddkpA8UMp2KoyN6HBp9EkWAf`
