@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin, isStaffOrAnonymousLocalRead } from "../access/roles";
 import { slugField } from "../fields/slug";
+import { denyPublicFallback } from "../hooks/deny-public-fallback";
 import { requireBothLocaleNamesWhenActive } from "../hooks/require-both-locale-names";
 
 export const PublicationTypes: CollectionConfig = {
@@ -17,6 +18,7 @@ export const PublicationTypes: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
+    beforeOperation: [denyPublicFallback],
     beforeChange: [requireBothLocaleNamesWhenActive],
   },
   fields: [

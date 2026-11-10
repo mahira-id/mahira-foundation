@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { isStaff, isStaffOrAnonymousLocalRead } from "../access/roles";
 import { slugField } from "../fields/slug";
+import { denyPublicFallback } from "../hooks/deny-public-fallback";
 
 export const Authors: CollectionConfig = {
   slug: "authors",
@@ -13,6 +14,9 @@ export const Authors: CollectionConfig = {
     create: isStaff,
     update: isStaff,
     delete: isStaff,
+  },
+  hooks: {
+    beforeOperation: [denyPublicFallback],
   },
   fields: [
     {
