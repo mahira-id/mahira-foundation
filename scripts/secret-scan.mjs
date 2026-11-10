@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-// Spike secret scan (M2): fails if any value from .env.local appears in the
-// given files or directories. Prints key names and file paths only, never
-// values.
+// Secret scan: fails if any value from .env.local appears in the given files
+// or directories. Prints key names and file paths only, never values.
 //
-// Usage: node scripts/spike/secret-scan.mjs <path> [<path> ...]
+// Usage: node scripts/secret-scan.mjs <path> [<path> ...]
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
@@ -12,7 +11,7 @@ import { fileURLToPath } from "node:url";
 const MIN_LENGTH = 12;
 const SKIP_DIRS = new Set(["node_modules", ".git"]);
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const envFile = path.join(repoRoot, ".env.local");
 
 function loadNeedles() {
@@ -64,7 +63,7 @@ function* walk(target) {
 
 const targets = process.argv.slice(2);
 if (targets.length === 0) {
-  console.error("usage: node scripts/spike/secret-scan.mjs <path> [<path> ...]");
+  console.error("usage: node scripts/secret-scan.mjs <path> [<path> ...]");
   process.exit(2);
 }
 

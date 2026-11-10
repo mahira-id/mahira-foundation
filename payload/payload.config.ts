@@ -10,17 +10,22 @@ import { PublicationTypes } from "./collections/PublicationTypes";
 import { Topics } from "./collections/Topics";
 import { TranslationGroups } from "./collections/TranslationGroups";
 import { Users } from "./collections/Users";
-import { resolveDatabaseUri } from "./db/database-uri";
-import { requireEnv } from "./env";
+import { SUPABASE_ROOT_CA_2021 } from "./db/supabase-root-ca";
+import { readCmsEnv } from "./env";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(dirname, "..");
 
+// null = CMS off (no CMS env, or Vercel Production). See ./env.ts.
+const cms = readCmsEnv();
+
 // Supabase Storage of the APP project (mahira.id), S3-compatible endpoint.
 // The S3 access keys bypass Storage RLS: server-only, never NEXT_PUBLIC_*.
-const appSupabaseUrl = requireEnv("APP_SUPABASE_URL").replace(/\/+$/, "");
-const appSupabaseRef = new URL(appSupabaseUrl).hostname.split(".")[0];
+const appSupabaseUrl = cms ? cms.APP_SUPABASE_URL.replace(/\/+$/, "") : "";
+const appSupabaseRef = cms ? new URL(appSupabaseUrl).hostname.split(".")[0] : "";
+// Spike bucket and prefix are kept until M3-08 (Owner 2026-11-10, M3-00 U2).
 const PUBLIC_BUCKET = "spike-m2-public";
+const MEDIA_PREFIX = "spike-m2";
 
 export default buildConfig({
   admin: {
@@ -33,26 +38,32 @@ export default buildConfig({
   collections: [Users, Publications, Authors, Topics, PublicationTypes, TranslationGroups, Media],
   plugins: [
     s3Storage({
+      enabled: cms !== null,
+      // Keeps the url, prefix and _objectKey fields when the plugin is off, so
+      // the schema is the same with the CMS on or off.
+      alwaysInsertFields: true,
       bucket: PUBLIC_BUCKET,
       collections: {
         media: {
-          prefix: "spike-m2",
+          prefix: MEDIA_PREFIX,
           // Public bucket: serve files directly from Supabase, not via /api/media/file.
           disablePayloadAccessControl: true,
           generateFileURL: ({ filename, prefix }) =>
             `${appSupabaseUrl}/storage/v1/object/public/${PUBLIC_BUCKET}/${prefix ? `${prefix}/` : ""}${encodeURIComponent(filename)}`,
         },
       },
-      config: {
-        endpoint: `https://${appSupabaseRef}.storage.supabase.co/storage/v1/s3`,
-        // DECISIONS §2.2 (mahira.id region); production region open (DEC-017/DEC-020).
-        region: "eu-central-1",
-        forcePathStyle: true,
-        credentials: {
-          accessKeyId: requireEnv("APP_SUPABASE_S3_ACCESS_KEY_ID"),
-          secretAccessKey: requireEnv("APP_SUPABASE_S3_SECRET_ACCESS_KEY"),
-        },
-      },
+      config: cms
+        ? {
+          endpoint: `https://${appSupabaseRef}.storage.supabase.co/storage/v1/s3`,
+          // DECISIONS §2.2 (mahira.id region); production region open (DEC-017/DEC-020).
+          region: "eu-central-1",
+          forcePathStyle: true,
+          credentials: {
+            accessKeyId: cms.APP_SUPABASE_S3_ACCESS_KEY_ID,
+            secretAccessKey: cms.APP_SUPABASE_S3_SECRET_ACCESS_KEY,
+          },
+        }
+        : {},
     }),
   ],
   localization: {
@@ -68,18 +79,18 @@ export default buildConfig({
   graphQL: {
     disable: true,
   },
-  secret: requireEnv("PAYLOAD_SECRET"),
+  // CMS off: an empty secret makes payload.init throw before any DB
+  // connection, so Payload denies even if proxy.ts were bypassed.
+  secret: cms?.PAYLOAD_SECRET ?? "",
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
   db: postgresAdapter({
     pool: {
-      connectionString: resolveDatabaseUri(),
-      // Without this, node-postgres talks to the Supabase pooler in plaintext
-      // (the URI has no sslmode). Verifying against the system CA store fails
-      // with SELF_SIGNED_CERT_IN_CHAIN (M2-01 evidence).
-      // SPIKE ONLY: production must pin the Supabase CA certificate (Dashboard → Database Settings → SSL Configuration)
-      ssl: { rejectUnauthorized: false },
+      connectionString: cms?.CMS_SUPABASE_DATABASE_URI,
+      // TLS verified against Supabase Root 2021 CA (M3-00 U1 S1). The URI must
+      // not contain `sslmode`; pg would replace this `ssl` object.
+      ssl: { ca: SUPABASE_ROOT_CA_2021 },
     },
     // Schema changes only through committed migrations; never dev push.
     push: false,
