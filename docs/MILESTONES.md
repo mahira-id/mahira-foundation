@@ -64,8 +64,8 @@
 **Exit:** DEC-006/007/018 Accepted dengan bukti spike ✔. DEC-012 tetap Proposed: bagian publik terbukti, bagian privat di M5-04.
 
 ### M3 — MVP Publikasi (Implementasi, vertical slice)
-Dasar kode: branch arsip `spike/m2-payload-postgres` (Payload, migrasi, Media/S3). Ambil yang dipakai ke branch `feat/` baru; buang skrip cek dan konfigurasi bertanda "SPIKE ONLY".
-- [ ] M3-00 Bawa fondasi Payload dari spike ke `master` lewat PR pertama; bukti build di Vercel Preview + Node 26.x (sisa M2-04)
+Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10, merge di luar rencana; Owner memilih maju, bukan revert). Build produksi Vercel untuk `e7f6876` ERROR (`Missing required environment variable APP_SUPABASE_URL` dari `payload/payload.config.ts`); `mahira.id` masih melayani deploy `3839725`.
+- [ ] M3-00 Pulihkan `master`: build Vercel hijau tanpa mengaktifkan `/admin` produksi ke database spike; buang skrip cek dan konfigurasi bertanda "SPIKE ONLY"; bukti build di Vercel Preview + Node 26.x (sisa M2-04) — branch `feat/m3-00-master-cleanup`
 - [ ] M3-01 Routing locale `/id` `/en`, language switcher, fallback eksplisit (DEC-004/005); tutup celah `?fallback-locale=` di REST publik (temuan C4c)
 - [ ] M3-02 Koleksi CMS: Publication, Author, Topic, Publication Type, Media; role Admin/Editor (DEC-016). Dari review M2: manajemen user staf hanya Admin; perbaiki race di hook shared-field DEC-004; tentukan penanganan log `cacheComponents` di admin (DEC-006)
 - [ ] M3-03 Workflow editorial minimum: draft → publish/unpublish (DEC-015)

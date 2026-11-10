@@ -16,7 +16,10 @@
 
 ## [Unreleased]
 
-> Entri [M2-*] merujuk commit di branch arsip `spike/m2-payload-postgres` (sudah di-push, tidak di-merge). Kodenya belum ada di `master`; dibawa lewat M3-00.
+> Entri [M2-*] merujuk commit dari branch `spike/m2-payload-postgres`, yang masuk ke `master` lewat PR #3 (`e7f6876`).
+
+### Changed
+- PR #3 me-merge branch spike ke `master` (di luar rencana; ikut membawa commit M1). Build produksi Vercel `e7f6876` ERROR karena env CMS tidak ada saat build; produksi tetap di deploy `3839725`. Owner memilih maju lewat M3-00, bukan revert — bukti: GitHub PR #3, Vercel deployment `dpl_DjWwddkpA8UMp2KoyN6HBp9EkWAf`
 
 ### Added
 - [M2-01] Payload 3.93.0 embedded di Next.js 16.4.4 (`app/(payload)`, homepage ke `app/(site)`), Postgres adapter ke `mahira-cms` (session pooler, TLS), migrasi `initial` + `publications` dengan RLS di setiap tabel, admin `/admin`, REST `/api` — bukti: branch `spike/m2-payload-postgres` commit `17fdf0c`, `3b1ff83`; lint + build exit 0; upgrade, reset dan clean install exit 0; seed-count 5/5 PASS setelah fix `119a131` (run integrasi pada `35abfbe` sempat FAIL); Data API probe 15/15 PASS (`rows=0`); RLS 19/19; konkurensi 50+10 paralel 0 error; restart persistence OK; SPIKE-001 §7.1–§7.5
