@@ -2,7 +2,7 @@
 
 **Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-009 and DEC-018 were Accepted on 2026-11-09; DEC-006, DEC-007, and DEC-013 on 2026-11-10 (§2.1). Every other row keeps its earlier status.  
 **Canonical IDs:** `DEC-NNN`. Historical PRD `D-xx` and SRS `T-xx` are retained for traceability.  
-**Last updated:** 2026-11-10 (DEC-006, DEC-007, DEC-013 Accepted; DEC-004/005 evidence and DEC-018 Node pin recorded; §2.1). Earlier the same day: M2 spike evidence proposal §2.3. Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
+**Last updated:** 2026-11-10 (Owner answers for M3-02/M3-01 recorded in §2.4; no status change). Earlier the same day: DEC-006, DEC-007, DEC-013 Accepted; DEC-004/005 evidence and DEC-018 Node pin recorded (§2.1); M2 spike evidence proposal §2.3. Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
 
 ## 1. How to use this register
 
@@ -137,10 +137,10 @@ Common fields for every record below:
 
 Common fields: **Status:** Accepted. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-10, Owner chat session, approving the recommendations in §2.3. Evidence is in `docs/spikes/SPIKE-001-PAYLOAD-POSTGRES.md` and `SPIKE-003-STORAGE-GATING.md`; code lives on the archived branch `spike/m2-payload-postgres` (pushed, not merged).
 
-- **DEC-006 — CMS selection and application topology.** Payload CMS 3 (3.93.0 tested) embedded in the single Next.js 16.4.4 application. *Not decided:* how to handle the `cacheComponents` log noise in the admin (SPIKE-001 §8); resolve in M3-02.
+- **DEC-006 — CMS selection and application topology.** Payload CMS 3 (3.93.0 tested) embedded in the single Next.js 16.4.4 application. *Not decided:* how to handle the `cacheComponents` log noise in the admin (SPIKE-001 §8); resolve in M3-02 (jawaban Owner: §2.4 P2).
 - **DEC-007 — Database schema ownership and migration.** Separate Supabase projects: `mahira-cms` holds only Payload's Postgres schema; `mahira.id` holds Auth, Storage, and app tables (§2.2). The CMS schema changes only through committed Payload migrations (`push: false`); every `up()` enables RLS on new tables; every `down()` is reviewed; CI checks `migrate:status`; `migrate:reset` and `migrate:fresh` are never run against shared or production databases. App-schema migration tooling for `mahira.id` is decided when M5 adds app tables. *Consequence:* ADR-0002's single-database text is superseded by this record.
 - **DEC-013 — Search scope and engine.** Start with PostgreSQL full-text search using the `indonesian` text-search configuration (present on Supabase; stemming works, stop words do not). `pg_trgm` only where tests justify it. Relevance is tested in M3-06.
-- **DEC-004 and DEC-005 — validation evidence added.** DEC-004: checks 1–3 and 5–7 PASS, check 4 PARTIAL (a client can force fallback with `?fallback-locale=` on REST; fix in M3). DEC-005: per-locale slug uniqueness proven by index `locale_slug_idx`; route rules (308, 404, trailing slash, `/id`/`/en`) are tested in M3-01/M3-07. Both stay Accepted.
+- **DEC-004 and DEC-005 — validation evidence added.** DEC-004: checks 1–3 and 5–7 PASS, check 4 PARTIAL (a client can force fallback with `?fallback-locale=` on REST; fix in M3) (REST anonim ditutup: §2.4 P1). DEC-005: per-locale slug uniqueness proven by index `locale_slug_idx`; route rules (308, 404, trailing slash, `/id`/`/en`) are tested in M3-01/M3-07. Both stay Accepted.
 - **DEC-012** is unchanged (Proposed): the public part is proven; private delivery waits for M5-04.
 
 ### 2.2 Spike environment for DEC-007 (not a decision)
@@ -176,6 +176,21 @@ Poin terbuka untuk Owner:
 - (b) **Region database produksi** (DEC-017/DEC-020): kedua project spike ada di Eropa (`eu-west-1`, `eu-central-1`); latensi spike dari Indonesia tidak mewakili produksi.
 - (c) **OG-09 dan sumber spec:** OG-09 tidak pernah dikonfirmasi, dan `.kiro/specs/03-architecture-technical-validation/` tidak ada di repo, padahal register ini, ADR-0004, dan ADR-0005 merujuknya. Delapan pemeriksaan M2-02 diambil dari brief workshop 2026-11-06.
 - (d) **ADR-0002:** teks "Proposed decision" menyebut satu database Supabase, sedangkan catatan Owner memilih Opsi 3 (database terpisah) dan lingkungan spike memakai dua project. Teks ADR belum diubah.
+
+### 2.4 Jawaban Owner 2026-11-10 untuk M3-02 dan M3-01 (catatan, bukan perubahan status)
+
+Dicatat dari jawaban Haidar (Product Owner) 2026-11-10 atas pertanyaan planner untuk M3-02 dan M3-01: "P1 A, P2 A, P3 B (i), P4a B, P4b (i), P4c (i), P4d setuju, P5 A, P6 A (i), P7 C". Bagian ini tidak mengubah kolom Status di §2 maupun record di §2.1.
+
+- **P1 REST/GraphQL publik — A:** REST anonim ditolak (403) di semua koleksi; halaman publik membaca lewat Local API di server, dan Local API tanpa login hanya melihat Publication `_status: published` + `accessLevel: public`; GraphQL tetap mati; login staf lewat `/api/users/login` tetap jalan. Menjawab poin DEC-004 di §2.3 ("putuskan pembatasan REST publik").
+- **P2 log `cacheComponents` di admin — A:** tanpa perubahan kode; dicatat sebagai known issue yang ditinjau ulang saat upgrade Payload/Next; Owner menyaring log di Vercel (ENG-ENV-001 §3.1). Menjawab sub-poin DEC-006.
+- **P3 `publishedAt` — B (i):** bila kosong saat dokumen disimpan sebagai published, server mengisinya dengan waktu saat itu (UTC); editor boleh mengubahnya; record lama yang kosong terisi saat disimpan ulang sebagai published.
+- **P4a route M3-01 — B:** infrastruktur locale (`id`/`en`, lainnya 404; `/id` dan `/en` 404; huruf besar 404; trailing slash 308; kamus UI; switcher; baca publik tanpa fallback) plus kerangka `/{locale}/publications` (judul published + public di locale itu, tanpa filter, pagination, atau tautan detail; 404 saat CMS mati).
+- **P4b switcher di `/` — (i):** `/` tidak berubah (tetap "EN segera" tanpa tautan).
+- **P4c default locale — (i):** konstanta `DEFAULT_LOCALE = "id"` hanya untuk `/` dan `defaultLocale` Payload, tanpa redirect. Menjawab butir "Still open" default locale di DEC-005 (ADR-0005, IA-01).
+- **P4d segmen lain — setuju:** topics, learning-hub, about, dan account tidak dibuat di M3-01.
+- **P5 role akun yang ada — A:** migrasi menjadikan satu-satunya user yang ada Admin; bila ada lebih dari satu user, migrasi berhenti dan Owner ditanya; user baru default Editor; user pertama di database kosong otomatis Admin.
+- **P6 field koleksi — A (i):** tambah hanya `role` (Users), `everPublished` (penanda sistem "pernah terbit" untuk aturan hapus DEC-016, tidak bisa diedit), dan `isActive` (Topic, Publication Type; default nonaktif; aktif hanya bila nama ID dan EN terisi; artinya di halaman publik diputuskan di M3-05). Field DATA-MODEL lain menunggu milestone pemakainya.
+- **P7 Data API `mahira-cms` — C:** Owner mematikan Data API di dashboard `mahira-cms`; agen hanya menulis langkahnya (ENG-ENV-001 §3.1); tanpa migrasi `REVOKE`.
 
 ## 3. Legacy ID mapping
 
@@ -240,3 +255,4 @@ A decision is only `Accepted` after the approver is known and the decision has a
 | 2026-11-09 | DEC-005 addendum Accepted (search via `/{locale}/publications?q=`, type pages `/{locale}/publications/type/{slug}`). |
 | 2026-11-10 | M2 spike evidence and recommendations added as proposal (§2.3); no status changed. |
 | 2026-11-10 | DEC-006, DEC-007, DEC-013 Accepted from M2 spike evidence; DEC-004/005 evidence and DEC-018 `engines.node` 26.x recorded; DEC-009 row approver/date filled. |
+| 2026-11-10 | Jawaban Owner untuk M3-02 dan M3-01 (P1–P7) dicatat di §2.4, dengan pointer di DEC-006 dan bukti DEC-004 (§2.1); tidak ada status yang berubah. |
