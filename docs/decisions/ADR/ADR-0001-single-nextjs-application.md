@@ -23,8 +23,6 @@ Mahira membutuhkan permukaan publik yang SEO-oriented, area akun terautentikasi,
 | B. Next.js public + Vite account/admin | Dashboard SPA dapat dirancang terpisah. | Session/CORS/API/deploy/configuration ganda; backend tetap diperlukan untuk operasi sensitif. |
 | C. Separate services from day one | Boundary deployment lebih kuat. | Kompleksitas operasional dan integrasi terlalu dini untuk tim/scope yang diketahui. |
 
-### Opsi terpilih: Opsi B
-
 ## Proposed decision
 
 Gunakan satu repository dan satu aplikasi Next.js App Router sebagai baseline. Pisahkan route dan domain secara eksplisit:

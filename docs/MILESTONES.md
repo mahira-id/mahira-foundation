@@ -4,7 +4,7 @@
 |---|---|
 | Status dokumen | Canonical (dokumen utama #1; pasangannya: `CHANGELOG.md`) |
 | Owner | Haidar (Product Owner) |
-| Terakhir diperbarui | 2026-11-09 |
+| Terakhir diperbarui | 2026-11-10 |
 | Menggantikan | `STATUS.md` (tidak ada lagi di repo) |
 
 ## 0. Aturan pakai (singkat)
@@ -21,8 +21,8 @@
 | ID | Milestone | Fase SDLC | Status | Gate keputusan |
 |---|---|---|---|---|
 | M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE | — |
-| M1 | Rekonsiliasi dokumen & keputusan | Requirements | TODO | DEC-002 penerapan, DEC-003, DEC-009 |
-| M2 | Validasi teknis (spike) | Design / arsitektur | TODO (siap mulai) | DEC-006, DEC-007, DEC-012 (DEC-018 Accepted) |
+| M1 | Rekonsiliasi dokumen & keputusan | Requirements | DONE (M1-08 ditunda ke M4-05) | — |
+| M2 | Validasi teknis (spike) | Design / arsitektur | DOING (bukti spike tercatat; menunggu keputusan Owner) | DEC-006, DEC-007, DEC-012 (DEC-018 Accepted) |
 | M3 | MVP — Platform publikasi | Implementasi | BLOCKED (M2) | DEC-013, DEC-017, DEC-024 |
 | M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3) | DEC-020, DEC-022, DEC-023 |
 | M5 | MVP+ — Akses pengguna | Implementasi lanjutan | BLOCKED | DEC-008–011, DEC-019, DEC-020 |
@@ -42,23 +42,24 @@
 **Exit:** semua dokumen ter-commit; root bersih.
 
 ### M1 — Rekonsiliasi (Requirements)
-- [ ] M1-01 Terapkan DEC-002 (MVP publication-only) ke PRD §7/§13 dan SRS FR-009–013 (prioritas pindah ke MVP+)
-- [ ] M1-02 Terapkan DEC-003 (2 sumbu: Publication Type + Topic "Bidang Kerja"; Desk ditunda) ke `CONTENT-ARCHITECTURE`, `DATA-MODEL`, `ERD`
-- [ ] M1-03 Putuskan DEC-009 (akses staf ke file eksklusif) — konflik SRS §4.1/§12.1 vs `ACCESS-POLICY` §6
-- [ ] M1-04 Selaraskan pola URL search & type page (`IA-ROUTING-I18N` vs ADR-0005); hapus route/param Desk
-- [ ] M1-05 Perbaiki heading "Opsi terpilih: Opsi B" (Vite) di ADR-0001
-- [ ] M1-06 Perbaiki tautan DEC di SPIKE-001/002/003
-- [ ] M1-07 Perbarui PRD document control (Owner = Haidar; nama brand sesuai DEC-001)
-- [ ] M1-08 Inventaris konten nyata (10–20 publikasi) untuk menguji nilai taksonomi DEC-003
+- [x] M1-01 DEC-002 diterapkan: PRD §13 AC 5–6 dan SRS FR-009–013 ditandai MVP+ — branch `docs/m1-reconciliation`
+- [x] M1-02 DEC-003 (2 sumbu) diterapkan: banner + Desk/Tag ditandai Not in MVP di `CONTENT-ARCHITECTURE`, `DATA-MODEL`; Desk/Tag dihapus dari `ERD`; "desk" dihapus dari spesifikasi
+- [x] M1-03 DEC-009 Accepted (role: Public user, Editor, Admin); SRS aktor & glosarium diperbarui
+- [x] M1-03b SRS matriks akses (§4/§12), T-06, dan TEST-PLAN matriks disinkronkan dengan DEC-009 (bypass Admin dihapus)
+- [x] M1-04 Route diputuskan (DEC-005 addendum): search `/{locale}/publications?q=`, type `/{locale}/publications/type/{slug}`; route/param Desk dihapus dari ADR-0005, IA, API, PAGE spec
+- [x] M1-05 Heading keliru "Opsi terpilih: Opsi B" dihapus dari ADR-0001
+- [x] M1-06 Tautan DEC spike diperbaiki: SPIKE-001 → DEC-004/005/006/007/018; SPIKE-002 → DEC-008/009/016; SPIKE-003 → DEC-009/010/011/012
+- [x] M1-07 PRD/SRS: Owner = Haidar, nama brand sesuai DEC-001
+- [ ] M1-08 DITUNDA ke M4-05 — Owner 2026-11-09: 10 PDF RFID di `public/publications/` (git-ignored) hanya contoh sementara. Dipakai sebagai fixture berlabel di M2–M3; nilai Topic diuji dengan konten nyata Mahira saat migrasi konten. Tidak memblokir exit M1.
 
 **Exit:** tidak ada konflik terbuka antar PRD/SRS/arsitektur untuk scope M2–M3.
 
 ### M2 — Validasi teknis (Design)
-- [ ] M2-01 SPIKE-001 Payload 3 + Postgres embedded di Next.js 16.4.4 (DEC-006, DEC-007); runtime Node.js (DEC-018). Lingkungan: CMS `mahira-cms`, APP `mahira.id` (`DECISIONS.md` §2.2)
-- [ ] M2-02 Uji localization hybrid DEC-004 & slug DEC-005 (unik per locale, tanpa kebocoran draft, hreflang)
-- [ ] M2-03 SPIKE-003 storage objek + file publik (DEC-012); bagian gated menunggu M5
-- [ ] M2-04 Build + deploy preview berhasil; pin versi Node.js (`engines.node` + setting Vercel); pilih region produksi (bukti untuk DEC-017)
-- [ ] M2-05 Catat hasil di spike report; ubah DEC terkait ke Accepted/Rejected
+- [x] M2-01 SPIKE-001 Payload 3 + Postgres embedded di Next.js 16.4.4 (DEC-006, DEC-007); runtime Node.js (DEC-018). Lingkungan: CMS `mahira-cms`, APP `mahira.id` (`DECISIONS.md` §2.2) — bukti: branch `spike/m2-payload-postgres`, commit `17fdf0c`, `3b1ff83`, SPIKE-001 §7.1–§7.5
+- [x] M2-02 Uji localization hybrid DEC-004 & slug DEC-005 (unik per locale, tanpa kebocoran draft, hreflang) — bukti: branch `spike/m2-payload-postgres`, commit `c8b783b`, SPIKE-001 §7.6 (pass=41 fail=0; check 4 PARTIAL: temuan `fallback-locale` untuk M3)
+- [x] M2-03 SPIKE-003 storage objek + file publik (DEC-012); bagian gated menunggu M5 — bukti: branch `spike/m2-payload-postgres`, commit `c19a774`, SPIKE-003 §7.2–§7.5
+- [ ] M2-04 Build + deploy preview berhasil; pin versi Node.js (`engines.node` + setting Vercel); pilih region produksi (bukti untuk DEC-017) — DOING: `bun run build` exit 0 di setiap commit spike, `engines.node` `26.x` (commit `17fdf0c`, SPIKE-001 §7.7); deploy preview & region menunggu keputusan Owner (DECISIONS §2.3)
+- [ ] M2-05 Catat hasil di spike report; ubah DEC terkait ke Accepted/Rejected — DOING: bukti & rekomendasi dicatat (SPIKE-001, SPIKE-003, DECISIONS §2.3); perubahan status DEC menunggu persetujuan Owner
 
 **Exit:** DEC-006/007/012/018 Accepted dengan bukti spike.
 
@@ -101,8 +102,8 @@
 
 | ID | Blocker | Memblokir | Owner |
 |---|---|---|---|
-| B-01 | DEC-007 kepemilikan skema DB (Open — critical); lingkungan spike sudah ada, tinggal bukti SPIKE-001 | M3 | Engineering |
+| B-01 | DEC-007 kepemilikan skema DB (Open — critical); bukti SPIKE-001 §7.2–§7.3 sudah ada, menunggu keputusan Owner atas DEC-007 dan penyelarasan ADR-0002 (DECISIONS §2.3) | M3 | PO |
+| B-06 | Bukti deploy M2-04: branch `spike/*` dilewati Ignored Build Step Vercel; cara memperoleh bukti deploy belum dipilih (DECISIONS §2.3 poin a) | M2-04 | PO |
 | B-05 | Project Supabase spike ada di Eropa (`eu-west-1`, `eu-central-1`); region produksi belum dipilih | M4 | PO (DEC-017, DEC-020) |
-| B-02 | DEC-009 akses staf (Open — critical) | M1-03, M5 | PO + Security owner |
 | B-03 | Belum ada Editorial Lead / Security owner / SEO owner | M1-08, M4 | PO |
-| B-04 | Nilai taksonomi belum ada (butuh konten nyata) | M3-02 | Editorial Lead |
+| B-04 | Nilai taksonomi belum ada; M3 memakai nilai fixture berlabel, nilai final saat M4-05 | M4-05 | Editorial Lead |

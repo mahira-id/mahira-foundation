@@ -1,6 +1,6 @@
 # SPIKE-002 — Public and Staff Authentication Boundaries
 
-**Status:** Planned · **Decision links:** DEC-004, DEC-005, DEC-007 · **ADR:** 0003 · **Owner:** TBD
+**Status:** Planned · **Decision links:** DEC-008, DEC-009, DEC-016 · **ADR:** 0003 · **Owner:** TBD
 
 ## Question
 Can Supabase Auth for public users and Payload Auth for staff coexist in one Next.js application with distinct cookies/sessions, route guards, and server-side authorization, without accidental privilege crossover?

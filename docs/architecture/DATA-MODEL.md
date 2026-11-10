@@ -1,5 +1,7 @@
 # Data Model Specification
 
+> **DEC-003 (Accepted 2026-11-08):** MVP memakai dua sumbu taksonomi: Publication Type (tepat satu, wajib) dan Topic (satu atau lebih, berurutan; yang pertama primer; label publik ID "Bidang Kerja"). Desk, Tag, dan Category tidak ada di MVP. Baris dan relasi Desk/Tag di dokumen ini hanya histori; jangan diimplementasikan. Nilai taksonomi tetap Open.
+
 **Status:** Proposed logical model; not yet a migration/schema contract  
 **Related:** SRS §5; DEC-004, DEC-007–DEC-012
 
@@ -23,10 +25,10 @@
 |---|---|---|---|
 | Publication | Payload | Payload access control; public read projection only | Payload migration workflow |
 | Author | Payload | Payload access control | Payload migration workflow |
-| Desk | Payload | Payload access control | Payload migration workflow |
+| Desk | Not in MVP (DEC-003) | Payload access control | Payload migration workflow |
 | Topic | Payload | Payload access control | Payload migration workflow |
 | PublicationType | Payload | Payload access control | Payload migration workflow |
-| Tag | Payload | Payload access control | Payload migration workflow |
+| Tag | Not in MVP (DEC-003) | Payload access control | Payload migration workflow |
 | PublicationAsset metadata | Payload or application domain — decide in spike | Staff write; server-only sensitive fields | One designated owner only |
 | LearningResource | Payload | Payload access control | Payload migration workflow |
 | Page | Payload | Payload access control | Payload migration workflow |
@@ -61,9 +63,9 @@
 | `summary` | textarea/rich text limited | Yes | Yes | Public abstract/summary; length policy TBD. |
 | `body` | rich text/blocks | No | Yes | Public landing/article body; do not store private full PDF body here without policy. |
 | `publicationType` | relationship | Yes | No | Controlled type. |
-| `desks` | relationship, one/many | TBD | No | Cardinality awaits taxonomy workshop. |
+| `desks` | **Not in MVP (DEC-003)** — relationship, one/many | TBD | No | Cardinality awaits taxonomy workshop. |
 | `topics` | relationship, many | Yes (proposed) | No | At least one if business policy requires. |
-| `tags` | relationship, many | No | No | Optional discovery labels. |
+| `tags` | **Not in MVP (DEC-003)** — relationship, many | No | No | Optional discovery labels. |
 | `authors` | ordered relationship | Yes* | No | Relation metadata should preserve order and role. *Allow institutional author if approved. |
 | `accessLevel` | enum | Yes | No | `public`, `registered`, `subscriber`; default must be consciously selected. |
 | `status` | enum/CMS status | Yes | No | Draft/review/approved/scheduled/published/unpublished/archived as workflow permits. |
@@ -117,7 +119,7 @@ Decide whether this collection is Payload-owned or application-owned before impl
 
 ### 4.4 Taxonomy
 
-`Desk`, `Topic`, `PublicationType`, and `Tag` each need `id`, stable `name`, `slug`, optional description, `sortOrder`, `status/isActive`, and locale policy. Do not implement all as a single generic category table unless a later ADR justifies it.
+`Topic` and `PublicationType` each need `id`, stable `name`, `slug`, optional description, `sortOrder`, `status/isActive`, and locale policy. Do not implement all as a single generic category table unless a later ADR justifies it.
 
 ### 4.5 LearningResource
 
@@ -196,7 +198,7 @@ See `ERD.md`. Cardinalities marked `TBD` must be confirmed with editorial sample
 
 - Unique index on locale + slug or chosen scope.
 - Index publication status + published_at for listing.
-- Join indexes on publication-author/topic/desk/tag relations.
+- Join indexes on publication-author/topic relations.
 - Search vector GIN index on intended public fields.
 - Index entitlement on `user_id`, `status`, validity window, scope fields.
 - Index download event on time and asset/publication for bounded audit queries.
@@ -209,7 +211,7 @@ Maintain a schema ownership ledger. Each migration must declare subsystem, purpo
 ## 10. Open questions before schema freeze
 
 1. Linked record vs Payload field localization.
-2. Desk cardinality (one vs many per publication).
+2. Desk cardinality: closed, Desk not in MVP (DEC-003).
 3. Asset metadata owner and adapter strategy.
 4. Whether assets can override publication access level.
 5. Whether author is required or institutional attribution is allowed.

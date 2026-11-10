@@ -4,7 +4,7 @@
 
 Baseline kebutuhan produk untuk platform publikasi, Learning Hub, akun pengguna, dan pengelolaan internal.
 
-| **Project**     | Mahira Indonesia Development (nama kerja, perlu konfirmasi)           |
+| **Project**     | Mahira Indonesia Development (brand publik, DEC-001; nama legal TBD)           |
 |-----------------|-----------------------------------------------------------------------|
 | **Document ID** | PRD-MID                                                               |
 | **Version**     | 0.1                                                                   |
@@ -21,7 +21,7 @@ Baseline kebutuhan produk untuk platform publikasi, Learning Hub, akun pengguna,
 
 | **Item**           | **Keterangan**                                                           |
 |--------------------|--------------------------------------------------------------------------|
-| Pemilik dokumen    | Product Owner / pemilik organisasi — belum ditentukan                    |
+| Pemilik dokumen    | Haidar (Product Owner)                    |
 | Penyusun awal      | Product & Engineering working draft                                      |
 | Status persetujuan | Belum disetujui; memerlukan validasi stakeholder                         |
 | Perubahan utama    | Dokumen awal berdasarkan percakapan teknis dan arahan visual 04 Nov 2026 |
@@ -227,11 +227,11 @@ Target bahasa yang dibahas adalah Bahasa Indonesia dan Bahasa Inggris, dengan UR
 >
 > **4.** Sistem mendukung konten ID/EN sesuai strategi localization yang telah disahkan.
 >
-> **5.** Pengguna dapat mendaftar dan login; konten terdaftar dapat dibedakan dari konten subscriber.
+> **5.** *(MVP+, DEC-002)* Pengguna dapat mendaftar dan login; konten terdaftar dapat dibedakan dari konten subscriber.
 >
-> **6.** File eksklusif hanya diberikan setelah pemeriksaan sesi dan entitlement di sisi server.
+> **6.** *(MVP+, DEC-002)* File eksklusif hanya diberikan setelah pemeriksaan sesi dan entitlement di sisi server.
 >
-> **7.** Peran admin dan editor terpisah; registrasi publik tidak dapat memperoleh hak staf.
+> **7.** Peran admin dan editor terpisah; registrasi publik tidak dapat memperoleh hak Editor/Admin (DEC-009).
 >
 > **8.** Build dan deployment staging berhasil; pengujian akses dasar dan restore backup telah dijalankan sebelum peluncuran.
 

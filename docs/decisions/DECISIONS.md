@@ -2,7 +2,7 @@
 
 **Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-018 was Accepted on 2026-11-09 (§2.1). Every other row keeps its earlier status.  
 **Canonical IDs:** `DEC-NNN`. Historical PRD `D-xx` and SRS `T-xx` are retained for traceability.  
-**Last updated:** 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
+**Last updated:** 2026-11-10 (M2 spike evidence proposal §2.3; no status changed). Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
 
 ## 1. How to use this register
 
@@ -25,7 +25,7 @@
 | DEC-006 | CMS selection and application topology | PRD D-09; SRS T-01 | Payload CMS 3 embedded in the Next.js application remains the baseline candidate; prove via spike. | Proposed | Admin, collection design, deployment | Engineering + PO | — | — |
 | DEC-007 | Database schema ownership and migration | SRS T-01 | Payload owns CMS collections; application schema owner/migration process must be explicit; no shared ad-hoc migrations. | Open — critical (spike environment set 2026-11-09; see §2.2) | All schema, backup, access, deployment | Engineering | — | — |
 | DEC-008 | Public and staff identity boundary | PRD §6.4; SRS T-06 | Supabase Auth for public users; Payload staff auth for staff; no implicit role promotion or shared session assumption. | Proposed | Auth, account, admin, access policy | Security owner + PO | — | — |
-| DEC-009 | Staff access to exclusive publications | SRS access matrix / T-06 | Deny-by-default; define whether staff use separate public account or an audited staff grant. | Open — critical | Access evaluator, audit, tests | PO + Security owner | — | — |
+| DEC-009 | Staff access to exclusive publications | SRS access matrix / T-06 | Deny-by-default; define whether staff use separate public account or an audited staff grant. | Accepted (roles: Public user, Editor, Admin; see §2.1) | Access evaluator, audit, tests | PO + Security owner | — | — |
 | DEC-010 | Authorization and entitlement model | PRD D-06; SRS §4 | Server-side authorization; explicit entitlement; RLS for app-user data; Payload access control for CMS. | Proposed | Access policy, APIs, storage, tests | Security owner | — | — |
 | DEC-011 | Publication-level vs asset-level access | PRD §8; SRS Publication model | Preserve publication `access_level`; evaluate per-asset override with effective access as the stricter of inherited and asset rules. | Proposed — needs approval | Asset schema, CMS, storage, access tests | PO + Engineering | — | — |
 | DEC-012 | File storage and private delivery | SRS T-03 | Object storage; public files only in public locations; exclusive files private and served after server authorization. Validate Payload adapter. | Proposed | Upload, download, backup, provider cost | Engineering + Security | — | — |
@@ -111,6 +111,20 @@ Common fields for every record below:
 - **Validation evidence:** not needed (policy decision); the prototype exercises it.
 - **Review trigger:** a structured-data decision (spec 01 PUB-OQ-39), or MVP+ restricted publications.
 
+#### DEC-005 addendum — Search and type routes (2026-11-09)
+
+- **Status:** Accepted. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-09, Owner chat session.
+- **Decision:** search uses query state on the publication index, `/{locale}/publications?q=...` (`noindex`, DEC-021). Publication type pages use `/{locale}/publications/type/{slug}`. `/{locale}/search`, `/{locale}/publication-types/{slug}`, and Desk routes are not used.
+- **Affected documents:** ADR-0005, IA-ROUTING-I18N, PAGE-SPECIFICATIONS §5, API-SPECIFICATION §6 (updated 2026-11-09).
+
+#### DEC-009 — Staff access to exclusive publications
+
+- **Status:** Accepted. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-09, Owner chat session.
+- **Decision (Owner's words, summarized):** only three roles are needed: Public user, Editor, Admin. No separate "staff" role, staff grant, Reviewer, or Finance role. In the documents, "staf" only means Editor and Admin together.
+- **Recorded interpretation (Owner may correct):** an Editor or Admin CMS session gives no bypass on the public download endpoint; that endpoint checks only the public user's entitlement (ACCESS-POLICY §6, deny by default). Editor and Admin handle assets inside the CMS under Payload access control; details in M5 (DEC-010, DEC-011). This replaces the SRS §4.1/§12.1 rule that let Admin download with an expired entitlement.
+- **Affected documents:** SRS §3 actors (updated), §4.1, §12.1; TEST-PLAN §4; ACCESS-POLICY §6.
+- **Review trigger:** a need for staff preview of exclusive files on the public site.
+
 #### DEC-018 — Package manager and runtime
 
 - **Status:** Accepted. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-09, Owner chat session ("sesuai rekomendasi dan best-practices").
@@ -131,6 +145,27 @@ Recorded 2026-11-09 from the Owner; project facts read through the Supabase Mana
 - The Owner named the APP project "mahira-id"; the API name is `mahira.id`.
 - Plan tier was not returned by the API: unknown.
 - Both regions are in Europe and differ from each other. Region for production is part of DEC-017 (latency for Indonesian readers) and DEC-020 (data location). These projects are for the spike and may be replaced.
+
+### 2.3 Bukti spike M2 dan rekomendasi (usulan, bukan keputusan)
+
+Dicatat 2026-11-10 dari spike M2 di branch `spike/m2-payload-postgres` (commit `17fdf0c`, `3b1ff83`, `c8b783b`, `c19a774`). Bagian ini tidak mengubah kolom Status di §2 maupun record di §2.1. Perubahan status hanya terjadi setelah Haidar (Product Owner) menyetujuinya.
+
+| DEC | Status saat ini (tidak berubah) | Bukti | Rekomendasi | Tindakan Owner |
+|---|---|---|---|---|
+| DEC-004 | Accepted | `spikes/SPIKE-001-PAYLOAD-POSTGRES.md` §7.6 (check 1–3, 5–7 PASS; check 4 PARTIAL) | Tetap Accepted; bukti validasi kini ada. Temuan C4c (`?fallback-locale=` di REST) ditangani di M3 | Setujui pencatatan bukti ke record §2.1; tetapkan bahwa kode publik tidak memakai `fallbackLocale` dan putuskan pembatasan REST publik untuk koleksi terlokalisasi |
+| DEC-005 | Accepted | SPIKE-001 §7.3 (index `locale_slug_idx`), §7.6 check 1 dan 5 | Tetap Accepted; slug per locale terbukti. Aturan route (308, 404, trailing slash, `/id`/`/en`) belum diuji → M3-01/M3-07 | Setujui pencatatan bukti; terima bahwa validasi route pindah ke M3 |
+| DEC-006 | Proposed | SPIKE-001 §7.1, §7.4, §8 (cacheComponents) | Proposed → siap Accepted bila Owner setuju: Payload 3.93.0 embedded di Next.js 16.4.4, satu aplikasi | Setujui atau tolak; pilih penanganan log `cacheComponents` di admin (biarkan + filter, tunggu fix, atau matikan) |
+| DEC-007 | Open — critical | SPIKE-001 §7.2, §7.3, §8 | Usulan: project CMS terpisah; skema `public` CMS hanya lewat migrasi Payload yang di-commit (`push: false`); RLS di setiap `up()`; `down()` direview; CI cek `migrate:status`; tanpa `migrate:reset`/`migrate:fresh`. Siap diputuskan setelah teks ADR-0002 diselaraskan (poin d) | Putuskan model kepemilikan (Opsi 3, DB terpisah, atau lainnya) dan setujui aturan migrasi |
+| DEC-012 | Proposed | `spikes/SPIKE-003-STORAGE-GATING.md` §7.2–§7.5 | Tetap Proposed: bagian publik (Supabase Storage via `@payloadcms/storage-s3`, URL publik, tanpa filesystem aplikasi) terbukti; bagian privat (signed URL) menunggu M5-04 | Opsional: catat bagian publik sebagai tervalidasi; putuskan nasib bucket `spike-m2-public` |
+| DEC-013 | Proposed | SPIKE-001 §7.6 check 8 | Proposed → siap Accepted untuk arah "mulai dengan PostgreSQL FTS" bila Owner setuju; config `indonesian` ada (stemming jalan, stop word tetap); relevansi diuji di M3-06 | Setujui arah; `pg_trgm` tetap hanya bila tes membenarkan |
+| DEC-018 | Accepted | SPIKE-001 §4, §7.4, §7.7 | Tetap Accepted; runtime `node` terbukti lokal; usulan pin `engines.node` `26.x` dan Node lokal ≥ 26.12.1. Bukti di Vercel belum ada (poin a) | Setujui pin `26.x`; set Vercel Project → Settings → Build and Deployment → Node.js Version 26.x |
+
+Poin terbuka untuk Owner:
+
+- (a) **Bukti deploy M2-04:** branch `spike/*` dilewati Ignored Build Step Vercel, jadi tidak ada deploy preview, redeploy, atau versi Node di Vercel. Owner memilih cara memperoleh bukti deploy (mis. izinkan preview untuk satu branch spike, atau buktikan di branch implementasi M3).
+- (b) **Region database produksi** (DEC-017/DEC-020): kedua project spike ada di Eropa (`eu-west-1`, `eu-central-1`); latensi spike dari Indonesia tidak mewakili produksi.
+- (c) **OG-09 dan sumber spec:** OG-09 tidak pernah dikonfirmasi, dan `.kiro/specs/03-architecture-technical-validation/` tidak ada di repo, padahal register ini, ADR-0004, dan ADR-0005 merujuknya. Delapan pemeriksaan M2-02 diambil dari brief workshop 2026-11-06.
+- (d) **ADR-0002:** teks "Proposed decision" menyebut satu database Supabase, sedangkan catatan Owner memilih Opsi 3 (database terpisah) dan lingkungan spike memakai dua project. Teks ADR belum diubah.
 
 ## 3. Legacy ID mapping
 
@@ -191,3 +226,6 @@ A decision is only `Accepted` after the approver is known and the decision has a
 | 2026-11-05 | Initial proposed register. |
 | 2026-11-08 | Columns Approver and Decided added (spec 01 PUB-DU-14). DEC-001, DEC-002, DEC-003 (structure only), DEC-004, DEC-005, DEC-015, DEC-016, DEC-021 set to Accepted with approver Haidar (Product Owner) and date 2026-11-08; records in §2.1. No other row changed. |
 | 2026-11-09 | DEC-018 Accepted (Bun package manager, Node.js runtime). DEC-007 spike environment recorded in §2.2; DEC-007 stays Open. |
+| 2026-11-09 | DEC-009 Accepted (roles: Public user, Editor, Admin; no staff bypass on public downloads). |
+| 2026-11-09 | DEC-005 addendum Accepted (search via `/{locale}/publications?q=`, type pages `/{locale}/publications/type/{slug}`). |
+| 2026-11-10 | M2 spike evidence and recommendations added as proposal (§2.3); no status changed. |

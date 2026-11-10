@@ -108,7 +108,7 @@ TTL is **TBD**. Choose the shortest practical period after testing download size
 
 ## 6. Search/list contract
 
-Suggested query parameters: `q`, `locale`, `type`, `desk`, `topic`, `year`, `sort`, `page`, `pageSize`.
+Suggested query parameters: `q`, `locale`, `type`, `topic`, `year`, `sort`, `page`, `pageSize`.
 
 - `locale` must match supported values; preferably derive from route context and reject conflicting query value.
 - Bound `q` length and normalize whitespace.

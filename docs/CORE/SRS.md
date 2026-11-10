@@ -4,7 +4,7 @@
 
 Spesifikasi fungsional, nonfungsional, arsitektur target, aktor, integrasi, kontrol akses, dan kriteria verifikasi.
 
-| **Project**     | Mahira Indonesia Development (nama kerja, perlu konfirmasi)           |
+| **Project**     | Mahira Indonesia Development (brand publik, DEC-001; nama legal TBD)           |
 |-----------------|-----------------------------------------------------------------------|
 | **Document ID** | SRS-MID                                                               |
 | **Version**     | 0.1                                                                   |
@@ -46,7 +46,7 @@ Sistem mencakup website publik yang SEO-oriented, katalog dan detail publikasi, 
 | Access level    | Tingkat akses yang melekat pada publikasi: public, registered, subscriber.                              |
 | Entitlement     | Hak aktual pengguna untuk mengakses konten berdasarkan akun, langganan, atau grant manual.              |
 | Signed URL      | URL file privat yang ditandatangani dan memiliki masa berlaku terbatas.                                 |
-| Staf            | Pengguna internal yang mengakses CMS/operasi; identitasnya dikelola terpisah dari pengguna umum.        |
+| Staf            | Istilah payung untuk Editor dan Admin saja, bukan role tersendiri (DEC-009); identitas terpisah dari pengguna umum. |
 | ISR / SSG / SSR | Strategi rendering Next.js untuk halaman statis, regenerasi, atau dinamis.                              |
 
 # 2. Gambaran sistem
@@ -60,7 +60,7 @@ Sistem mencakup website publik yang SEO-oriented, katalog dan detail publikasi, 
 | Subscriber                    | Supabase Auth + entitlement aktif. | Kapabilitas registered + mengakses publikasi subscriber selama hak akses berlaku.                       |
 | Editor                        | Payload user/staff.                | Mengelola konten sesuai access control; membuat draft, metadata, preview, dan publish sesuai policy.    |
 | Admin                         | Payload user/staff.                | Mengelola konfigurasi/role staf dan akses editorial penuh sesuai policy.                                |
-| Reviewer / Finance (opsional) | Payload user/staff.                | Role terbatas bila organisasi membutuhkan review atau pembacaan data subscription/finance.              |
+| Reviewer / Finance            | Tidak dipakai.                     | Owner 2026-11-09: role yang dibutuhkan hanya Public user, Editor, Admin (DEC-009, DEC-016). |
 
 ## 2.2 Konteks arsitektur target
 
@@ -83,7 +83,7 @@ Sistem mencakup website publik yang SEO-oriented, katalog dan detail publikasi, 
 
 ## 2.3 Pembagian tanggung jawab data
 
-- **Payload:** konten editorial dan identitas staf: publikasi, author, topic/desk, halaman, event, Learning Hub, localization, workflow editorial, staff role.
+- **Payload:** konten editorial dan identitas staf: publikasi, author, topic, halaman, event, Learning Hub, localization, workflow editorial, staff role.
 
 - **Supabase:** akun publik, profil, entitlement, subscription (fase lanjutan), log unduhan, bookmark/riwayat bila disetujui, serta file privat.
 
@@ -105,14 +105,14 @@ Prioritas: P0 = wajib untuk MVP; P1 = penting setelah inti MVP; P2 = opsional/ek
 | FR-006 | Search                       | P0            | Sistem harus mencari publikasi berdasarkan kata kunci pada field yang ditentukan.                                        | Hasil relevan ditampilkan; query kosong/invalid dan no-results memiliki state yang jelas.                     |
 | FR-007 | SEO metadata                 | P0            | Setiap halaman publikasi harus menyediakan metadata unik dan social preview.                                             | HTML response memiliki title, description, canonical dan Open Graph yang tepat.                               |
 | FR-008 | Public file download         | P0            | Sistem harus mengizinkan unduhan file publik tanpa login.                                                                | File public hanya dapat diakses melalui URL/bucket yang memang diklasifikasikan public.                       |
-| FR-009 | Access-level enforcement     | P0            | Sistem harus memeriksa access_level dan entitlement pada server sebelum mengeluarkan akses file.                         | Anonim/registered tanpa hak tidak memperoleh signed URL file subscriber.                                      |
-| FR-010 | Public account registration  | P0            | Sistem harus mendukung registrasi pengguna umum melalui Supabase Auth.                                                   | Akun dibuat, validasi/verifikasi sesuai konfigurasi, dan session tersedia setelah flow selesai.               |
-| FR-011 | Public user sign-in/out      | P0            | Sistem harus mendukung login, logout, dan reset password.                                                                | Session dibuat/dihapus dengan aman; route akun memerlukan session valid.                                      |
-| FR-012 | Account area                 | P0            | Sistem harus menyediakan area akun dasar bagi pengguna terdaftar.                                                        | Pengguna dapat melihat profil dan status akses; halaman tidak diindeks mesin pencari.                         |
-| FR-013 | Entitlement administration   | P0            | Staf berwenang harus dapat memberikan/mencabut entitlement manual sebelum payment aktif.                                 | Perubahan dicatat dan berdampak pada keputusan akses berikutnya.                                              |
+| FR-009 | Access-level enforcement     | MVP+ (DEC-002) | Sistem harus memeriksa access_level dan entitlement pada server sebelum mengeluarkan akses file.                         | Anonim/registered tanpa hak tidak memperoleh signed URL file subscriber.                                      |
+| FR-010 | Public account registration  | MVP+ (DEC-002) | Sistem harus mendukung registrasi pengguna umum melalui Supabase Auth.                                                   | Akun dibuat, validasi/verifikasi sesuai konfigurasi, dan session tersedia setelah flow selesai.               |
+| FR-011 | Public user sign-in/out      | MVP+ (DEC-002) | Sistem harus mendukung login, logout, dan reset password.                                                                | Session dibuat/dihapus dengan aman; route akun memerlukan session valid.                                      |
+| FR-012 | Account area                 | MVP+ (DEC-002) | Sistem harus menyediakan area akun dasar bagi pengguna terdaftar.                                                        | Pengguna dapat melihat profil dan status akses; halaman tidak diindeks mesin pencari.                         |
+| FR-013 | Entitlement administration   | MVP+ (DEC-002) | Staf berwenang harus dapat memberikan/mencabut entitlement manual sebelum payment aktif.                                 | Perubahan dicatat dan berdampak pada keputusan akses berikutnya.                                              |
 | FR-014 | Editorial content management | P0            | Editor harus dapat membuat, membaca, memperbarui, dan mengarsipkan konten publikasi.                                     | CRUD mengikuti access control staf dan validasi field wajib.                                                  |
 | FR-015 | Editorial workflow           | P0            | Sistem CMS harus mendukung draft, preview, dan publish; review/schedule dikonfirmasi pada proses editorial.              | Konten draft tidak tampil di halaman publik; konten published tampil sesuai locale.                           |
-| FR-016 | Author and topic management  | P0            | Staf harus dapat mengelola penulis dan topik/desk sebagai entitas terstruktur.                                           | Referensi dapat digunakan ulang pada beberapa publikasi.                                                      |
+| FR-016 | Author and topic management  | P0            | Staf harus dapat mengelola penulis dan topik (DEC-003) sebagai entitas terstruktur.                                           | Referensi dapat digunakan ulang pada beberapa publikasi.                                                      |
 | FR-017 | Media and file upload        | P0            | Staf harus dapat mengunggah cover dan file publik/privat ke object storage.                                              | Upload memiliki validasi tipe/ukuran, status, dan lokasi penyimpanan sesuai klasifikasi.                      |
 | FR-018 | Learning Hub catalog         | P1            | Sistem harus menampilkan katalog materi pembelajaran dengan kategori dan metadata.                                       | Pengguna dapat membuka detail/resource dan mengikuti embed/tautan yang tersedia.                              |
 | FR-019 | Video embed                  | P1            | Sistem harus mendukung video eksternal melalui embed, misalnya YouTube.                                                  | Embed responsive, memiliki title/accessibility, dan tidak mengunggah file video ke app server.                |
@@ -135,13 +135,13 @@ Prioritas: P0 = wajib untuk MVP; P1 = penting setelah inti MVP; P2 = opsional/ek
 | Membaca metadata publik      | Ya         | Ya             | Ya                     | Ya                          | Ya        |
 | Membaca ringkasan publik     | Ya         | Ya             | Ya                     | Ya                          | Ya        |
 | Download level public        | Ya         | Ya             | Ya                     | Ya                          | Ya        |
-| Download level registered    | Tidak      | Ya             | Ya                     | Sesuai policy staf          | Ya        |
-| Download level subscriber    | Tidak      | Tidak          | Jika entitlement aktif | Sesuai policy staf          | Ya        |
+| Download level registered    | Tidak      | Ya             | Ya                     | Tidak via endpoint publik (DEC-009) | Tidak via endpoint publik (DEC-009) |
+| Download level subscriber    | Tidak      | Tidak          | Jika entitlement aktif | Tidak via endpoint publik (DEC-009) | Tidak via endpoint publik (DEC-009) |
 | Membuat/mengubah konten CMS  | Tidak      | Tidak          | Tidak                  | Ya                          | Ya        |
 | Mengelola user staf/role     | Tidak      | Tidak          | Tidak                  | Tidak                       | Ya        |
 | Memberi/mencabut entitlement | Tidak      | Tidak          | Tidak                  | Sesuai permission eksplisit | Ya        |
 
-Akses staf untuk membaca/unduh dokumen eksklusif perlu policy eksplisit. Jangan menyimpulkan bahwa seluruh staf otomatis memiliki entitlement publik; gunakan akun publik terpisah atau grant yang tercatat bila kebutuhan operasional mengharuskannya.
+DEC-009 (Accepted 2026-11-09): role hanya Public user, Editor, Admin. Sesi Editor/Admin di CMS tidak memberi akses ke file eksklusif lewat endpoint publik; endpoint itu hanya memeriksa entitlement akun publik. Editor/Admin mengelola file di dalam CMS sesuai Payload access control.
 
 ## 4.2 Aturan otorisasi wajib
 
@@ -326,10 +326,10 @@ Subscription bukan prasyarat peluncuran MVP. Namun model entitlement harus cukup
 | **Skenario**                            | **Visitor** | **Registered** | **Subscriber** | **Editor**   | **Admin** |
 |-----------------------------------------|-------------|----------------|----------------|--------------|-----------|
 | Public publication metadata             | Allow       | Allow          | Allow          | Allow        | Allow     |
-| Public PDF download                     | Allow       | Allow          | Allow          | Policy-based | Allow     |
-| Registered-only PDF                     | Deny        | Allow          | Allow          | Policy-based | Allow     |
-| Subscriber PDF with active entitlement  | Deny        | Deny           | Allow          | Policy-based | Allow     |
-| Subscriber PDF with expired entitlement | Deny        | Deny           | Deny           | Policy-based | Allow     |
+| Public PDF download                     | Allow       | Allow          | Allow          | Allow        | Allow     |
+| Registered-only PDF                     | Deny        | Allow          | Allow          | Deny (DEC-009) | Deny (DEC-009) |
+| Subscriber PDF with active entitlement  | Deny        | Deny           | Allow          | Deny (DEC-009) | Deny (DEC-009) |
+| Subscriber PDF with expired entitlement | Deny        | Deny           | Deny           | Deny (DEC-009) | Deny (DEC-009) |
 | Open CMS editor                         | Deny        | Deny           | Deny           | Allow        | Allow     |
 | Change staff role                       | Deny        | Deny           | Deny           | Deny         | Allow     |
 
@@ -380,7 +380,7 @@ Implementasi tidak disarankan menggunakan pola backend-first sampai seluruh back
 | T-03   | Storage adapter                | Pilih adapter/integrasi Supabase Storage dan strategi upload dari Payload.                              |
 | T-04   | Search scope                   | Apakah PDF text extraction masuk MVP; definisi relevansi dan filter.                                    |
 | T-05   | Subscription model             | Plan, status, period, grace period, cancel/refund, renewal, payment provider.                           |
-| T-06   | Staff and public user identity | Apakah staf hanya memakai akun Payload atau perlu akses konten publik dengan akun Supabase terpisah.    |
+| T-06   | Staff and public user identity | Diputuskan DEC-009 (2026-11-09): staf = Editor/Admin di Payload; file eksklusif di situs publik hanya lewat akun publik dengan entitlement.    |
 | T-07   | Operational admin features     | Manajemen user, grant entitlement, analytics, finance; custom view Payload atau route internal.         |
 | T-08   | Hosting and region             | Konfirmasi Vercel/Supabase plan, database region, egress, backup, dan total cost.                       |
 | T-09   | Email and deliverability       | Provider SMTP, domain authentication, transactional templates, dan notification policy.                 |

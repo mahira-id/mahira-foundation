@@ -25,8 +25,8 @@ Detail lengkap ada di `docs/decisions/DECISIONS.md` §2.1 (DEC-005, DEC-021).
 ## Still open (not decided by this ADR)
 
 - Default locale sebagai setting bernama (homepage `/` tetap berbahasa Indonesia tanpa redirect, tetapi tidak ada keputusan "default locale" untuk fungsi lain).
-- Pola URL search (DEC-013) dan kanonikalisasi query string selain aturan `noindex`.
-- Segmen route lain di bawah ini: topics, desks, publication-types, learning-hub, about, search, account, dan mount path admin.
+- Kanonikalisasi query string selain aturan `noindex`.
+- Segmen route lain di bawah ini: topics, learning-hub, about, account, dan mount path admin.
 - Kapan slug lama dianggap retired (aturan "permanent redirect only after content owner confirms") untuk konten produksi.
 
 ## Proposed route baseline (historical, before acceptance)
@@ -36,19 +36,17 @@ Detail lengkap ada di `docs/decisions/DECISIONS.md` §2.1 (DEC-005, DEC-021).
 /{locale}/publications
 /{locale}/publications/{slug}
 /{locale}/topics/{slug}
-/{locale}/desks/{slug}
-/{locale}/publication-types/{slug}
+/{locale}/publications/type/{slug}
 /{locale}/learning-hub
 /{locale}/learning-hub/{slug}
 /{locale}/about
-/{locale}/search
 /{locale}/account
 /{locale}/account/profile
 /{locale}/account/library
 /admin                    # Payload admin; confirm mount path
 ```
 
-Route names and taxonomy segments are proposals, except the two publication routes accepted above. `/{locale}` alone returns 404 under the accepted decision. Desk routes are outside the accepted taxonomy (DEC-003). Freeze the other segments only after information architecture review.
+Route names and taxonomy segments are proposals, except the two publication routes accepted above. `/{locale}` alone returns 404 under the accepted decision. Desk routes are outside the accepted taxonomy (DEC-003) and were removed. Search (`/{locale}/publications?q=`) and type pages (`/{locale}/publications/type/{slug}`) were decided 2026-11-09 (DECISIONS DEC-005 addendum). Freeze the other segments only after information architecture review.
 
 ## Rules to decide (historical list; see "Decision" and "Still open")
 
@@ -74,9 +72,12 @@ Test locale switching, missing translation, duplicate slug, renamed slug redirec
 
 Status validasi (2026-11-08): belum dijalankan. Prototipe Spike A (spec 03 design Revision 3 §22, tahap P3 sampai P5) menguji aturan di bagian "Decision".
 
+Status validasi (2026-11-10): dijalankan di M2-02 pada branch spike/m2-payload-postgres; hasil di SPIKE-001 §7.6; rekomendasi di DECISIONS §2.3. Status ADR tidak berubah.
+
 ## Change history
 
 | Date | Change |
 |---|---|
 | 2026-11-05 | Initial proposed ADR. |
 | 2026-11-08 | Status Accepted for the rules in "Decision", approver Haidar (Product Owner). "Still open" section added. Earlier lists kept and labelled historical. |
+| 2026-11-10 | Validation pointer to M2-02 results (SPIKE-001 §7.6, DECISIONS §2.3) added. Status unchanged. |

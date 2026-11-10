@@ -64,9 +64,12 @@ Spike membuat satu publication ID/EN, slug berbeda, satu versi yang belum diterj
 
 Status validasi (2026-11-08): belum dijalankan. Prototipe Spike A (spec `03-architecture-technical-validation`, design Revision 3 §22) menjalankan pemeriksaan ini. Apakah delapan pemeriksaan DEC-004 dari workshop 2026-11-06 dicatat sebagai bagian resmi Spike A menunggu konfirmasi Owner (spec 03 OG-09).
 
+Status validasi (2026-11-10): dijalankan di M2-02 pada branch spike/m2-payload-postgres; hasil di SPIKE-001 §7.6; rekomendasi di DECISIONS §2.3. Status ADR tidak berubah.
+
 ## Change history
 
 | Date | Change |
 |---|---|
 | 2026-11-05 | Initial proposed ADR. |
 | 2026-11-08 | Status Accepted, approver Haidar (Product Owner). Stray heading "Opsi terpilih: C. Hybrid" replaced by the "Decision" section. Validation note added. |
+| 2026-11-10 | Validation pointer to M2-02 results (SPIKE-001 §7.6, DECISIONS §2.3) added. Status unchanged. |

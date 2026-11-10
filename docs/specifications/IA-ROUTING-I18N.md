@@ -26,8 +26,6 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 | Publication index | `/{locale}/publications` | Search, filters, pagination. |
 | Publication detail | `/{locale}/publications/{slug}` | One localized publication representation. |
 | Publication type index | `/{locale}/publications/type/{typeSlug}` | Only if taxonomy deserves an indexable landing page. |
-| Desk index | `/{locale}/desks` | Directory of research desks. |
-| Desk detail | `/{locale}/desks/{deskSlug}` | Related topics/publications. |
 | Topic detail | `/{locale}/topics/{topicSlug}` | Implement only if user-facing taxonomy requires it. |
 | Learning Hub index | `/{locale}/learning-hub` | Catalog. |
 | Learning resource detail | `/{locale}/learning-hub/{slug}` | Detail or outbound/embed page. |
@@ -69,7 +67,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 1. Lowercase, URL-safe slug; normalize whitespace and punctuation deterministically.
 2. Store slug per localized content record if linked translations are selected; uniqueness should be scoped deliberately (e.g. locale + route collection), not assumed.
 3. Slug change requires a redirect record from old path to new path. Redirects must be locale-aware and loop-checked.
-4. Reserved path segments (`admin`, `account`, `api`, `internal`, `topics`, `desks`, `publications`, `learning-hub`) must not be accepted as conflicting content slugs in their respective route namespace.
+4. Reserved path segments (`admin`, `account`, `api`, `internal`, `topics`, `publications`, `learning-hub`) must not be accepted as conflicting content slugs in their respective route namespace.
 5. Do not derive a permanent slug from a mutable title at request time.
 6. Use stable IDs for cache tags, relations, and internal links; do not use localized slug as a foreign key.
 7. Decide trailing slash policy once and apply consistently to canonical URLs, redirects, sitemap, and links.
@@ -87,7 +85,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 
 Recommended query contract for publication listing:
 
-`?q=...&type=...&desk=...&topic=...&year=...&page=...&sort=...`
+`?q=...&type=...&topic=...&year=...&page=...&sort=...`
 
 - All parameters optional; invalid values normalize or return a safe validation response.
 - Search is initially scoped to active locale (SRS recommendation); cross-language search remains an open product decision.
@@ -120,6 +118,6 @@ Recommended query contract for publication listing:
 | IA-01 | Default locale | Routing implementation |
 | IA-02 | Linked records vs field localization | Content schema |
 | IA-03 | Locale fallback behavior | UX and CMS implementation |
-| IA-04 | Desk/topic public index strategy | Sitemap and taxonomy routes |
+| IA-04 | Topic public index strategy (Desk out of scope, DEC-003) | Sitemap and taxonomy routes |
 | IA-05 | Search locale scope | Search implementation |
 | IA-06 | Slug uniqueness and redirect retention | Migration and route implementation |

@@ -1,5 +1,7 @@
 # Content Architecture
 
+> **DEC-003 (Accepted 2026-11-08):** MVP memakai dua sumbu taksonomi: Publication Type (tepat satu, wajib) dan Topic (satu atau lebih, berurutan; yang pertama primer; label publik ID "Bidang Kerja"). Desk, Tag, dan Category tidak ada di MVP. Baris dan relasi Desk/Tag di dokumen ini hanya histori; jangan diimplementasikan. Nilai taksonomi tetap Open.
+
 **Status:** Proposed domain model; taxonomy awaits editorial approval  
 **Owner:** Editorial Lead (TBD)  
 **Related:** PRD §2, §5–§6; PDD §7–§8; SRS §5–§8; DEC-003, DEC-004, DEC-014, DEC-015
