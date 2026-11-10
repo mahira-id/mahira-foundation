@@ -24,7 +24,7 @@ Detail lengkap ada di `docs/decisions/DECISIONS.md` §2.1 (DEC-005, DEC-021).
 
 ## Still open (not decided by this ADR)
 
-- Default locale sebagai setting bernama (homepage `/` tetap berbahasa Indonesia tanpa redirect, tetapi tidak ada keputusan "default locale" untuk fungsi lain).
+- ~~Default locale sebagai setting bernama (homepage `/` tetap berbahasa Indonesia tanpa redirect, tetapi tidak ada keputusan "default locale" untuk fungsi lain).~~ **Dijawab Owner 2026-11-10** (DECISIONS §2.4 P4c): konstanta `DEFAULT_LOCALE = "id"` (`lib/i18n/locales.ts`) hanya untuk `/` dan `localization.defaultLocale` Payload; tanpa redirect dan tanpa fallback konten. Diterapkan di M3-01.
 - Kanonikalisasi query string selain aturan `noindex`.
 - Segmen route lain di bawah ini: topics, learning-hub, about, account, dan mount path admin.
 - Kapan slug lama dianggap retired (aturan "permanent redirect only after content owner confirms") untuk konten produksi.
@@ -81,3 +81,4 @@ Status validasi (2026-11-10): dijalankan di M2-02 pada branch spike/m2-payload-p
 | 2026-11-05 | Initial proposed ADR. |
 | 2026-11-08 | Status Accepted for the rules in "Decision", approver Haidar (Product Owner). "Still open" section added. Earlier lists kept and labelled historical. |
 | 2026-11-10 | Validation pointer to M2-02 results (SPIKE-001 §7.6, DECISIONS §2.3) added. Status unchanged. |
+| 2026-11-10 | "Still open" default-locale item marked answered by the Owner (DECISIONS §2.4 P4c); implemented in M3-01. Status unchanged. |

@@ -54,7 +54,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 ## 4. Locale behavior
 
 - Supported locales: `id` and `en` (baseline requirement).
-- Default locale: **TBD**. Indonesian is a reasonable proposal given the organization's target context, but owner approval is required.
+- Default locale: `id`. Dijawab Owner 2026-11-10 (DECISIONS §2.4 P4c, ADR-0005 "Still open"): `DEFAULT_LOCALE = "id"` hanya untuk `/` dan `defaultLocale` Payload; tanpa redirect ke locale default dan tanpa fallback konten. Diterapkan di M3-01 (`lib/i18n/locales.ts`).
 - Locale detection: may use user preference or `Accept-Language` only for initial routing. Persisted user preference, if introduced, must not override an explicitly requested URL locale.
 - Explicit URL locale wins over browser preference.
 - Unknown locale: return a controlled not-found or redirect to an approved default; never create an unbounded redirect loop.
@@ -115,7 +115,7 @@ Recommended query contract for publication listing:
 
 | ID | Decision | Needed before |
 |---|---|---|
-| IA-01 | Default locale | Routing implementation |
+| IA-01 | Default locale — dijawab Owner 2026-11-10: `id`, hanya untuk `/` dan Payload (DECISIONS §2.4 P4c; §4) | Routing implementation |
 | IA-02 | Linked records vs field localization | Content schema |
 | IA-03 | Locale fallback behavior | UX and CMS implementation |
 | IA-04 | Topic public index strategy (Desk out of scope, DEC-003) | Sitemap and taxonomy routes |
