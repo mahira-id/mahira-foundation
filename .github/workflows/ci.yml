@@ -1,6 +1,8 @@
 # CI without secrets (M3-10, Owner 2026-11-11, P3 B). The repository is
 # public: no secret, no database and no CMS env is used here. Database tests
-# and `migrate:status` (DEC-007) run locally (`bun run test:integration`).
+# run locally (`bun run test:integration`); its db-invariants file checks that
+# every repo migration ran, in place of `migrate:status` (DEC-007), which CI
+# does not run.
 # Actions are pinned to commit SHAs (resolved 2026-11-11).
 name: CI
 
