@@ -1,7 +1,12 @@
 import type { CollectionConfig } from "payload";
-import { isStaff } from "../access/roles";
+import { isAdmin, isStaff } from "../access/roles";
+import { refuseDeletingUsedTranslationGroup } from "../hooks/refuse-delete-used-translation-group";
 
-/** Links the ID and EN records of one publication (DEC-004). Staff-only. */
+/**
+ * Links the ID and EN records of one publication (DEC-004). Staff-only.
+ * Deleting is Admin only (DEC-016) and refused while a publication still
+ * uses the group.
+ */
 export const TranslationGroups: CollectionConfig = {
   slug: "translation-groups",
   admin: {
@@ -11,7 +16,10 @@ export const TranslationGroups: CollectionConfig = {
     read: isStaff,
     create: isStaff,
     update: isStaff,
-    delete: isStaff,
+    delete: isAdmin,
+  },
+  hooks: {
+    beforeDelete: [refuseDeletingUsedTranslationGroup],
   },
   fields: [
     {
