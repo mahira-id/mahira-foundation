@@ -2,7 +2,7 @@
 
 **Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-009 and DEC-018 were Accepted on 2026-11-09; DEC-006, DEC-007, and DEC-013 on 2026-11-10 (§2.1). Every other row keeps its earlier status.  
 **Canonical IDs:** `DEC-NNN`. Historical PRD `D-xx` and SRS `T-xx` are retained for traceability.  
-**Last updated:** 2026-11-11 (review M3-02 fixes: DEC-005 "Still open" pointer to §2.4 P4c; DEC-006 upgrade review trigger; no status change). Earlier: 2026-11-10 (Owner answers for M3-02/M3-01 recorded in §2.4; no status change). Earlier the same day: DEC-006, DEC-007, DEC-013 Accepted; DEC-004/005 evidence and DEC-018 Node pin recorded (§2.1); M2 spike evidence proposal §2.3. Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
+**Last updated:** 2026-11-11 (Owner answers for M3-10 recorded in §2.5; no status change). Earlier the same day: 2026-11-11 (review M3-02 fixes: DEC-005 "Still open" pointer to §2.4 P4c; DEC-006 upgrade review trigger; no status change). Earlier: 2026-11-10 (Owner answers for M3-02/M3-01 recorded in §2.4; no status change). Earlier the same day: DEC-006, DEC-007, DEC-013 Accepted; DEC-004/005 evidence and DEC-018 Node pin recorded (§2.1); M2 spike evidence proposal §2.3. Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
 
 ## 1. How to use this register
 
@@ -192,6 +192,18 @@ Dicatat dari jawaban Haidar (Product Owner) 2026-11-10 atas pertanyaan planner u
 - **P6 field koleksi — A (i):** tambah hanya `role` (Users), `everPublished` (penanda sistem "pernah terbit" untuk aturan hapus DEC-016, tidak bisa diedit), dan `isActive` (Topic, Publication Type; default nonaktif; aktif hanya bila nama ID dan EN terisi; artinya di halaman publik diputuskan di M3-05). Field DATA-MODEL lain menunggu milestone pemakainya.
 - **P7 Data API `mahira-cms` — C:** Owner mematikan Data API di dashboard `mahira-cms`; agen hanya menulis langkahnya (ENG-ENV-001 §3.1); tanpa migrasi `REVOKE`.
 
+### 2.5 Jawaban Owner 2026-11-11 untuk M3-10 (catatan, bukan perubahan status)
+
+Dicatat dari jawaban Haidar (Product Owner) 2026-11-11 atas pertanyaan planner untuk M3-10 (test framework + tes kritikal): "P1a A, P1b (i), P1c (i), P2 A, P3 B, P4 A, folder (a)". Bagian ini tidak mengubah kolom Status di §2 maupun record di §2.1. Rincian tes yang dihasilkan: TEST-PLAN §12.
+
+- **P1a runner unit + integrasi — A:** `node:test` bawaan Node 26 dengan loader `tsx` exact `4.23.15` (versi yang sudah ada di `bun.lock` lewat Payload); ini satu-satunya dev dependency baru. Tanpa Vitest, Jest, atau `bun test`. Tes jalan di Node, sesuai DEC-018; Bun tetap hanya package manager.
+- **P1b E2E browser — (i) nanti:** Playwright tidak dipasang di M3-10. Ditambahkan saat ada interaksi browser (M3-05 filter/pagination/URL state, atau M5 login). Sampai saat itu cek dilakukan di level HTTP.
+- **P1c Node lokal — (i) upgrade:** Node lokal v26.13.0; `engines.node` tetap `26.x`. Exit code libuv (SPIKE-001 §8) diuji ulang di v26.13.0: semua run unit, matriks build, dan integrasi M3-10 mengembalikan exit code aslinya (0 lulus, 1 gagal), tanpa assertion libuv dan tanpa exit 9.
+- **P2 database tes — A:** `mahira-cms` bersama dengan isolasi fixture: (1) guard target: tes menolak jalan bila `VERCEL_ENV` terisi, bila set env CMS tidak lengkap, atau bila `CMS_SUPABASE_DATABASE_URI` bukan project `mahira-cms` (ref `qnfzzymrceoubowfknvl`), tanpa mencetak nilai; (2) guard Owner: `users` = 1 dan satu-satunya user (bukan fixture) ber-role Admin, sebelum dan sesudah setiap file tes; (3) fixture berprefix `fixture-test-<area>-`, email `@example.invalid`, dihapus di awal dan akhir, hanya fixture buatan tes; (4) akun Owner hanya disentuh di dalam transaksi yang selalu di-rollback; uji rusak-sengaja guard Admin terakhir hanya lewat unit test tanpa DB; (5) file integrasi berurutan, satu per satu; tidak boleh dua run bersamaan. DB tes terpisah belum ada.
+- **P3 CI — B:** GitHub Actions tanpa secret (`.github/workflows/ci.yml`): `bun install --frozen-lockfile`, `bun run lint`, `bun run test`, dan matriks build tanpa DB (tanpa env, `VERCEL_ENV=production`, set parsial harus gagal dengan nama saja) + cek HTTP gerbang. Node 26.x dan Bun 1.3.14 di-pin; action di-pin ke commit SHA; `permissions: contents: read`. Tidak ada secret di GitHub. CI tidak menjalankan `migrate:status`; tes lokal `db-invariants` memeriksa bahwa semua migrasi repo sudah jalan. DEC-007 tidak berubah.
+- **P4 cakupan — A:** semua cek yang masih berlaku menjadi tes sekarang: unit (`payload/env.ts`, `proxy.ts`, `lib/i18n/locales.ts`, `payload/access/roles.ts` + akses koleksi, `setPublicationLifecycleFields`, `denyPublicFallback`, `keepOneAdmin*`, `firstUserIsAdmin`); integrasi (akses, perbaikan review, locale, race, invarian RLS + migrasi); matriks build 4 mode + cek HTTP gerbang + secret-scan `.next`. `m3-02-user-count.ts` menjadi guard bersama; cek sekali-pakai `m3-02-migration-verify` tidak dijadikan tes.
+- **Folder `tests/` — (a):** layout memakai `tests/` (`unit/`, `integration/`, `build/`, `helpers/`). File Owner `tests/api-publications.json` belum dipindahkan oleh Owner dan tidak di-commit.
+
 ## 3. Legacy ID mapping
 
 | Legacy reference | Canonical register item |
@@ -257,3 +269,4 @@ A decision is only `Accepted` after the approver is known and the decision has a
 | 2026-11-10 | DEC-006, DEC-007, DEC-013 Accepted from M2 spike evidence; DEC-004/005 evidence and DEC-018 `engines.node` 26.x recorded; DEC-009 row approver/date filled. |
 | 2026-11-10 | Jawaban Owner untuk M3-02 dan M3-01 (P1–P7) dicatat di §2.4, dengan pointer di DEC-006 dan bukti DEC-004 (§2.1); tidak ada status yang berubah. |
 | 2026-11-11 | Perbaikan review M3-02: pointer "(jawaban Owner: §2.4 P4c)" di butir "Still open" DEC-005; pemicu review upgrade Payload (row lock bergantung pada internal `@payloadcms/drizzle`, cek race wajib diulang) di DEC-006; tidak ada status yang berubah. |
+| 2026-11-11 | Jawaban Owner untuk M3-10 (P1a–P4, folder `tests/`) dicatat di §2.5; tidak ada status yang berubah. |

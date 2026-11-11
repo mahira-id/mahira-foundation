@@ -21,13 +21,18 @@ bun install      # pasang dependency (jangan pakai npm/yarn/pnpm)
 bun run dev      # server pengembangan di http://localhost:3000
 bun run lint     # ESLint
 bun run build    # build produksi
+bun run test               # unit test (node:test + tsx), tanpa DB
+bun run test:integration   # tes DB mahira-cms + server lokal; butuh .env.local
+bun run test:build-matrix  # 4 mode build env + cek gerbang HTTP
 ```
+
+Rincian tes dan aturan keamanan DB: `docs/engineering/TEST-PLAN.md` §12.
 
 ## Alur kerja
 
 1. Ambil task dari `docs/MILESTONES.md` (ID `M#-##`).
 2. Buat branch `<tipe>/<m-id>-<topik>` dari `master` (`feat`, `fix`, `docs`, `chore`, `spike`).
-3. Pastikan `bun run lint` dan `bun run build` lulus.
+3. Pastikan `bun run lint`, `bun run test`, dan `bun run build` lulus; perubahan CMS/akses juga `bun run test:integration`.
 4. Di PR yang sama: centang task di `MILESTONES.md` dan tambah entri di `CHANGELOG.md`.
 5. PR ke `master`. `master` ter-deploy ke produksi (Vercel); jangan push langsung.
 

@@ -23,7 +23,7 @@
 | M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE | — |
 | M1 | Rekonsiliasi dokumen & keputusan | Requirements | DONE (M1-08 ditunda ke M4-05) | — |
 | M2 | Validasi teknis (spike) | Design / arsitektur | DONE (2026-11-10) | — |
-| M3 | MVP — Platform publikasi | Implementasi | DOING (M3-00, M3-01, M3-02 selesai) | DEC-017, DEC-024 (DEC-013 Accepted) |
+| M3 | MVP — Platform publikasi | Implementasi | DOING (M3-00, M3-01, M3-02, M3-10 selesai) | DEC-017, DEC-024 (DEC-013 Accepted) |
 | M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3) | DEC-020, DEC-022, DEC-023 |
 | M5 | MVP+ — Akses pengguna | Implementasi lanjutan | BLOCKED | DEC-008–011, DEC-019, DEC-020 |
 | M6 | Expansion — Learning Hub & engagement | Evolusi | BLOCKED | DEC-014 |
@@ -75,7 +75,7 @@ Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10,
 - [ ] M3-07 SEO: metadataBase, canonical, hreflang, sitemap, OG (DEC-021)
 - [ ] M3-08 Unduhan file publik; `access_level` tersimpan sejak awal
 - [ ] M3-09 Halaman About; satu sumber token desain (DEC-024)
-- [ ] M3-10 Test framework dipilih + tes kritikal (belum ada di repo)
+- [x] M3-10 Test framework dipilih + tes kritikal — branch `feat/m3-10-test-framework`, commit `0378252` (runner `node:test` + `tsx` 4.23.15, 69 unit test), `1967756` (matriks build 4 mode + cek gerbang HTTP + CI GitHub Actions tanpa secret), `421de03` (104 tes integrasi DB `mahira-cms` dengan isolasi fixture); jawaban Owner 2026-11-11 DECISIONS §2.5; perintah `bun run test`, `bun run test:integration`, `bun run test:build-matrix` (TEST-PLAN §12); bukti: CHANGELOG [M3-10]. Sisa temuan: belum ada E2E browser (Playwright di M3-05/M5); tes DB dan `migrate:status` tidak jalan di CI; Vercel Preview memakai DB yang sama dengan tes; CI belum pernah jalan di GitHub; pooler Supabase `mahira-cms` dua kali memutus koneksi di tengah run dan transaksi yatim menahan row lock ±15 menit (koneksi app tidak dibatasi `idle_in_transaction_session_timeout`; kandidat M4); helper akhir pool tes memakai internal `pg-pool` (cek ulang saat upgrade Payload/`pg`); `getPayload` non-produksi menulis ulang `payload/payload-types.ts` dengan LF di checkout CRLF; `/ID/publications` dan `/EN/publications` 200 berisi shell kosong di `next start` Windows (filesystem lokal); `.kiro/steering/tech.md` masih menyebut belum ada Payload/test framework
 
 **Exit:** PRD §13 AC 1–4 & 7 lulus di staging.
 
