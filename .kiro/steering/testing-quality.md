@@ -6,7 +6,7 @@ fileMatchPattern: ["**/*.test.*", "**/*.spec.*", "**/__tests__/**/*", "playwrigh
 
 ## Current test baseline
 
-The inspected `package.json` currently defines `lint` and `build`, but no `test` script or test runner. Do not assume Vitest, Jest, or Playwright is installed. Before adding a runner, propose a minimal choice, explain the scope, and wait for the dependency/tooling decision where required.
+The runner is Node's built-in `node:test` with the `tsx` 4.23.15 loader (Owner decision 2026-11-11, DECISIONS §2.5); tests run under Node (DEC-018). Scripts: `bun run test` (unit tests in `tests/unit/`, no database, no env), `bun run test:integration` (build, `next start` on port 3100, DB tests in `tests/integration/` one file at a time) and `bun run test:build-matrix` (four env build modes, HTTP gate test, secret scan of `.next`). Vitest, Jest and Playwright are not installed; Playwright is planned with M3-05/M5. Integration tests use the shared `mahira-cms` database only through the target guard, Owner guard and `fixture-test-` prefixes in `tests/helpers/`; never break the last-Admin, first-user or Users access rules for a DB run. See TEST-PLAN §12. Adding another runner or dependency needs an Owner decision.
 
 ## Testing approach
 

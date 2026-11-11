@@ -87,7 +87,7 @@ Sampai langkah ini dilakukan, RLS (tanpa policy) adalah satu-satunya penjaga tab
 
 `payload` dan semua `@payloadcms/*` di-pin exact `3.93.0`; upgrade hanya lewat PR yang mengubah pin itu. PR tersebut wajib meninjau:
 
-- **Row lock Translation Group (DEC-004).** `payload/db/lock-translation-group.ts` mengambil koneksi transaksi dari struktur internal `@payloadcms/drizzle`, `adapter.sessions[transactionID].db` (`getTransaction` tidak diekspor). Bila struktur itu berubah, helper gagal tertutup: setiap simpan Publication dan setiap hapus Translation Group gagal, alih-alih balapan. Cek race (`m3-02-race-checks`: R1–R3) wajib dijalankan ulang dan lulus pada setiap upgrade Payload. Sampai ada test framework (M3-10), skrip cek itu arsip tugas di luar repo.
+- **Row lock Translation Group (DEC-004).** `payload/db/lock-translation-group.ts` mengambil koneksi transaksi dari struktur internal `@payloadcms/drizzle`, `adapter.sessions[transactionID].db` (`getTransaction` tidak diekspor). Bila struktur itu berubah, helper gagal tertutup: setiap simpan Publication dan setiap hapus Translation Group gagal, alih-alih balapan. Tes race `tests/integration/race.test.ts` (R1–R3) wajib dijalankan ulang dan lulus pada setiap upgrade Payload, lewat `bun run test:integration` atau langsung `node --import tsx --test tests/integration/race.test.ts` (tanpa server). Lihat TEST-PLAN §12.7.
 - **Log `cacheComponents` di admin** (P2 A di atas).
 
 ## 4. Database and storage separation
