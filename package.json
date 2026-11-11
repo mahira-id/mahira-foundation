@@ -12,7 +12,8 @@
     "start": "next start",
     "lint": "eslint",
     "payload": "payload",
-    "test": "node --import tsx --test --test-reporter=spec \"tests/unit/**/*.test.ts\""
+    "test": "node --import tsx --test --test-reporter=spec \"tests/unit/**/*.test.ts\"",
+    "test:build-matrix": "node --import tsx scripts/test-build-matrix.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.93.0",

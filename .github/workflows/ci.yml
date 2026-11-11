@@ -1,0 +1,40 @@
+# CI without secrets (M3-10, Owner 2026-11-11, P3 B). The repository is
+# public: no secret, no database and no CMS env is used here. Database tests
+# and `migrate:status` (DEC-007) run locally (`bun run test:integration`).
+# Actions are pinned to commit SHAs (resolved 2026-11-11).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.3.14
+
+      # Node runs the code (DEC-018); Bun is the package manager only.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26.x"
+          package-manager-cache: false
+
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run test
+      # Env gate: no CMS env, VERCEL_ENV=production, partial set (must fail
+      # with names only), each followed by HTTP gate checks. No `full` mode:
+      # it needs the CMS env.
+      - run: bun run test:build-matrix --modes absent,prodsim,partial
