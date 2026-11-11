@@ -83,6 +83,13 @@ Sampai langkah ini dilakukan, RLS (tanpa policy) adalah satu-satunya penjaga tab
 
 **P2 A — log `cacheComponents` di Vercel.** Pesan `Route "/admin/[[...segments]]": Next.js encountered the unstable value new Date() while prerendering` muncul berlevel error pada route `/admin/[[...segments]]`, hanya di Preview dan lokal (CMS mati di Production). Di Vercel → project → **Logs**: pilih Environment `preview`, lalu pada filter **Route** pilih route selain `/admin/[[...segments]]` saat mencari error lain. Ditinjau ulang saat upgrade Payload/Next. Sumber: [Vercel — Runtime Logs](https://vercel.com/docs/logs/runtime).
 
+#### Pemicu review saat upgrade Payload (DEC-006)
+
+`payload` dan semua `@payloadcms/*` di-pin exact `3.93.0`; upgrade hanya lewat PR yang mengubah pin itu. PR tersebut wajib meninjau:
+
+- **Row lock Translation Group (DEC-004).** `payload/db/lock-translation-group.ts` mengambil koneksi transaksi dari struktur internal `@payloadcms/drizzle`, `adapter.sessions[transactionID].db` (`getTransaction` tidak diekspor). Bila struktur itu berubah, helper gagal tertutup: setiap simpan Publication dan setiap hapus Translation Group gagal, alih-alih balapan. Cek race (`m3-02-race-checks`: R1–R3) wajib dijalankan ulang dan lulus pada setiap upgrade Payload. Sampai ada test framework (M3-10), skrip cek itu arsip tugas di luar repo.
+- **Log `cacheComponents` di admin** (P2 A di atas).
+
 ## 4. Database and storage separation
 
 - Separate Supabase projects are recommended for development, staging, and production.
