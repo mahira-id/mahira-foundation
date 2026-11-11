@@ -11,7 +11,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "payload": "payload"
+    "payload": "payload",
+    "test": "node --import tsx --test --test-reporter=spec \"tests/unit/**/*.test.ts\""
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.93.0",
@@ -32,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.4",
     "tailwindcss": "^4",
+    "tsx": "4.23.15",
     "typescript": "^5"
   },
   "packageManager": "bun@1.3.14",
