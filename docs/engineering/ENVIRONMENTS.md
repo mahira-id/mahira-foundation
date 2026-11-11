@@ -59,11 +59,36 @@ Aturan set:
 - Hanya sebagian terisi: build dan start gagal; pesan error menyebut nama variabel yang hilang, tidak pernah nilainya.
 - `VERCEL_ENV=production`: CMS selalu mati, apa pun yang di-set. Menghidupkan CMS di Production memerlukan PR yang di-review (M4).
 
-Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`. Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku.
+Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`, dan sejak M3-01 juga untuk halaman publik berbasis CMS `/id/publications` dan `/en/publications` (Production tidak menampilkan halaman publikasi sampai M4). Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku.
 
 TLS ke database: CA Supabase Root 2021 di-pin di `payload/db/supabase-root-ca.ts` (sertifikat publik, bukan secret). Tidak ada variabel `CMS_SUPABASE_DB_CA_CERT`. `CMS_SUPABASE_DATABASE_URI` tidak boleh berisi parameter `sslmode`, karena `pg` akan mengganti objek `ssl` yang memuat CA tersebut.
 
 Key lain di `.env.local` (`CMS_SUPABASE_URL`, `*_PUBLISHABLE_KEY`, `*_SECRET_KEY`, `APP_SUPABASE_SERVICE_ROLE_KEY`, `OPENALEX_API_KEY`) tidak dipakai kode dan tidak di-set di Vercel.
+
+Sejak M3-02, saat CMS hidup (Preview, lokal), REST anonim ditolak (403) di semua koleksi dan GraphQL tetap mati; halaman publik membaca lewat Local API di server (DECISIONS §2.4 P1).
+
+#### Langkah Owner dari jawaban 2026-11-10 (M3-02)
+
+**P7 C — matikan Data API di `mahira-cms`.** Payload tidak memakai Data API; ia tersambung langsung ke Postgres lewat pooler. Project APP `mahira.id` jangan diubah (Storage dipakai Media).
+
+1. Buka dashboard Supabase project `mahira-cms` (ref `qnfzzymrceoubowfknvl`): `https://supabase.com/dashboard/project/qnfzzymrceoubowfknvl/integrations/data_api/settings` (menu **Integrations → Data API → Settings**; di dashboard lama **Project Settings → Data API**).
+2. Matikan toggle **Enable Data API**, lalu simpan.
+3. Bila toggle itu tidak ada: hapus `public` dari **Exposed schemas**, matikan **Automatically expose new tables**, lalu simpan.
+4. Verifikasi di PowerShell dengan `CMS_SUPABASE_URL` dan publishable key `mahira-cms` dari `.env.local` (isi `$env:CMS_SUPABASE_URL` dan `$env:CMS_SUPABASE_PUBLISHABLE_KEY` di sesi itu saja; jangan tempel key ke chat atau dokumen):
+   `curl.exe -s -o NUL -w "%{http_code}" -H "apikey: $env:CMS_SUPABASE_PUBLISHABLE_KEY" "$env:CMS_SUPABASE_URL/rest/v1/users?select=id"`
+   Hasil yang diharapkan: bukan `200` (sebelumnya `200` dengan `rows=0`, SPIKE-001 §7.3).
+5. Buka `/admin` di Vercel Preview dan pastikan login tetap berhasil.
+
+Sampai langkah ini dilakukan, RLS (tanpa policy) adalah satu-satunya penjaga tabel `mahira-cms` dari publishable key. Sumber: [Supabase — Securing your API](https://supabase.com/docs/guides/api/securing-your-api), [Supabase — Next.js quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs).
+
+**P2 A — log `cacheComponents` di Vercel.** Pesan `Route "/admin/[[...segments]]": Next.js encountered the unstable value new Date() while prerendering` muncul berlevel error pada route `/admin/[[...segments]]`, hanya di Preview dan lokal (CMS mati di Production). Di Vercel → project → **Logs**: pilih Environment `preview`, lalu pada filter **Route** pilih route selain `/admin/[[...segments]]` saat mencari error lain. Ditinjau ulang saat upgrade Payload/Next. Sumber: [Vercel — Runtime Logs](https://vercel.com/docs/logs/runtime).
+
+#### Pemicu review saat upgrade Payload (DEC-006)
+
+`payload` dan semua `@payloadcms/*` di-pin exact `3.93.0`; upgrade hanya lewat PR yang mengubah pin itu. PR tersebut wajib meninjau:
+
+- **Row lock Translation Group (DEC-004).** `payload/db/lock-translation-group.ts` mengambil koneksi transaksi dari struktur internal `@payloadcms/drizzle`, `adapter.sessions[transactionID].db` (`getTransaction` tidak diekspor). Bila struktur itu berubah, helper gagal tertutup: setiap simpan Publication dan setiap hapus Translation Group gagal, alih-alih balapan. Cek race (`m3-02-race-checks`: R1–R3) wajib dijalankan ulang dan lulus pada setiap upgrade Payload. Sampai ada test framework (M3-10), skrip cek itu arsip tugas di luar repo.
+- **Log `cacheComponents` di admin** (P2 A di atas).
 
 ## 4. Database and storage separation
 

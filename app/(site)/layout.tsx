@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk } from "next/font/google";
+import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
 import "./globals.css";
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -58,7 +59,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id" className={`${hankenGrotesk.variable} h-full antialiased`}>
+    <html lang={DEFAULT_LOCALE} className={`${hankenGrotesk.variable} h-full antialiased`}>
       <body className="min-h-full bg-white font-sans text-ink">
         <a href="#main" className="skip-link">
           Lewati ke konten

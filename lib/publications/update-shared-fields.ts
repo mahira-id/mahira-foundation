@@ -1,5 +1,6 @@
 import { commitTransaction, createLocalReq, initTransaction, killTransaction } from "payload";
 import type { Payload } from "payload";
+import { lockTranslationGroup } from "@/payload/db/lock-translation-group";
 import type { SharedField } from "@/payload/hooks/enforce-shared-fields";
 import type { Publication } from "@/payload/payload-types";
 
@@ -11,6 +12,10 @@ import type { Publication } from "@/payload/payload-types";
  * only server code that imports this function can.
  *
  * Each sibling is saved with a regular (non-draft) update, in id order.
+ *
+ * The Translation Group row is locked first (same lock as
+ * `enforceSharedFields`), so a concurrent save in the group waits for this
+ * transaction and then sees the new values.
  */
 export async function updateSharedFields(
   payload: Payload,
@@ -20,6 +25,7 @@ export async function updateSharedFields(
   const req = await createLocalReq({ context: { sharedFieldSync: true } }, payload);
   await initTransaction(req);
   try {
+    await lockTranslationGroup(req, groupId);
     const siblings = await payload.find({
       collection: "publications",
       where: { translationGroup: { equals: groupId } },

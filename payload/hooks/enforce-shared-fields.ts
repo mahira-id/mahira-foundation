@@ -1,5 +1,6 @@
 import { ValidationError } from "payload";
 import type { CollectionBeforeChangeHook, Where } from "payload";
+import { lockTranslationGroup } from "../db/lock-translation-group";
 
 /**
  * DEC-004 shared fields: every language version in one Translation Group must
@@ -35,12 +36,19 @@ function isMissing(value: unknown): boolean {
  * shared fields differ from any sibling in the same Translation Group.
  * `updateSharedFields()` in lib/publications sets `context.sharedFieldSync`
  * to change all siblings together; REST and admin clients cannot set context.
+ *
+ * Concurrent writers: the hook locks the Translation Group row before reading
+ * the siblings, so a second save in the same group waits for the first
+ * transaction to finish and then compares against its committed values
+ * (READ COMMITTED). `updateSharedFields()` takes the same lock itself.
  */
 export const enforceSharedFields: CollectionBeforeChangeHook = async ({ context, data, originalDoc, req }) => {
   if (context?.sharedFieldSync === true) return data;
 
   const groupId = toId((data.translationGroup ?? originalDoc?.translationGroup) as RelationValue);
   if (groupId === null) return data;
+
+  await lockTranslationGroup(req, groupId);
 
   const conditions: Where[] = [{ translationGroup: { equals: groupId } }];
   if (originalDoc?.id !== undefined) conditions.push({ id: { not_equals: originalDoc.id } });

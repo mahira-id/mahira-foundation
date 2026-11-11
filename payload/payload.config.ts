@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { buildConfig } from "payload";
+import { DEFAULT_LOCALE } from "../lib/i18n/locales";
 import { Authors } from "./collections/Authors";
 import { Media } from "./collections/Media";
 import { Publications } from "./collections/Publications";
@@ -71,9 +72,10 @@ export default buildConfig({
       { code: "id", label: "Bahasa Indonesia" },
       { code: "en", label: "English" },
     ],
-    // Payload requires a default locale for field-level localization. This is
-    // not the open DEC-005 decision about the site's default/fallback locale.
-    defaultLocale: "id",
+    // Payload requires a default locale for field-level localization. Owner
+    // 2026-11-10, P4c (i): the site default locale is "id", used here and for
+    // `/` only; no content fallback (fallback: false).
+    defaultLocale: DEFAULT_LOCALE,
     fallback: false,
   },
   graphQL: {
