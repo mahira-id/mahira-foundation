@@ -10,10 +10,23 @@ import { describe, test } from "node:test";
  *            prod = VERCEL_ENV=production  -> same as off
  *            on   = full .env.local        -> /admin reachable, anonymous /api/* 403,
  *                                             /{id,en}/publications 200
+ * `/` (M3-04, DECISIONS §2.7): never sample content (G1); off/prod show the
+ * empty notice (G7); on renders the CMS block (G8).
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
 const BASE_URL = (process.env.TEST_BASE_URL ?? "http://localhost:3100").replace(/\/+$/, "");
+
+/** Texts of the removed sample homepage content (M3-04); none may appear on `/`. */
+const SAMPLE_TEXTS = [
+  "Transisi Energi yang Adil",
+  "Tim Riset",
+  "Learning Hub",
+  "Katalog 2026",
+  "Enam bidang kerja",
+  "Perlu akun",
+  "Membaca Data Energi",
+];
 
 type Page = { status: number; location: string; body: string; headers: Headers | null };
 
@@ -42,7 +55,7 @@ test("GATE_MODE is off, on or prod", () => {
 });
 
 describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
-  test("G1 GET / unchanged: 200, headline, lang id, header 'segera', no /en/publications link", async (t) => {
+  test("G1 GET / unchanged: 200, headline, lang id, header 'segera', no /en/publications link, no sample content", async (t) => {
     t.diagnostic(`base ${BASE_URL}`);
     const home = await request("GET", "/");
     assert.equal(home.status, 200);
@@ -50,7 +63,37 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     assert.equal(home.body.includes('<html lang="id"'), true, '<html lang="id">');
     assert.equal(home.body.includes("segera"), true, 'header marker "segera" (R3.b)');
     assert.equal(home.body.includes('href="/en/publications"'), false, "no /en/publications link on / (R3.b)");
+    // M3-04 (DECISIONS §2.7 P1, P2, P8): no sample publication, author, topic,
+    // Learning Hub block or menu item. Case-sensitive: the metadata keyword
+    // "learning hub" (app/(site)/layout.tsx) stays until M3-07.
+    for (const sample of SAMPLE_TEXTS) {
+      assert.equal(home.body.includes(sample), false, `sample text "${sample}" on /`);
+    }
   });
+
+  if (MODE === "off" || MODE === "prod") {
+    test("G7 GET / with the CMS off: empty notice, no CMS blocks, no /id/publications link", async () => {
+      const home = await request("GET", "/");
+      assert.equal(home.status, 200);
+      assert.equal(home.body.includes('data-home-notice="empty"'), true, 'data-home-notice="empty"');
+      assert.equal(home.body.includes("Belum ada publikasi yang terbit"), true, "empty notice text (P1 A)");
+      for (const marker of ["data-home-lead", "data-home-latest", "data-home-topic", 'href="/id/publications"']) {
+        assert.equal(home.body.includes(marker), false, `${marker} on / with the CMS off`);
+      }
+    });
+  }
+
+  if (MODE === "on") {
+    test("G8 GET / with the CMS on: the CMS block is rendered (lead or notice)", async () => {
+      const home = await request("GET", "/");
+      assert.equal(home.status, 200);
+      assert.equal(
+        home.body.includes("data-home-lead=") || home.body.includes("data-home-notice="),
+        true,
+        "data-home-lead= or data-home-notice= on /",
+      );
+    });
+  }
 
   for (const [index, path] of ["/robots.txt", "/icon.svg", "/favicon.ico"].entries()) {
     test(`G2.${index + 1} GET ${path}: 200`, async () => {
