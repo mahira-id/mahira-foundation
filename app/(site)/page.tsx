@@ -1,20 +1,29 @@
+import { connection } from "next/server";
+import { Suspense } from "react";
+
 import { MahiraMark } from "@/components/brand/mahira";
-import { AccessBadge } from "@/components/home/access-badge";
-import { PublicationCover } from "@/components/home/publication-cover";
+import { HeroCover } from "@/components/home/hero-cover";
+import { LatestPublications } from "@/components/home/latest-publications";
+import { PublicationLead } from "@/components/home/publication-lead";
 import { SectionHeader } from "@/components/home/section-header";
+import { TopicIndex } from "@/components/home/topic-index";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
-import { ArrowIcon, PlusIcon } from "@/components/ui/icons";
-import {
-  learningFeature,
-  learningResources,
-  leadPublication,
-  principles,
-  publications,
-  topics,
-} from "@/lib/landing-content";
+import { ArrowIcon } from "@/components/ui/icons";
+import { getHomepageData } from "@/lib/cms/public-content";
+import { planHomepage, type HomepagePlan } from "@/lib/home/homepage-view";
+import { principles } from "@/lib/landing-content";
+import { isCmsEnabled } from "@/payload/env";
 
+/**
+ * Homepage `/` (M3-04, DECISIONS §2.7). Hero, Tentang, principles and the
+ * closing CTA are static approved copy; the lead, the index and "Bidang
+ * kerja" come from the CMS at request time when it is on (P1 A, P3 A). With
+ * the CMS off the page is fully static and shows the empty notice.
+ */
 export default function Home() {
+  const cmsOn = isCmsEnabled();
+
   return (
     <>
       <Header />
@@ -59,39 +68,18 @@ export default function Home() {
                 </a>
               </div>
               <div className="mt-12 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/25 pt-4 text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-white">
-                <span>Katalog 2026</span>
-                <span
-                  aria-hidden="true"
-                  className="hidden h-1 w-1 rounded-full bg-white/50 sm:inline-block"
-                />
                 <span>Riset · Kebijakan · Pembelajaran</span>
               </div>
             </div>
 
             <div className="lg:col-span-5">
-              <div className="relative mx-auto max-w-[17rem] sm:max-w-[21rem] lg:mr-0 lg:ml-auto lg:max-w-none">
-                <div
-                  aria-hidden="true"
-                  className="publication-cover absolute top-5 left-0 hidden w-[84%] -rotate-3 opacity-90 sm:flex"
-                  data-tone="silver"
-                >
-                  <span className="absolute inset-x-0 top-0 h-1 bg-orange" />
-                  <span className="absolute top-6 left-3 text-[0.625rem] font-bold uppercase tracking-[0.16em] text-ink/40 [writing-mode:vertical-rl]">
-                    Mahira · Publikasi 2026
-                  </span>
-                </div>
-                <PublicationCover
-                  className="relative mx-auto w-[88%] rotate-2 ring-1 ring-white/25 sm:mr-0 sm:ml-auto"
-                  issue={leadPublication.issue}
-                  title={leadPublication.coverTitle}
-                  tone="ink"
-                  topic={leadPublication.topic}
-                  type={leadPublication.type}
-                />
-                <p className="mt-6 text-center text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-white sm:text-right">
-                  Publikasi terbaru · 2026
-                </p>
-              </div>
+              {cmsOn ? (
+                <Suspense fallback={<HeroCover lead={null} />}>
+                  <HomeHeroCover />
+                </Suspense>
+              ) : (
+                <HeroCover lead={null} />
+              )}
             </div>
           </div>
 
@@ -100,270 +88,13 @@ export default function Home() {
           </div>
         </section>
 
-        <section
-          aria-labelledby="publikasi-heading"
-          className="bg-white pt-20 pb-16 md:pt-28 md:pb-20"
-          id="publikasi"
-        >
-          <div className="container-editorial">
-            <SectionHeader
-              action={
-                <a
-                  className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-700 transition-colors hover:text-brand-900"
-                  href="#indeks-publikasi"
-                >
-                  Lihat indeks
-                  <ArrowIcon className="h-3.5 w-3.5" />
-                </a>
-              }
-              description="Publikasi yang menghubungkan temuan riset dengan pilihan kebijakan yang dapat diuji dan didiskusikan."
-              id="publikasi-heading"
-              index="01"
-              label="Publikasi"
-              title="Riset yang sedang menjadi perhatian."
-            />
-
-            <div className="mt-10 grid gap-10 lg:mt-12 lg:grid-cols-12 lg:items-start lg:gap-12">
-              <div className="lg:col-span-5">
-                <PublicationCover
-                  className="mx-auto w-full max-w-[24rem] lg:mx-0 lg:max-w-none"
-                  issue={leadPublication.issue}
-                  title={leadPublication.coverTitle}
-                  tone={leadPublication.tone}
-                  topic={leadPublication.topic}
-                  type={leadPublication.type}
-                />
-              </div>
-
-              <div className="lg:col-span-7">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="eyebrow text-brand-700">
-                    {leadPublication.type}
-                  </span>
-                  <span aria-hidden="true" className="h-1 w-1 rounded-full bg-dark-silver" />
-                  <span className="text-sm font-medium text-muted">
-                    {leadPublication.topic}
-                  </span>
-                  <span aria-hidden="true" className="h-1 w-1 rounded-full bg-dark-silver" />
-                  <time className="text-sm text-muted" dateTime={leadPublication.dateISO}>
-                    {leadPublication.date}
-                  </time>
-                </div>
-
-                <h3 className="mt-6 text-[clamp(1.75rem,3vw,2.75rem)] font-bold leading-[1.08] tracking-[-0.03em] text-ink">
-                  {leadPublication.title}
-                </h3>
-                <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-                  {leadPublication.summary}
-                </p>
-
-                <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-line py-5">
-                  <div>
-                    <dt className="eyebrow text-muted">Penulis</dt>
-                    <dd className="mt-2 text-sm font-semibold text-ink">
-                      {leadPublication.authors}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="eyebrow text-muted">Terbit</dt>
-                    <dd className="mt-2 text-sm font-semibold text-ink">
-                      <time dateTime={leadPublication.dateISO}>
-                        {leadPublication.date}
-                      </time>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="eyebrow text-muted">Topik</dt>
-                    <dd className="mt-2 text-sm font-semibold text-ink">
-                      {leadPublication.topic}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="eyebrow text-muted">Akses</dt>
-                    <dd className="mt-2">
-                      <AccessBadge level={leadPublication.access} />
-                    </dd>
-                  </div>
-                </dl>
-
-                <div className="mt-8">
-                  <a className="btn btn-primary" href="#indeks-publikasi">
-                    Lihat indeks publikasi
-                    <ArrowIcon className="h-3.5 w-3.5" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="indeks-publikasi-heading"
-          className="bg-white pb-20 md:pb-28"
-          id="indeks-publikasi"
-        >
-          <div className="container-editorial">
-            <SectionHeader
-              action={
-                <span className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted">
-                  Klik baris untuk ringkasan
-                </span>
-              }
-              description="Indeks publikasi terbaru. Ringkasan tetap terbuka; akses ke file penuh mengikuti status akun dan langganan."
-              id="indeks-publikasi-heading"
-              index="02"
-              label="Indeks"
-              title="Publikasi terbaru."
-            />
-
-            <div className="mt-2">
-              {publications.map((publication, index) => (
-                <details className="publication-row border-b border-line" key={publication.slug}>
-                  <summary className="group grid cursor-pointer gap-3 rounded-sm px-1 py-5 transition-colors hover:bg-silver/60 md:grid-cols-12 md:items-center md:gap-6 md:px-3 md:py-6">
-                    <span className="text-xs font-bold tabular-nums text-muted md:col-span-1">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted md:col-span-2">
-                      <time dateTime={publication.dateISO}>{publication.date}</time>
-                      <span aria-hidden="true" className="h-1 w-1 rounded-full bg-dark-silver" />
-                      <span>{publication.type}</span>
-                    </span>
-                    <div className="md:col-span-6">
-                      <h3 className="text-lg font-bold leading-tight tracking-[-0.02em] text-ink transition-colors group-hover:text-brand-700 md:text-xl">
-                        {publication.title}
-                      </h3>
-                      <span className="mt-1 block text-sm text-muted">
-                        {publication.authors}
-                      </span>
-                    </div>
-                    <span className="flex items-center justify-between gap-4 md:col-span-3 md:justify-end">
-                      <AccessBadge level={publication.access} />
-                      <span className="row-icon inline-flex h-8 w-8 items-center justify-center rounded-sm border border-line text-ink">
-                        <PlusIcon className="h-4 w-4" />
-                      </span>
-                    </span>
-                  </summary>
-                  <div className="px-1 pb-6 md:grid md:grid-cols-12 md:px-3">
-                    <p className="max-w-2xl text-sm leading-relaxed text-muted md:col-span-9 md:col-start-4">
-                      {publication.summary}
-                    </p>
-                  </div>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="topik-heading"
-          className="section-space bg-silver"
-          id="topik"
-        >
-          <div className="container-editorial">
-            <SectionHeader
-              description="Enam bidang kerja yang menjadi pintu masuk untuk membaca publikasi dan materi pembelajaran."
-              id="topik-heading"
-              index="03"
-              label="Bidang kerja"
-              title="Persoalan yang kami kerjakan."
-            />
-
-            <div className="mt-10 grid gap-x-10 md:grid-cols-2">
-              {topics.map((topic) => (
-                <a
-                  className="group flex items-start justify-between gap-6 border-t border-line py-5 transition-colors hover:border-orange"
-                  href="#indeks-publikasi"
-                  key={topic.index}
-                >
-                  <span className="flex gap-5">
-                    <span className="pt-1 text-xs font-bold tabular-nums text-brand-700">
-                      {topic.index}
-                    </span>
-                    <span>
-                      <span className="block text-lg font-bold tracking-[-0.02em] text-ink transition-colors group-hover:text-brand-700">
-                        {topic.name}
-                      </span>
-                      <span className="mt-1 block max-w-sm text-sm leading-relaxed text-muted">
-                        {topic.description}
-                      </span>
-                    </span>
-                  </span>
-                  <ArrowIcon className="mt-1 h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-1 group-hover:text-brand-700" />
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="learning-heading"
-          className="section-space bg-white"
-          id="learning"
-        >
-          <div className="container-editorial">
-            <SectionHeader
-              action={
-                <span className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted">
-                  Video · Panduan · Kelas
-                </span>
-              }
-              description="Materi pembelajaran yang menghubungkan konsep, data, dan praktik kebijakan publik."
-              id="learning-heading"
-              index="04"
-              label="Learning Hub"
-              title="Belajar dari riset."
-            />
-
-            <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
-              <div className="lg:col-span-7">
-                <PublicationCover
-                  className="aspect-[16/10] w-full max-w-[34rem]"
-                  issue={learningFeature.issue}
-                  title={learningFeature.coverTitle}
-                  tone="green"
-                  topic={learningFeature.format}
-                  type={learningFeature.type}
-                />
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <span className="eyebrow text-green">{learningFeature.type}</span>
-                  <span aria-hidden="true" className="h-1 w-1 rounded-full bg-dark-silver" />
-                  <span className="text-sm text-muted">{learningFeature.format}</span>
-                </div>
-                <h3 className="mt-3 text-2xl font-bold tracking-[-0.025em] text-ink">
-                  {learningFeature.title}
-                </h3>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-                  {learningFeature.description}
-                </p>
-              </div>
-
-              <div className="lg:col-span-5">
-                <p className="eyebrow text-green">Materi lain</p>
-                <ul className="mt-4 border-t border-line">
-                  {learningResources.map((resource, index) => (
-                    <li className="border-b border-line py-5" key={resource.title}>
-                      <div className="flex items-start gap-4">
-                        <span className="pt-1 text-xs font-bold tabular-nums text-green">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted">
-                            <span>{resource.type}</span>
-                            <span aria-hidden="true" className="h-1 w-1 rounded-full bg-dark-silver" />
-                            <span>{resource.format}</span>
-                          </div>
-                          <h3 className="mt-2 text-lg font-bold leading-snug tracking-[-0.02em] text-ink">
-                            {resource.title}
-                          </h3>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
+        {cmsOn ? (
+          <Suspense fallback={<PublicationsLoading />}>
+            <HomeCmsSections />
+          </Suspense>
+        ) : (
+          <HomeSections plan={planHomepage({ status: "off" })} />
+        )}
 
         <section
           aria-labelledby="tentang-heading"
@@ -377,7 +108,7 @@ export default function Home() {
           <div className="container-editorial section-space relative">
             <div className="grid gap-8 lg:grid-cols-12">
               <div className="lg:col-span-3">
-                <p className="eyebrow text-silver">05 / Tentang</p>
+                <p className="eyebrow text-silver">Tentang</p>
               </div>
               <div className="lg:col-span-9">
                 <span aria-hidden="true" className="block h-0.5 w-16 bg-orange" />
@@ -455,8 +186,7 @@ export default function Home() {
                   Dari riset ke perubahan.
                 </h2>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
-                  Temukan publikasi terbaru, ikuti materi pembelajaran, atau
-                  kenali cara kami bekerja.
+                  Temukan publikasi terbaru atau kenali cara kami bekerja.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
@@ -474,6 +204,132 @@ export default function Home() {
         </section>
       </main>
       <Footer />
+    </>
+  );
+}
+
+async function HomeHeroCover() {
+  // Request-time data (DECISIONS §2.6 P3 A): keeps the CMS query out of the build prerender.
+  await connection();
+  return <HeroCover lead={planHomepage(await getHomepageData()).lead} />;
+}
+
+async function HomeCmsSections() {
+  await connection();
+  return <HomeSections plan={planHomepage(await getHomepageData())} />;
+}
+
+const NOTICE_TEXT = {
+  empty: "Belum ada publikasi yang terbit. Publikasi akan tampil di sini setelah diterbitkan.",
+  error: "Publikasi belum dapat dimuat. Coba muat ulang halaman beberapa saat lagi.",
+} as const;
+
+function PublicationsHeader({ withIndexLink }: { withIndexLink: boolean }) {
+  return (
+    <SectionHeader
+      action={
+        withIndexLink ? (
+          <a
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-700 transition-colors hover:text-brand-900"
+            href="#indeks-publikasi"
+          >
+            Lihat indeks
+            <ArrowIcon className="h-3.5 w-3.5" />
+          </a>
+        ) : undefined
+      }
+      description="Publikasi yang menghubungkan temuan riset dengan pilihan kebijakan yang dapat diuji dan didiskusikan."
+      id="publikasi-heading"
+      label="Publikasi"
+      title="Riset yang sedang menjadi perhatian."
+    />
+  );
+}
+
+function PublicationsLoading() {
+  return (
+    <section
+      aria-labelledby="publikasi-heading"
+      className="bg-white pt-20 pb-16 md:pt-28 md:pb-20"
+      id="publikasi"
+    >
+      <div className="container-editorial">
+        <PublicationsHeader withIndexLink={false} />
+        <div className="mt-10 grid lg:grid-cols-12 lg:gap-8">
+          <p className="text-base text-muted lg:col-span-9 lg:col-start-4" role="status">
+            Memuat publikasi…
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeSections({ plan }: { plan: HomepagePlan }) {
+  return (
+    <>
+      <section
+        aria-labelledby="publikasi-heading"
+        className="bg-white pt-20 pb-16 md:pt-28 md:pb-20"
+        id="publikasi"
+      >
+        <div className="container-editorial">
+          <PublicationsHeader withIndexLink={plan.latest.length > 0} />
+          {plan.notice ? (
+            <div className="mt-10 grid lg:grid-cols-12 lg:gap-8">
+              <p
+                className="max-w-2xl text-base leading-relaxed text-muted lg:col-span-9 lg:col-start-4"
+                data-home-notice={plan.notice}
+              >
+                {NOTICE_TEXT[plan.notice]}
+              </p>
+            </div>
+          ) : plan.lead ? (
+            <PublicationLead publication={plan.lead} />
+          ) : null}
+        </div>
+      </section>
+
+      {plan.latest.length > 0 ? (
+        <section
+          aria-labelledby="indeks-publikasi-heading"
+          className="bg-white pb-20 md:pb-28"
+          id="indeks-publikasi"
+        >
+          <div className="container-editorial">
+            <SectionHeader
+              action={
+                <span className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted">
+                  Klik baris untuk ringkasan
+                </span>
+              }
+              description="Publikasi terbaru dalam Bahasa Indonesia. Buka baris untuk membaca ringkasannya."
+              id="indeks-publikasi-heading"
+              label="Indeks"
+              title="Publikasi terbaru."
+            />
+            <LatestPublications items={plan.latest} />
+          </div>
+        </section>
+      ) : null}
+
+      {plan.topics.length > 0 ? (
+        <section
+          aria-labelledby="topik-heading"
+          className="section-space bg-silver"
+          id="topik"
+        >
+          <div className="container-editorial">
+            <SectionHeader
+              description="Bidang kerja yang menjadi pintu masuk untuk membaca publikasi."
+              id="topik-heading"
+              label="Bidang kerja"
+              title="Persoalan yang kami kerjakan."
+            />
+            <TopicIndex topics={plan.topics} />
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }

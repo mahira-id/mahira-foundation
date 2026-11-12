@@ -1,6 +1,6 @@
 import { Logo } from "@/components/brand/mahira";
 import { ArrowIcon } from "@/components/ui/icons";
-import { navigation, topics } from "@/lib/landing-content";
+import { navigation } from "@/lib/landing-content";
 
 export function Footer() {
   return (
@@ -21,7 +21,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-7">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 lg:col-span-7">
             <nav aria-label="Jelajahi">
               <h2 className="eyebrow text-silver">Jelajahi</h2>
               <ul className="mt-4 space-y-3">
@@ -32,22 +32,6 @@ export function Footer() {
                       href={item.href}
                     >
                       {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            <nav aria-label="Topik">
-              <h2 className="eyebrow text-silver">Topik</h2>
-              <ul className="mt-4 space-y-3">
-                {topics.slice(0, 4).map((topic) => (
-                  <li key={topic.index}>
-                    <a
-                      className="text-sm text-silver transition-colors hover:text-white"
-                      href="#topik"
-                    >
-                      {topic.name}
                     </a>
                   </li>
                 ))}

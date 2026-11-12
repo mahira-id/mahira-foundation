@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 type SectionHeaderProps = {
-  index: string;
+  index?: string;
   label: string;
   title: string;
   description?: string;
@@ -21,7 +21,8 @@ export function SectionHeader({
     <div className="grid gap-6 border-b border-line pb-8 lg:grid-cols-12 lg:gap-8">
       <div className="lg:col-span-3">
         <p className="eyebrow text-brand-700">
-          {index} / {label}
+          {index ? `${index} / ` : ""}
+          {label}
         </p>
       </div>
       <div className="lg:col-span-9">
