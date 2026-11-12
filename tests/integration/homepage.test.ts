@@ -16,7 +16,8 @@ import {
   hookNote,
   totalOf,
 } from "../helpers/fixtures";
-import { assertServerUp, getPage, pageFact } from "../helpers/http";
+import { startNextServer } from "../../scripts/lib/processes";
+import { BASE_URL, assertServerUp, getPage, pageFact, rest, type JsonObject } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
 
 /**
@@ -33,6 +34,10 @@ import { closeTestPayload, getTestPayload } from "../helpers/payload";
  * Fixtures: slugs fixture-test-home-*, titles, names and labels
  * "[FIXTURE] test home *". No user is created; the Owner guard runs before
  * any fixture is written and after cleanup.
+ *
+ * HP8 is a `todo` regression test of a known issue: it starts a second, fresh
+ * `next start` on TEST_PORT + 1 (no build), lets GET / create the Payload
+ * instance, and checks an anonymous empty login for REST field-error details.
  */
 type PubData = RequiredDataFromCollectionSlug<"publications">;
 
@@ -43,6 +48,18 @@ const SUMMARY_TEXT = "[FIXTURE] Ringkasan uji homepage M3-04.";
 const TOPIC_OFF_NAME = `${LABEL}Topik Nonaktif`;
 
 const slug = (name: string) => `${PREFIX}${name}`;
+
+/** Port of the second, fresh server of HP8 (the shared one is BASE_URL). */
+const FRESH_PORT = Number(new URL(BASE_URL).port || "3100") + 1;
+
+/** "status=<n> name=<name> data=<yes|no> paths=<a,b>" of the first REST error. */
+function firstErrorFact(status: number, body: JsonObject): string {
+  const error = (Array.isArray(body.errors) ? body.errors[0] : undefined) as
+    | { name?: string; data?: { errors?: { path?: string }[] } }
+    | undefined;
+  const paths = (error?.data?.errors ?? []).map((item) => item.path).join(",");
+  return `status=${status} name=${error?.name ?? "-"} data=${error?.data ? "yes" : "no"} paths=${paths || "-"}`;
+}
 
 function matches(html: string, attribute: string): string[] {
   return [...html.matchAll(new RegExp(`${attribute}="([^"]+)"`, "g"))].map((match) => match[1] as string);
@@ -239,4 +256,37 @@ describe("homepage (M3-04 / from CMS data)", () => {
       assert.equal(html.includes(field), false, `"${field}" in the HTML of /`);
     }
   });
+
+  // Known issue (M3-04, pre-existing; MILESTONES M3-04, TEST-PLAN §12.5): the
+  // production bundle has two copies of `payload` and getPayload keeps one
+  // global instance. When a page creates it (fresh server, GET / first), REST
+  // ValidationErrors lose `errors[0].data`. Fix candidate:
+  // serverExternalPackages ["payload"] in next.config.ts (Owner approval).
+  // Runs and reports; does not fail the run until the fix lands.
+  test(
+    "HP8 page-first Payload init keeps REST field-error details (errors[0].data)",
+    { todo: "known issue M3-04: page-first getPayload drops REST ValidationError data; fix needs Owner approval (TEST-PLAN §12.5)" },
+    async (t) => {
+      const shared = await rest("POST", "/api/users/login", { body: {} });
+      t.diagnostic(`shared server (REST warmed first), empty login: ${firstErrorFact(shared.status, shared.body)}`);
+      // startNextServer waits for GET / = 200, so a page creates the instance.
+      const env: Record<string, string | undefined> = { ...process.env };
+      delete env.NODE_TEST_CONTEXT; // the child is a server, not a test process
+      const fresh = await startNextServer({ env, port: FRESH_PORT, label: "home-hp8" });
+      try {
+        const response = await fetch(`http://localhost:${FRESH_PORT}/api/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        });
+        const body = (await response.json()) as JsonObject;
+        const fact = firstErrorFact(response.status, body);
+        t.diagnostic(`fresh server (GET / first), empty login: ${fact}`);
+        assert.equal(response.status, 400, `empty login on the fresh server: ${fact}`);
+        assert.equal(fact.includes("data=yes"), true, `errors[0].data missing after page-first init: ${fact}`);
+      } finally {
+        await fresh.stop();
+      }
+    },
+  );
 });

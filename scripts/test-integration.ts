@@ -14,7 +14,8 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *   locale        locale routes, <html lang>, 404/308, no public locale fallback
  *   race          DEC-004 shared fields under concurrent writers (rerun on every Payload upgrade)
  *   workflow      draft/publish/revise/unpublish, public page freshness, liveOnSite, P5 guard
- *   homepage      / from CMS data: lead, latest (dated before undated), active topics, freshness (M3-04)
+ *   homepage      / from CMS data: lead, latest (dated before undated), active topics, freshness (M3-04);
+ *                 HP8 todo: page-first Payload init (second server on TEST_PORT + 1)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left (always last)
  *
  * Usage: bun run test:integration [--skip-build] [--only access,guards,...]
@@ -71,7 +72,9 @@ async function main(): Promise<number> {
     if (build.code !== 0) return 1;
   }
 
-  const server = await startNextServer({ env, port: PORT, label: "integration" });
+  // REST first: since M3-04 GET / initializes Payload, and a page-first
+  // instance drops REST field-error details (known issue; TEST-PLAN §12.5).
+  const server = await startNextServer({ env, port: PORT, label: "integration", warmPath: "/api/users" });
   const results: Array<[Name, number]> = [];
   try {
     console.log(`[integration] server started on ${PORT} (log: ${server.logFile})`);

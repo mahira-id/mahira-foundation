@@ -92,9 +92,20 @@ export type NextServer = {
  * running with the full CMS env and is not secret-scanned, so `stop()`
  * deletes it; callers keep it only when a step failed. Refuses a port that
  * is already in use, so a test never talks to a server it did not start.
+ *
+ * `warmPath`: requested once (any status) before the first `GET /`, so that
+ * path is the first request the server handles. The DB integration tests pass
+ * a REST path: whichever bundle calls `getPayload` first creates the shared
+ * Payload instance, and when a page creates it, REST ValidationErrors lose
+ * their field details (known issue M3-04, MILESTONES; TEST-PLAN §12.5).
  */
-export async function startNextServer(options: { env: ChildEnv; port: number; label: string }): Promise<NextServer> {
-  const { env, port, label } = options;
+export async function startNextServer(options: {
+  env: ChildEnv;
+  port: number;
+  label: string;
+  warmPath?: string;
+}): Promise<NextServer> {
+  const { env, port, label, warmPath } = options;
   if (await isPortOpen(port)) {
     throw new Error(`Port ${port} is already in use; stop that server first.`);
   }
@@ -140,9 +151,15 @@ export async function startNextServer(options: { env: ChildEnv; port: number; la
   };
 
   const deadline = Date.now() + 120_000;
+  let warmed = warmPath === undefined;
   while (Date.now() < deadline) {
     if (exited) break;
     try {
+      if (!warmed) {
+        const warm = await fetch(`http://localhost:${port}${warmPath}`, { redirect: "manual" });
+        await warm.arrayBuffer();
+        warmed = true;
+      }
       const response = await fetch(`http://localhost:${port}/`, { redirect: "manual" });
       await response.arrayBuffer();
       if (response.status === 200) return { logFile, stop };
