@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Agent task folders (git-excluded), DECISIONS §2.7 P11 A
+    ".agents/**",
   ]),
 ]);
 
