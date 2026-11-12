@@ -20,7 +20,7 @@ export const ROOT_PREFIX = "fixture-test-";
 export const LABEL_ROOT = "[FIXTURE] test ";
 export const EMAIL_DOMAIN = "@example.invalid";
 
-export type Area = "access" | "guard" | "locale" | "race" | "workflow";
+export type Area = "access" | "guard" | "home" | "locale" | "race" | "workflow";
 
 export function areaPrefix(area: Area): string {
   return `${ROOT_PREFIX}${area}-`;

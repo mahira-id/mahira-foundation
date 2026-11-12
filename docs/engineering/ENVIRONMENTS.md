@@ -59,13 +59,15 @@ Aturan set:
 - Hanya sebagian terisi: build dan start gagal; pesan error menyebut nama variabel yang hilang, tidak pernah nilainya.
 - `VERCEL_ENV=production`: CMS selalu mati, apa pun yang di-set. Menghidupkan CMS di Production memerlukan PR yang di-review (M4).
 
-Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`, dan sejak M3-01 juga untuk halaman publik berbasis CMS `/id/publications` dan `/en/publications` (Production tidak menampilkan halaman publikasi sampai M4). Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku.
+Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`, dan sejak M3-01 juga untuk halaman publik berbasis CMS `/id/publications` dan `/en/publications` (Production tidak menampilkan halaman publikasi sampai M4). Homepage `/` tetap 200 dengan blok statis dan catatan "Belum ada publikasi yang terbit" di blok Publikasi, tanpa konten sampel (M3-04, DECISIONS §2.7 P1 A). Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku.
 
 TLS ke database: CA Supabase Root 2021 di-pin di `payload/db/supabase-root-ca.ts` (sertifikat publik, bukan secret). Tidak ada variabel `CMS_SUPABASE_DB_CA_CERT`. `CMS_SUPABASE_DATABASE_URI` tidak boleh berisi parameter `sslmode`, karena `pg` akan mengganti objek `ssl` yang memuat CA tersebut.
 
 Key lain di `.env.local` (`CMS_SUPABASE_URL`, `*_PUBLISHABLE_KEY`, `*_SECRET_KEY`, `APP_SUPABASE_SERVICE_ROLE_KEY`, `OPENALEX_API_KEY`) tidak dipakai kode dan tidak di-set di Vercel.
 
 Sejak M3-02, saat CMS hidup (Preview, lokal), REST anonim ditolak (403) di semua koleksi dan GraphQL tetap mati; halaman publik membaca lewat Local API di server (DECISIONS §2.4 P1).
+
+Known issue saat CMS hidup (ada sebelum M3-04, belum diperbaiki): build produksi memuat dua salinan `payload`, dan `getPayload` menyimpan satu instance global per proses. Bila halaman publik (sejak M3-04 juga `/`) atau `/admin` yang pertama membuat instance setelah cold start, ValidationError REST kehilangan rincian field (`errors[0].data`), sehingga admin UI hanya menampilkan "The following field is invalid: …". Production tidak terdampak (CMS mati). Kandidat perbaikan: `serverExternalPackages: ["payload"]` di `next.config.ts`, butuh persetujuan Owner dan run tes tersendiri (MILESTONES M3-04, TEST-PLAN §12.5).
 
 #### Langkah Owner dari jawaban 2026-11-10 (M3-02)
 

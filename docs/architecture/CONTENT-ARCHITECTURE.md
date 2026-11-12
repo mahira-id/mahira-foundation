@@ -21,9 +21,9 @@ Menetapkan bagaimana Mahira mengelompokkan, menghubungkan, menerjemahkan, menerb
 | Tag | Label granular dan fleksibel untuk pencarian/editorial curation. | APBN, regional policy. | Many-to-many; optional and controlled. |
 | Author | Person credited as author/editor/contributor. | Named researcher. | Many-to-many with publications; role/sequence on relation. |
 | Publication Asset | File or resource attached to publication. | Cover, PDF, appendix, dataset. | Many assets per publication; individual access classification proposed. |
-| Learning Resource | Educational item in Learning Hub. | Video, playlist, reading list, external resource. | May relate to topic/desk/publication. |
+| Learning Resource | Educational item in Learning Hub. Cakupan launch (DEC-014; DECISIONS §2.8 Q2 A): video/playlist YouTube yang di-embed, panduan, dan toolkit yang dapat diunduh publik, dikelompokkan per tema. | Video, playlist, guide, downloadable toolkit. | Model final, jenis materi, dan relasi OPEN (M3-11). |
 | Static Page | Institutional information page. | About, contact, policy. | Localized and published through CMS. |
-| Event | Event information, if approved in scope. | Seminar or webinar. | P2 / optional per PRD. |
+| Event | Event information, if approved in scope. | Seminar or webinar. | Pasca-launch (M6, DECISIONS §2.8 Q3 A). |
 
 ## 3. Taxonomy rules
 
@@ -44,7 +44,7 @@ Menetapkan bagaimana Mahira mengelompokkan, menghubungkan, menerjemahkan, menerb
 - Publication ↔ Tag: many-to-many, optional.
 - Publication → Publication Asset: one-to-many.
 - Publication ↔ Translation group: links language variants according to DEC-004.
-- Learning Resource ↔ Topic/Desk/Publication: optional relationships determined by editorial use.
+- Learning Resource ↔ Topic/Desk/Publication: OPEN (M3-11). Apakah "tema" katalog Learning Hub sama dengan Topic/"Bidang kerja" belum diputuskan (DECISIONS §2.8).
 
 ## 4. Proposed content lifecycle
 
@@ -120,4 +120,4 @@ Do not hardcode sample desks/types as production taxonomy. Create a stakeholder 
 
 ## 10. Out of scope until approved
 
-LMS course hierarchy, assessments, certificates, contributor submission portal, peer-review management, DOI registration, dataset repository, and automated content licensing are not part of the current confirmed MVP.
+LMS course hierarchy, assessments, certificates, contributor submission portal, peer-review management, DOI registration, dataset repository, and automated content licensing are not part of the current confirmed MVP. LMS features (course hierarchy, assessments, certificates, progress tracking, login for learning resources) are also not part of the launch scope (DEC-014).

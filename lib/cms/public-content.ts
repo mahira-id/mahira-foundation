@@ -1,5 +1,8 @@
 import config from "@payload-config";
 import { getPayload } from "payload";
+import { cache } from "react";
+import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
+import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import type { Locale } from "@/lib/i18n/locales";
 import { isCmsEnabled } from "@/payload/env";
 
@@ -33,3 +36,23 @@ export async function listPublishedPublications(locale: Locale) {
   });
   return result.docs;
 }
+
+/**
+ * Data of the homepage `/` (M3-04, DECISIONS §2.7): the newest Indonesian
+ * publications and the active topics, read at request time. Deduplicated per
+ * request by React `cache` (the hero cover and the sections both ask).
+ * A failed read is logged with the error name only (P3 A) and gives
+ * `{ status: "error" }`; the page still answers 200.
+ */
+export const getHomepageData = cache(async (): Promise<HomepageData> => {
+  if (!isCmsEnabled()) return { status: "off" };
+  try {
+    const payload = await getPayload({ config });
+    const publications = await findHomepagePublications(payload);
+    const topics = await findActiveTopics(payload);
+    return { status: "ok", publications: publications.map(toHomePublication), topics: toHomeTopics(topics) };
+  } catch (error) {
+    console.error("[homepage] CMS read failed:", readErrorLabel(error));
+    return { status: "error" };
+  }
+});

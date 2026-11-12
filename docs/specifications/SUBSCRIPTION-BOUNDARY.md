@@ -6,16 +6,18 @@
 
 Menjaga agar model data dan access evaluator pada MVP dapat dikembangkan ke subscription tanpa mengimplementasikan payment prematurely. Dokumen ini bukan spesifikasi pembayaran lengkap dan tidak menetapkan harga, gateway, recurring method, refund, atau legal terms.
 
-## 2. What belongs in the MVP
+## 2. What belongs before launch (DECISIONS §2.8 Q1 A)
 
-- A publication/asset has a defined access requirement.
+- A publication/asset has a defined access requirement, including the `registered` level.
 - A user identity has a stable internal reference.
-- The system can represent manual entitlement with source, scope, validity, status, and audit trail.
-- Authorization evaluator can answer allow/deny without knowing which payment provider may be used later.
-- Private asset delivery is server-authorized.
-- Account UI can show a neutral access state if account feature is in MVP scope.
+- Authorization evaluator can answer allow/deny for the `registered` level without knowing which payment provider may be used later.
+- Private asset delivery for `registered` assets is server-authorized.
+- Account UI shows a neutral access state.
 
-## 3. What must remain out of scope until Phase 2
+## 3. What must remain out of scope until Phase 2 (M7)
+
+- Manual entitlement with source, scope, validity, status, and audit trail (M7-02), and the evaluator for the `subscriber` level. Its schema compatibility is still checked in M5 (§6).
+- Subscriber asset delivery (M7-03).
 
 - Payment capture/settlement.
 - Plan catalog/pricing and taxes.
@@ -61,7 +63,7 @@ Do not derive entitlement from a front-end redirect or client-supplied payment s
 
 ## 6. Migration compatibility checks
 
-Before MVP schema acceptance, verify that:
+Before M5 schema acceptance, verify that:
 - `Entitlement.source` can represent manual and future provider origins.
 - Entitlement validity can be bounded in time.
 - Public user identity is stable and not coupled to email string.

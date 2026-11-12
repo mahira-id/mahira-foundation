@@ -1,7 +1,8 @@
 # Access Policy Specification
 
 **Status:** Proposed security contract; requires Security Owner and Product Owner approval  
-**Related:** PRD §8; SRS §4.1–4.3, §8, §12.1; DEC-008–DEC-012; ADR-0003, ADR-0006
+**Related:** PRD §8; SRS §4.1–4.3, §8, §12.1; DEC-008–DEC-012; ADR-0003, ADR-0006  
+**Fase (DECISIONS §2.8 Q1 A, 2026-11-12):** baris Registered berlaku pra-launch (M5); baris Subscriber dan semua aturan entitlement berlaku di Phase 2 (M7).
 
 ## 1. Purpose
 

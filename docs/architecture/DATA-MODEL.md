@@ -123,6 +123,8 @@ Decide whether this collection is Payload-owned or application-owned before impl
 
 ### 4.5 LearningResource
 
+**Status (2026-11-12):** cakupan launch disetujui (DEC-014; DECISIONS §2.8 Q2 A): video/playlist YouTube, panduan, dan toolkit unduhan publik, dikelompokkan per tema. Field di bawah tetap usulan; `downloadable` = toolkit. Relasi ke Topic, model bilingual, dan penyimpanan file toolkit OPEN (M3-11).
+
 Proposed fields: `id`, localized `title`, `slug`, `description`, `resourceType` (video, playlist, reading, external_link, downloadable), `provider`, `externalUrl/embedId`, thumbnail asset, topics/desks, related publications, locale, status, publishedAt, SEO fields. Validate embed host against allowlist; never accept arbitrary iframe HTML from editors without sanitization.
 
 ### 4.6 Page
@@ -149,6 +151,8 @@ Fields: email, name, role(s), active/disabled state, MFA policy/state as availab
 Do not duplicate email/password from Auth unless there is a documented need. Email change and verification remain Auth-owned.
 
 ### 5.2 Entitlement
+
+**Fase (DECISIONS §2.8 Q1 A):** entitlement subscriber dibuat di Phase 2 (M7-02). Level `registered` saat launch (M5) tidak membutuhkan entitlement; cukup sesi pengguna publik yang valid.
 
 | Field | Type | Required | Rule |
 |---|---|---:|---|

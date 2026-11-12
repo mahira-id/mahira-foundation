@@ -25,6 +25,7 @@ Baseline kebutuhan produk untuk platform publikasi, Learning Hub, akun pengguna,
 | Penyusun awal      | Product & Engineering working draft                                      |
 | Status persetujuan | Belum disetujui; memerlukan validasi stakeholder                         |
 | Perubahan utama    | Dokumen awal berdasarkan percakapan teknis dan arahan visual 04 Nov 2026 |
+| Perubahan 2026-11-12 | Arahan Owner (DECISIONS §2.8): Learning Hub dan akun publik level `registered` masuk cakupan launch; entitlement subscriber dan pembayaran setelah launch (Phase 2). Diubah: §4, §6.2, §6.3, §7, §10, §12 D-04/D-06, §13, glosarium |
 | Relasi dokumen     | PDD-MID untuk keputusan desain; SRS-MID untuk spesifikasi sistem         |
 
 # 1. Ringkasan eksekutif
@@ -77,7 +78,7 @@ Menjadi pusat publikasi dan pembelajaran digital yang memudahkan masyarakat mene
 | Kualitas pengalaman baca | Pengguna dapat memahami metadata, abstrak/ringkasan, dan status akses sebelum mengunduh.                        | Uji tugas dengan pengguna; validasi pada mobile dan desktop.     |
 | Efisiensi editorial      | Editor dapat membuat draft, memperbarui metadata, mengelola aset, preview, dan menerbitkan konten.              | Ukur waktu tugas dan error editorial; tetapkan setelah uji coba. |
 | Kontrol akses            | Dokumen yang dibatasi tidak dapat diunduh tanpa entitlement yang sesuai.                                        | Uji otomatis untuk anonim, terdaftar, subscriber, dan staf.      |
-| Kesiapan subscription    | Entitlement dan data langganan dapat diperkenalkan tanpa mengubah model publikasi inti.                         | Pembayaran di luar MVP; entitlement manual lebih dulu.           |
+| Kesiapan subscription    | Entitlement dan data langganan dapat diperkenalkan tanpa mengubah model publikasi inti.                         | Pembayaran dan entitlement subscriber setelah launch (Phase 2, M7). |
 
 > **CATATAN KPI**
 >
@@ -113,13 +114,19 @@ Catatan: segmen mahasiswa/pendidik berasal dari referensi Learning Hub pada doku
 
 ## 6.2 Learning Hub
 
-- **Katalog pembelajaran:** materi dikelompokkan berdasarkan topik/kelas/format sesuai model konten yang disepakati.
+- **Cakupan launch (DEC-014; DECISIONS §2.8 Q2 A):** Learning Hub wajib tersedia saat launch dengan katalog per tema, embed video/playlist YouTube, panduan, dan toolkit yang dapat diunduh publik. Semua materi dapat diakses tanpa login.
+
+- **Referensi struktur:** https://www.cips-indonesia.org/cips-learning-hub, hanya sebagai referensi struktur; identitas dan aset CIPS tidak disalin.
 
 - **Materi video:** prioritaskan embed dari YouTube atau sumber video eksternal; jangan mengasumsikan kebutuhan video hosting sendiri.
 
-- **Batas MVP:** Learning Hub awal dapat berupa katalog konten dan embed. Progress tracking, sertifikat, kuis kompleks, dan LMS penuh bukan bagian MVP kecuali disetujui terpisah.
+- **Di luar cakupan launch:** login untuk materi, progress tracking, kuis, sertifikat, kelas berbayar, dan LMS penuh.
+
+- **OPEN (M3-11):** model konten dan jenis materi, relasi ke Topic/"Bidang kerja", model bilingual, route, penyimpanan file toolkit, serta halaman detail per materi vs embed langsung di katalog.
 
 ## 6.3 Area akun pengguna
+
+- **Cakupan launch (DECISIONS §2.8 Q1 A, M5):** registrasi, login, logout, reset password, verifikasi email, area akun minimal, dan unduhan file level `registered` setelah cek sesi di server. Status subscription, entitlement subscriber, dan pembayaran masuk Phase 2 (M7).
 
 - **Autentikasi:** registrasi, login, logout, reset password, dan verifikasi email sesuai kebijakan.
 
@@ -145,10 +152,13 @@ Catatan: segmen mahasiswa/pendidik berasal dari referensi Learning Hub pada doku
 |-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
 | Persiapan & technical spike       | Inventaris konten, user story, matriks akses, keputusan bilingual, wireframe; uji Next.js + Payload + Supabase + satu PDF gated.     | Gate sebelum implementasi penuh: koneksi DB, auth, upload/storage, build, dan gating berhasil dibuktikan. |
 | MVP — Publication platform        | Situs publik bilingual-ready, CMS/admin editorial, katalog dan detail publikasi, metadata SEO, search dasar, file publik, role staf. | Editor dapat menerbitkan publikasi nyata; halaman dapat ditemukan dan dibagikan; staging dapat didemokan. |
-| MVP+ — User access                | Registrasi/login, area akun minimal, access_level, entitlement manual, PDF eksklusif dengan signed URL.                              | Matriks akses teruji otomatis; file privat tidak bocor.                                                   |
-| Expansion — Learning & engagement | Learning Hub yang lebih kaya, event, newsletter, bookmark/riwayat/analitik sesuai prioritas.                                         | Fitur didorong kebutuhan penggunaan aktual.                                                               |
-| Phase 2 — Subscription            | Payment gateway, webhook idempotent, status subscription, tagihan, perpanjangan dan pembatalan.                                      | Uji sukses/gagal bayar, webhook duplikat, kedaluwarsa, dan perubahan entitlement.                         |
-| Launch hardening                  | Performance, accessibility, security review, backup restore, monitoring, privacy/legal readiness, content migration.                 | Checklist rilis dan pemulihan teruji.                                                                     |
+| Learning Hub (pra-launch, M3-11–M3-13) | Katalog per tema, embed video/playlist YouTube, panduan, toolkit unduhan publik; tanpa login, progress, kuis, sertifikat (DEC-014). Detail model, route, dan storage toolkit OPEN (M3-11). | AC 9 lulus di staging.                                                                                    |
+| Akses pengguna publik (pra-launch, M5, level `registered`) | Registrasi/login/logout/reset, verifikasi email (DEC-019), area akun minimal, evaluator akses server-side, unduhan file `registered` lewat private bucket dengan signed URL (DECISIONS §2.8 Q1 A). | Matriks akses kolom Visitor/Registered/Editor/Admin teruji otomatis; file privat tidak bocor; AC 5, 6 (file `registered`), 10 lulus. |
+| Launch hardening (M4)             | Performance, accessibility, security review, backup restore, monitoring, privacy/legal readiness, content migration.                 | Checklist rilis dan pemulihan teruji; AC 8 lulus; rilis produksi 1.0.0.                                   |
+| Expansion pasca-launch (M6)       | Event, newsletter, form jaringan dosen (DECISIONS §2.8 Q3 A), bookmark/riwayat/analitik sesuai prioritas.                            | Fitur didorong kebutuhan penggunaan aktual.                                                               |
+| Phase 2 — Subscription pasca-launch (M7) | Entitlement manual subscriber, file subscriber, payment gateway, webhook idempotent, status subscription, tagihan, perpanjangan dan pembatalan. | Uji sukses/gagal bayar, webhook duplikat, kedaluwarsa, dan perubahan entitlement; kolom subscriber matriks akses teruji. |
+
+Urutan baris di atas adalah urutan eksekusi sejak 2026-11-12 (DECISIONS §2.8): M0–M2 → M3 → M5 → M4 (launch) → M6 / M7.
 
 # 8. Model akses konten
 
@@ -180,9 +190,9 @@ Target bahasa yang dibahas adalah Bahasa Indonesia dan Bahasa Inggris, dengan UR
 
 # 10. Batasan dan non-goals
 
-- **Bukan LMS penuh pada MVP:** belum mencakup progress tracking, sertifikasi, kelas berbayar, penilaian kompleks, atau learning path adaptif.
+- **Bukan LMS penuh saat launch:** belum mencakup progress tracking, sertifikasi, kelas berbayar, penilaian kompleks, atau learning path adaptif (DEC-014).
 
-- **Bukan sistem pembayaran pada MVP:** subscription disiapkan pada model akses tetapi payment gateway masuk fase berikutnya.
+- **Bukan sistem pembayaran saat launch:** subscription dan entitlement subscriber setelah launch (Phase 2, M7); model akses tetap menyiapkan level `subscriber`.
 
 - **Bukan SPA murni untuk seluruh situs:** halaman publik memerlukan HTML yang siap diindeks dan metadata unik per halaman.
 
@@ -209,15 +219,17 @@ Target bahasa yang dibahas adalah Bahasa Indonesia dan Bahasa Inggris, dengan UR
 | D-01   | Nama dan identitas organisasi   | Konfirmasi apakah “Mahira Indonesia Development” adalah nama resmi, brand, atau placeholder.                                    |
 | D-02   | Bidang/desk riset dan taksonomi | Tetapkan topik utama, jenis publikasi, serta hubungan antara topic, desk, dan category.                                         |
 | D-03   | Strategi bilingual              | Pilih linked translation entries atau field-level localization; putuskan fallback dan siapa pemilik review terjemahan.          |
-| D-04   | Konten Learning Hub             | Konfirmasi apakah hanya katalog + embed atau memerlukan kelas, progress, kuis, dan fitur LMS.                                   |
+| D-04   | Konten Learning Hub             | Diputuskan untuk cakupan launch: DEC-014 (DECISIONS §2.8 Q2 A); model konten, route, storage toolkit OPEN (M3-11).          |
 | D-05   | Proses editorial                | Tetapkan apakah ada reviewer/approval, jadwal publikasi, dan aturan revisi setelah publish.                                     |
-| D-06   | Kebijakan akses                 | Definisikan konten mana yang publik, perlu akun, dan subscriber; mekanisme pemberian akses manual.                              |
+| D-06   | Kebijakan akses                 | Definisikan konten mana yang publik, perlu akun, dan subscriber; mekanisme pemberian akses manual. Level `registered` saat launch, `subscriber` Phase 2 (DECISIONS §2.8 Q1 A). |
 | D-07   | Pengelola dan role              | Konfirmasi jumlah editor/admin dan apakah diperlukan role Reviewer/Finance.                                                     |
 | D-08   | Skema subscription              | Harga, durasi, recurring vs manual renewal, masa tenggang, pembatalan, refund, dan gateway belum ditetapkan.                    |
 | D-09   | CMS custom vs Payload           | Payload menjadi baseline karena kebutuhan editorial; admin custom dapat dipertimbangkan bila editor tunggal dan konten sedikit. |
 | D-10   | Infrastruktur final             | Vercel Pro + Supabase Pro adalah rekomendasi dari diskusi; validasi biaya, billing, region, dan hasil spike sebelum komitmen.   |
 
-# 13. Kriteria penerimaan produk MVP
+# 13. Kriteria penerimaan produk saat launch
+
+Pemetaan fase (DECISIONS §2.8): AC 1–4 dan 7 = MVP publikasi (M3); AC 9 = Learning Hub (M3-11–M3-13); AC 5, bagian `registered` AC 6, dan AC 10 = akun publik (M5); AC 8 = launch (M4); bagian subscriber AC 6 = Phase 2 (M7).
 
 > **1.** Pengunjung anonim dapat menemukan katalog publikasi, membuka halaman detail, membaca ringkasan, dan memahami aturan akses.
 >
@@ -227,13 +239,17 @@ Target bahasa yang dibahas adalah Bahasa Indonesia dan Bahasa Inggris, dengan UR
 >
 > **4.** Sistem mendukung konten ID/EN sesuai strategi localization yang telah disahkan.
 >
-> **5.** *(MVP+, DEC-002)* Pengguna dapat mendaftar dan login; konten terdaftar dapat dibedakan dari konten subscriber.
+> **5.** *(Launch, M5; DECISIONS §2.8 Q1 A)* Pengguna dapat mendaftar dan login; konten terdaftar dapat dibedakan dari konten subscriber.
 >
-> **6.** *(MVP+, DEC-002)* File eksklusif hanya diberikan setelah pemeriksaan sesi dan entitlement di sisi server.
+> **6.** *(File `registered`: launch, M5; file subscriber: Phase 2, M7)* File eksklusif hanya diberikan setelah pemeriksaan sesi dan entitlement di sisi server.
 >
 > **7.** Peran admin dan editor terpisah; registrasi publik tidak dapat memperoleh hak Editor/Admin (DEC-009).
 >
 > **8.** Build dan deployment staging berhasil; pengujian akses dasar dan restore backup telah dijalankan sebelum peluncuran.
+>
+> **9.** *(Launch, M3-11–M3-13; DEC-014)* Pengunjung tanpa login dapat menjelajah katalog Learning Hub per tema, memutar video/playlist YouTube yang di-embed, membaca panduan, dan mengunduh toolkit publik; tidak ada login, progress, kuis, atau sertifikat.
+>
+> **10.** *(Launch, M5; DECISIONS §2.8 Q1 A)* Pengguna terdaftar dapat memverifikasi email, mereset password, melihat area akun minimal, dan mengunduh file `registered` setelah cek sesi di server; pengunjung anonim ditolak; registrasi tidak memberi hak staf (DEC-009).
 
 # Glosarium
 
@@ -242,6 +258,8 @@ Target bahasa yang dibahas adalah Bahasa Indonesia dan Bahasa Inggris, dengan UR
 | Entitlement    | Hak akses efektif pengguna terhadap suatu konten atau kelompok konten.       |
 | Access level   | Klasifikasi akses pada publikasi: public, registered, subscriber.            |
 | CMS            | Sistem untuk membuat, mengelola, meninjau, dan menerbitkan konten.           |
-| Learning Hub   | Area katalog materi pembelajaran; cakupan LMS penuh belum termasuk MVP.      |
+| Learning Hub   | Area katalog materi pembelajaran. Cakupan launch (DEC-014): katalog per tema, embed video/playlist YouTube, panduan, toolkit unduhan publik; LMS penuh tidak termasuk. |
 | Vertical slice | Implementasi fitur utuh dari data/backend sampai tampilan yang dapat diuji.  |
 | MVP            | Rilis minimum yang memvalidasi nilai utama publikasi dan workflow editorial. |
+| Launch         | Rilis produksi 1.0.0 (M4-05) = MVP publikasi + Learning Hub + akun publik level `registered` (DECISIONS §2.8). |
+| MVP+           | Label lama DEC-002. Sejak 2026-11-12: bagian `registered` pra-launch (M5) dan bagian subscriber Phase 2 (M7) (DECISIONS §2.8). |

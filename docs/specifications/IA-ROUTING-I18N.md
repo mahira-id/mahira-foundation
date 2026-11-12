@@ -22,13 +22,13 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 
 | Page | Route candidate | Notes |
 |---|---|---|
-| Home | `/{locale}` | Editorial landing page. |
+| Home | `/` (Indonesia; DEC-005, DECISIONS §2.7 P6 A) | Editorial landing page; only `locale: id` publications. Bare `/id` and `/en` stay 404 (DEC-005). English homepage: **OPEN**. |
 | Publication index | `/{locale}/publications` | Search, filters, pagination. |
 | Publication detail | `/{locale}/publications/{slug}` | One localized publication representation. |
 | Publication type index | `/{locale}/publications/type/{typeSlug}` | Only if taxonomy deserves an indexable landing page. |
 | Topic detail | `/{locale}/topics/{topicSlug}` | Implement only if user-facing taxonomy requires it. |
-| Learning Hub index | `/{locale}/learning-hub` | Catalog. |
-| Learning resource detail | `/{locale}/learning-hub/{slug}` | Detail or outbound/embed page. |
+| Learning Hub index | `/{locale}/learning-hub` | Catalog per tema; wajib saat launch (DEC-014). Route kandidat; route final OPEN (DEC-005 "Still open"; M3-11). |
+| Learning resource detail | `/{locale}/learning-hub/{slug}` | Detail or outbound/embed page. Route kandidat; route final dan halaman detail vs embed langsung OPEN (DEC-005 "Still open"; M3-11). |
 | About | `/{locale}/about` | Organization-controlled content. |
 | Contact | `/{locale}/contact` | Publish only after contact process is approved. |
 
@@ -41,6 +41,8 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 | Library / access | `/{locale}/account/library` | Authenticated public user; only own entitlements. |
 | Download history | `/{locale}/account/downloads` | Optional, requires product/privacy approval. |
 | Subscription | `/{locale}/account/subscription` | Phase 2; do not expose before subscription model exists. |
+
+Fase (DECISIONS §2.8 Q1 A, 2026-11-12): permukaan akun pra-launch (M5), kecuali Subscription (Phase 2, M7). Halaman akun mana yang masuk area akun minimal M5 diputuskan di M5-02.
 
 ### 3.3 Internal surface
 
