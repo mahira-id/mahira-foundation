@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { createWriteStream } from "node:fs";
+import { createWriteStream, rmSync } from "node:fs";
 import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -79,13 +79,19 @@ export async function isPortOpen(port: number): Promise<boolean> {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export type NextServer = { logFile: string; stop: () => Promise<void> };
+export type NextServer = {
+  logFile: string;
+  /** Stops the server; deletes the log unless `keepLog` is true. */
+  stop: (options?: { keepLog?: boolean }) => Promise<void>;
+};
 
 /**
  * Starts `next start` on the port with the given env and waits until `GET /`
  * answers 200 (120 s). Server output goes to a log file in the OS temp
- * folder, never into the repository. Refuses a port that is already in use,
- * so a test never talks to a server it did not start.
+ * folder, never into the repository. The log can hold output of a server
+ * running with the full CMS env and is not secret-scanned, so `stop()`
+ * deletes it; callers keep it only when a step failed. Refuses a port that
+ * is already in use, so a test never talks to a server it did not start.
  */
 export async function startNextServer(options: { env: ChildEnv; port: number; label: string }): Promise<NextServer> {
   const { env, port, label } = options;
@@ -101,14 +107,16 @@ export async function startNextServer(options: { env: ChildEnv; port: number; la
     detached: process.platform !== "win32",
     windowsHide: true,
   });
-  child.stdout.pipe(log);
-  child.stderr.pipe(log);
+  // `end: false`: two streams share one log; stop() ends it once, so a late
+  // stderr chunk never hits a stream that stdout already ended.
+  child.stdout.pipe(log, { end: false });
+  child.stderr.pipe(log, { end: false });
   let exited = false;
   child.once("exit", () => {
     exited = true;
   });
 
-  const stop = async () => {
+  const stop = async ({ keepLog = false }: { keepLog?: boolean } = {}) => {
     if (!exited && child.pid !== undefined) {
       if (process.platform === "win32") {
         spawnSync("taskkill", ["/T", "/F", "/PID", String(child.pid)], { stdio: "ignore", windowsHide: true });
@@ -122,7 +130,13 @@ export async function startNextServer(options: { env: ChildEnv; port: number; la
     }
     for (let i = 0; i < 60 && (await isPortOpen(port)); i++) await sleep(500);
     await sleep(1000);
-    log.end();
+    if (!log.closed) {
+      await new Promise<void>((resolve) => {
+        log.once("close", () => resolve());
+        log.end();
+      });
+    }
+    if (!keepLog) rmSync(logFile, { force: true });
   };
 
   const deadline = Date.now() + 120_000;
@@ -137,6 +151,6 @@ export async function startNextServer(options: { env: ChildEnv; port: number; la
     }
     await sleep(1000);
   }
-  await stop();
-  throw new Error(`next start did not answer GET / with 200 within 120 s (log: ${logFile}).`);
+  await stop({ keepLog: true });
+  throw new Error(`next start did not answer GET / with 200 within 120 s (log kept: ${logFile}; delete it after reading).`);
 }

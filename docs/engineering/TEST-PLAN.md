@@ -135,7 +135,7 @@ Keputusan Owner 2026-11-11: DECISIONS §2.5 (P1a A, P1b (i), P1c (i), P2 A, P3 B
 
 ### 12.1 Perintah
 
-| Perintah | Isi | Butuh | Durasi lokal (2026-11-11) |
+| Perintah | Isi | Butuh | Durasi lokal (2026-11-12) |
 |---|---|---|---|
 | `bun run test` | Unit test `tests/unit/**/*.test.ts` | Tanpa DB, tanpa `.env.local` | ±15–45 detik (69 tes, sebagian besar waktu impor `tsx`/Payload) |
 | `bun run test:integration [--skip-build] [--only access,guards,locale,race,db-invariants]` | Build env lengkap, `next start` di port 3100, lalu satu proses `node --test` per file dengan urutan access, guards, locale, race, db-invariants; server dihentikan di `finally`; exit 1 bila ada file gagal | `.env.local` lengkap, DB `mahira-cms` | ±11–15 menit run penuh (build ±1 menit; access ±4–5,5; guards ±3–4; locale ±1; race ±3,5–4; db-invariants ±20 detik) |

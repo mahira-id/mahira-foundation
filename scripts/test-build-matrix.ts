@@ -101,6 +101,7 @@ async function runMode(mode: Mode, scan: boolean): Promise<string> {
   for (const line of routeLines(build.output)) console.log(line);
   if (build.code !== 0) {
     problems.push("build must succeed");
+    console.log(`build[${mode}] log kept for debugging: ${logFile} (not secret-scanned; delete it after reading)`);
     return summarize(mode, `build=${build.code} (expected 0)`, problems);
   }
   if (scan) {
@@ -122,8 +123,9 @@ async function runMode(mode: Mode, scan: boolean): Promise<string> {
     );
     gateCode = result.code;
   } finally {
-    await server.stop();
-    console.log(`server[${mode}] stopped`);
+    const keepLog = gateCode !== 0;
+    await server.stop({ keepLog });
+    console.log(`server[${mode}] stopped; log ${keepLog ? `kept for debugging: ${server.logFile} (delete it after reading)` : "deleted"}`);
   }
   if (gateCode !== 0) problems.push(`gate test (GATE_MODE=${gate}) exit=${gateCode}`);
   return summarize(mode, `build=0 scan=${scan ? "run" : "skipped"} gate=${gate} gate-exit=${gateCode}`, problems);

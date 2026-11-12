@@ -85,8 +85,11 @@ async function main(): Promise<number> {
       console.log(`[integration] ${name} exit=${result.code}`);
     }
   } finally {
-    await server.stop();
-    console.log("[integration] server stopped");
+    const keepLog = results.length < names.length || results.some(([, code]) => code !== 0);
+    await server.stop({ keepLog });
+    console.log(
+      `[integration] server stopped; log ${keepLog ? `kept for debugging: ${server.logFile} (delete it after reading)` : "deleted"}`,
+    );
   }
   const failed = results.filter(([, code]) => code !== 0);
   console.log(`[integration] summary: ${results.map(([name, code]) => `${name}=${code}`).join(" ")}`);
