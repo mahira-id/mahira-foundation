@@ -11,7 +11,7 @@ Memetakan kebutuhan PRD/SRS ke spesifikasi, implementasi, dan test. Mapping beri
 | Source requirement | Summary | Spec / decision | Implementation domain | Verification | Release |
 |---|---|---|---|---|---|
 | PRD §6.1 / SRS FR-001 | Locale routes ID/EN | IA-ROUTING-I18N; ADR-0004/0005 | Next routing, Payload localization | LOC-01.. | MVP gate |
-| SRS FR-002 | Homepage | PAGE-SPEC homepage; PDD; DECISIONS §2.7 (M3-04) | site/home (`app/(site)/page.tsx`, `lib/cms/homepage-query.ts`, `lib/home/homepage-view.ts`, `lib/cms/public-content.ts` `getHomepageData`) | `tests/unit/homepage.test.ts` H1–H8; `tests/build/env-gate-http.test.ts` G1/G7/G8; `tests/integration/homepage.test.ts` HP1–HP7 (M3-04); Learning Hub entry point M3-12 | MVP |
+| SRS FR-002 | Homepage | PAGE-SPEC homepage; PDD; DECISIONS §2.7 (M3-04) | site/home (`app/(site)/page.tsx`, `lib/cms/homepage-query.ts`, `lib/home/homepage-view.ts`, `lib/cms/public-content.ts` `getHomepageData`) | `tests/unit/homepage.test.ts` H1–H8; `tests/build/env-gate-http.test.ts` G1/G7/G8; `tests/integration/homepage.test.ts` HP1–HP7 (M3-04), HP8–HP9 (urutan inisialisasi Payload, TEST-PLAN §12.5); Learning Hub entry point M3-12 | MVP |
 | SRS FR-003 | Publication listing | CONTENT-ARCH, DATA-MODEL, PAGE-SPEC | publications/search | PUB-01.. | MVP |
 | SRS FR-004 | Publication detail | PAGE-SPEC, SEO-SPEC | publications | PUB-DETAIL-01.. | MVP |
 | SRS FR-005 | Taxonomy | CONTENT-ARCH, DATA-MODEL | taxonomy | TAX-01.. | MVP |
