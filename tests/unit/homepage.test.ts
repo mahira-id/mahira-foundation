@@ -15,6 +15,7 @@ import {
   toHomeTopics,
   type HomePublication,
   type HomePublicationDoc,
+  type HomepageData,
 } from "../../lib/home/homepage-view";
 
 /**
@@ -126,6 +127,11 @@ describe("lib/home/homepage-view.ts", () => {
     const topics = [{ slug: "t", name: "T", description: null }];
     assert.deepEqual(planHomepage({ status: "off" }), { notice: "empty", lead: null, latest: [], topics: [] });
     assert.deepEqual(planHomepage({ status: "error" }), { notice: "error", lead: null, latest: [], topics: [] });
+    assert.deepEqual(
+      planHomepage({ status: "error", topics } as unknown as HomepageData).topics,
+      [],
+      "an error result never shows Bidang kerja, even with topics attached (P3 A)",
+    );
     assert.deepEqual(planHomepage({ status: "ok", publications: [], topics }), {
       notice: "empty",
       lead: null,
