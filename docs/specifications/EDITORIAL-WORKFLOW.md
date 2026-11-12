@@ -118,3 +118,37 @@ Record at minimum actor, action, entity ID, prior/current lifecycle state, times
 5. What public notice is required for withdrawn publications?
 6. Who owns English translation and review?
 7. Which publication types require full PDF, abstract, references, or citation metadata?
+
+## 9. Implementasi MVP (M3-03, DECISIONS §2.6)
+
+Workflow minimum DEC-015 (draft → published → unpublished) untuk koleksi Publication, sesuai jawaban Owner 2026-11-12 (DECISIONS §2.6). Bagian §2–§4 di atas tetap baseline usulan untuk fase berikutnya.
+
+### 9.1 Model state
+
+Status disimpan per versi bahasa (satu record per bahasa, DEC-004). "Tayang di situs" adalah field virtual `liveOnSite` yang hanya terbaca staf (§2.6 P4).
+
+| State | Disimpan sebagai | Tampil di situs | Admin menampilkan (Status / Tayang di situs) |
+|---|---|---|---|
+| Draft, belum pernah terbit | `_status: draft`, `everPublished: false` | tidak | Draft / Tidak |
+| Published | record `_status: published` | ya, bila `accessLevel: public` (DEC-002) | Published / Ya (Tidak bila `registered`/`subscriber`) |
+| Published dengan revisi tertunda | record published, versi terbaru draft | versi yang terbit | Changed / Ya |
+| Unpublished | record `_status: draft`, `everPublished: true` | tidak | Draft atau Changed / Tidak (dibaca dari kode Payload 3.93.0, belum diuji di browser) |
+| Review / Approved / Scheduled | tidak ada di MVP (DEC-015) | — | — |
+| Archived / Withdrawn | bukan state; pakai Unpublish (§2.6 P1) | — | — |
+
+### 9.2 Aksi
+
+- **Save Draft**, **Publish** / **Publish changes**, dan **Unpublish** (dengan dialog konfirmasi) adalah tombol bawaan Payload; labelnya tetap Inggris dan sesuai PDD §9 (§2.6 P9).
+- Editor dan Admin sama-sama boleh membuat, mengubah, menerbitkan, dan meng-unpublish (DEC-016). Ini menjawab "Policy TBD" kolom Publish/unpublish Editor di §3 dan pertanyaan §8 nomor 2.
+- Menghapus versi bahasa yang pernah terbit hanya boleh Admin (DEC-016); Editor mendapat 403.
+
+### 9.3 Aturan
+
+- Validasi field tidak jalan saat Save Draft (`drafts` tanpa `validate`), sehingga draft boleh belum lengkap; field wajib diperiksa saat terbit (§4.1). Teruji: draft hanya dengan judul, slug, bahasa, dan Translation Group tersimpan; Publish-nya ditolak 400 dengan ringkasan, jenis publikasi, topik, penulis, dan Access Level sebagai field yang kurang (W1–W2).
+- `publishedAt` terisi otomatis saat pertama terbit bila kosong dan tidak berubah saat terbit ulang atau saat revisi diterbitkan (§2.4 P3).
+- Revisi setelah terbit disimpan sebagai draft di atas versi yang tayang; pengunjung tetap melihat versi yang terbit sampai Publish changes (§4.5).
+- Simpan non-draft tanpa `_status` pada publikasi yang tayang dan punya draft tertunda ditolak 400; editor harus memilih Publish atau Save Draft (§2.6 P5). `updateSharedFields()` ikut ditolak dan di-rollback.
+- Status tiap bahasa berdiri sendiri: unpublish versi ID tidak mengubah versi EN.
+- Cache (§4.4): halaman publik dibaca saat request; tidak ada hook revalidasi di M3-03. Bacaan publik yang nanti memakai `"use cache"` wajib memberi `cacheTag` dan direvalidasi setelah commit (§2.6 P3).
+- Sitemap dan indeks pencarian (§4.4) mengikuti M3-06/M3-07, preview draft M3-05 (§2.6 P2), jejak audit aktor/waktu (§4.4, §7) M4-02 (§2.6 P7), dan privasi file Media dari draft (§4.1) M3-08 (§2.6 P8; known issue: file di bucket publik terbuka lewat URL-nya).
+- Verifikasi: `tests/integration/workflow.test.ts` (W1–W13) dan `tests/unit/publication-workflow.test.ts` (TEST-PLAN §12.2).

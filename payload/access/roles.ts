@@ -19,6 +19,8 @@ export const isStaff: Access = ({ req }) => staffRoleOf(req) !== null;
 
 export const isAdminField: FieldAccess = ({ req }) => staffRoleOf(req) === "admin";
 
+export const isStaffField: FieldAccess = ({ req }) => staffRoleOf(req) !== null;
+
 /** Staff, or a public page reading through the server-side Local API. */
 export const isStaffOrAnonymousLocalRead: Access = ({ req }) =>
   staffRoleOf(req) !== null || isAnonymousLocalRead(req);

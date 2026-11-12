@@ -129,16 +129,16 @@ Use deterministic synthetic fixtures representing both locales, multiple authors
 
 A release candidate passes all P0 tests, has no unresolved critical/high security issue, has recorded manual review for tests that cannot be automated, and includes reproducible evidence (CI result, staging checklist, screenshots/log references) tied to a commit.
 
-## 12. Tes yang ada di repo (M3-10)
+## 12. Tes yang ada di repo (M3-10, M3-03)
 
-Keputusan Owner 2026-11-11: DECISIONS §2.5 (P1a A, P1b (i), P1c (i), P2 A, P3 B, P4 A, folder (a)). Runner: `node:test` bawaan Node 26 dengan loader `tsx` 4.23.15. Semua tes jalan di Node (DEC-018); Bun hanya meluncurkan script. Vitest, Jest, `bun test`, dan Playwright tidak dipasang.
+Keputusan Owner 2026-11-11: DECISIONS §2.5 (P1a A, P1b (i), P1c (i), P2 A, P3 B, P4 A, folder (a)). Runner: `node:test` bawaan Node 26 dengan loader `tsx` 4.23.15. Semua tes jalan di Node (DEC-018); Bun hanya meluncurkan script. Vitest, Jest, `bun test`, dan Playwright tidak dipasang. Tes workflow editorial M3-03 mengikuti jawaban Owner 2026-11-12 (DECISIONS §2.6).
 
 ### 12.1 Perintah
 
 | Perintah | Isi | Butuh | Durasi lokal (2026-11-12) |
 |---|---|---|---|
-| `bun run test` | Unit test `tests/unit/**/*.test.ts` | Tanpa DB, tanpa `.env.local` | ±15–45 detik (69 tes, sebagian besar waktu impor `tsx`/Payload) |
-| `bun run test:integration [--skip-build] [--only access,guards,locale,race,db-invariants]` | Build env lengkap, `next start` di port 3100, lalu satu proses `node --test` per file dengan urutan access, guards, locale, race, db-invariants; server dihentikan di `finally`; exit 1 bila ada file gagal | `.env.local` lengkap, DB `mahira-cms` | ±11–15 menit run penuh (build ±1 menit; access ±4–5,5; guards ±3–4; locale ±1; race ±3,5–4; db-invariants ±20 detik) |
+| `bun run test` | Unit test `tests/unit/**/*.test.ts` | Tanpa DB, tanpa `.env.local` | ±15–45 detik (89 tes, sebagian besar waktu impor `tsx`/Payload) |
+| `bun run test:integration [--skip-build] [--only access,guards,locale,race,workflow,db-invariants]` | Build env lengkap, `next start` di port 3100, lalu satu proses `node --test` per file dengan urutan access, guards, locale, race, workflow, db-invariants; server dihentikan di `finally`; exit 1 bila ada file gagal | `.env.local` lengkap, DB `mahira-cms` | Run penuh M3-03 2026-11-12: 15,5 menit (access ±3–5,5; guards ±3–4; locale ±1; race ±3–4; workflow ±3,5–6; db-invariants ±20 detik; build ±1 menit) |
 | `bun run test:build-matrix [--modes absent,prodsim,partial,full]` | 4 mode build + cek HTTP gerbang (`tests/build/env-gate-http.test.ts`) + secret-scan log build dan `.next/static` + `.next/server` | Mode `full` dan secret-scan `.next` hanya bila `.env.local` ada | ±2,5–3,5 menit dengan cache Turbopack hangat |
 
 Cek read-only tanpa server: `node --import tsx --test --test-reporter=spec tests/integration/db-invariants.test.ts`.
@@ -154,7 +154,8 @@ ID cek dari skrip arsip M3-01/M3-02 dipertahankan di nama tes. Cek jumlah user (
 | `tests/unit/env.test.ts` | 11 | `payload/env.ts`: tanpa env → CMS mati; set lengkap → hidup; set parsial → error yang hanya menyebut nama variabel; `VERCEL_ENV=production` mematikan CMS, juga untuk set parsial |
 | `tests/unit/proxy.test.ts` | 4 | `proxy.ts`: 404 + `X-Robots-Tag: noindex` + `Cache-Control: no-store` saat CMS mati; lanjut saat hidup; `config.matcher` 4 entri |
 | `tests/unit/locales.test.ts` | 10 | `lib/i18n/locales.ts`: `LOCALES`, `DEFAULT_LOCALE`, `isLocale`, `otherLocale`, `languageSwitchHref` |
-| `tests/unit/roles.test.ts` | 17 | `payload/access/roles.ts` (5) + akses koleksi Publications, Users, Topics, PublicationTypes, TranslationGroups dan field `everPublished` (12) |
+| `tests/unit/roles.test.ts` | 18 | `payload/access/roles.ts` (6, termasuk `isStaffField` dari M3-03) + akses koleksi Publications, Users, Topics, PublicationTypes, TranslationGroups dan field `everPublished` (12) |
+| `tests/unit/publication-workflow.test.ts` | 19 | M3-03 (DECISIONS §2.6): `readLiveOnSite` L1–L5 (anonim tanpa query; staf dan `overrideAccess` dihitung dari record utama dengan `PUBLIC_PUBLICATION_READ`; tanpa id → `no`; query satu request berurutan), konfigurasi `liveOnSite` (virtual, tanpa filter daftar, hanya dibaca staf, tidak pernah ditulis) dan `defaultColumns`; `markStatusNotSent` M1–M2 dan `refuseImplicitStatusOverPendingDraft` U1–U7 (P5 A), urutan hook `beforeOperation`/`beforeChange` |
 | `tests/unit/publication-lifecycle.test.ts` | 9 | `setPublicationLifecycleFields` (`publishedAt` terisi saat terbit, termasuk nilai `null`; `everPublished`) |
 | `tests/unit/deny-public-fallback.test.ts` | 7 | `denyPublicFallback`: request tanpa login tidak boleh fallback locale |
 | `tests/unit/staff-user-hooks.test.ts` | 11 | `keepOneAdminOnRoleChange` (3), `keepOneAdminOnDelete` termasuk hapus bulk (5), `firstUserIsAdmin` (3); user in-memory, tanpa DB |
@@ -163,15 +164,18 @@ ID cek dari skrip arsip M3-01/M3-02 dipertahankan di nama tes. Cek jumlah user (
 | `tests/integration/guards.test.ts` | 23 | Arsip `m3-02-review-fixes-checks` (25 cek): G1, G2, G2b, G2c, G3–G6 (Admin terakhir; Owner hanya di transaksi rollback), T1–T7 (hapus Translation Group hanya Admin dan tidak saat dipakai), P0–P5 (`publishedAt`); G7 OBSERVED |
 | `tests/integration/locale.test.ts` | 37 | Arsip `m3-01-locale-checks` (37 cek): L1.1–L2.4, S1, S1.b, S2, S2.b, Q1–Q3, R1.1–R1.6, R2, R3, R3.b, R4.1–R4.3, R5.1–R5.6, F1, F1.b, F2, F3 (`?fallback-locale=` ditolak); E.id, E.en, F4 OBSERVED |
 | `tests/integration/race.test.ts` | 3 | Arsip `m3-02-race-checks` (4 cek): R1–R3, penulis bersamaan pada field bersama (row lock Translation Group, DEC-004) |
+| `tests/integration/workflow.test.ts` | 14 | M3-03 (DEC-015, DECISIONS §2.6): W1–W7 satu record lewat draft tidak lengkap → publish ditolak 400 (field wajib) → terbit → revisi draft (situs tetap versi lama) → terbit revisi → unpublish seperti tombol admin → terbit ulang, dengan `/id/publications` dicek pada request berikutnya dan `publishedAt` pertama dipertahankan; W8 unpublish ID, EN tetap tayang; W9 `liveOnSite` di daftar staf; W9b tanpa key `liveOnSite` untuk Local API anonim; W10–W12 simpan tanpa `_status` di atas draft tertunda ditolak (Local API, REST Editor, `updateSharedFields` + rollback); W13 simpan tanpa `_status` tetap diterima tanpa draft tertunda |
 | `tests/integration/db-invariants.test.ts` | 4 | I1 users = 1 dan satu-satunya user Admin bukan fixture; I2 RLS aktif di setiap tabel `public`; I3 setiap migrasi di `payload/migrations/index.ts` sudah jalan; I4 0 record `fixture-test-` |
 
 Hasil di tree akhir M3-10: unit 69/69; integrasi 104/104 (37 + 23 + 37 + 3 + 4); matriks build: absent build 0 + gerbang off 12/12, prodsim build 0 + gerbang prod 12/12, partial build gagal dengan nama variabel saja, full build 0 + gerbang on 10/10. Setiap area keamanan diuji rusak-sengaja dan gagal seperti diharapkan (bukti: CHANGELOG [M3-10]).
+
+Hasil di tree akhir M3-03 (2026-11-12): unit 89/89; integrasi 118/118 (37 + 23 + 37 + 3 + 14 + 4); matriks build keempat mode PASS dengan angka gerbang yang sama. Setiap tes baru diuji rusak-sengaja (bukti: CHANGELOG [M3-03]).
 
 ### 12.3 Aturan keamanan DB (P2 A)
 
 - **Guard target** (`tests/helpers/target-guard.ts`): tes menolak jalan sebelum koneksi DB bila `VERCEL_ENV` terisi, bila set env CMS tidak lengkap, atau bila `CMS_SUPABASE_DATABASE_URI` tidak menunjuk project `mahira-cms` (ref `qnfzzymrceoubowfknvl`). Pesan hanya menyebut nama variabel.
 - **Guard Owner:** sebelum dan sesudah setiap file, `users` = 1 dan satu-satunya user (bukan fixture) ber-role Admin. Email dan id Owner tidak pernah dicetak.
-- **Fixture:** slug dan email berprefix `fixture-test-<area>-` (access, guard, locale, race), email `@example.invalid`, label/judul `[FIXTURE] test <area> `. Dihapus di awal dan akhir file; hanya fixture buatan tes yang disentuh. Fixture `[FIXTURE]` lama tidak diubah.
+- **Fixture:** slug dan email berprefix `fixture-test-<area>-` (access, guard, locale, race, workflow), email `@example.invalid`, label/judul `[FIXTURE] test <area> `. Dihapus di awal dan akhir file; hanya fixture buatan tes yang disentuh. Fixture `[FIXTURE]` lama tidak diubah.
 - **Akun Owner** hanya disentuh di dalam transaksi yang selalu di-rollback. Uji rusak-sengaja keep-one-admin, first-user-is-admin, akses Users, `isAdminOrSelf`, dan `isAdminField` hanya lewat unit test tanpa DB.
 - **Berurutan:** file integrasi jalan satu per satu; jangan menjalankan dua run integrasi bersamaan, dan jangan `bun run build` saat tes integrasi berjalan.
 - Koneksi tes dibatasi `idle_in_transaction_session_timeout = '60s'`; password fixture acak di memori; log server ditulis ke folder temp OS, bukan ke repo. `migrate`, `migrate:reset`, `migrate:fresh`, dan `migrate:down` tidak pernah dijalankan oleh tes.
@@ -186,10 +190,12 @@ Hasil di tree akhir M3-10: unit 69/69; integrasi 104/104 (37 + 23 + 37 + 3 + 4);
 - Tes DB dan `migrate:status` (DEC-007) tidak jalan di CI karena tidak ada secret DB di GitHub; `db-invariants` lokal memeriksa migrasi.
 - Vercel Preview memakai DB `mahira-cms` yang sama, jadi fixture published + public buatan tes sempat terlihat di Preview selama run.
 - Komponen UI belum diuji (belum ada komponen interaktif).
+- UI daftar dan edit Publication di admin (kolom default, "Tayang di situs", konfirmasi Unpublish) belum punya tes otomatis; cek manual Owner di Vercel Preview sampai Playwright tersedia (M3-05/M5). Tes M3-03 memanggil REST dengan parameter yang sama seperti tombol admin (Save Draft `?draft=true` + `_status: draft`, Publish `_status: published`, Unpublish `?unpublishAllLocales=true` + `_status: draft`), tetapi tidak membuka admin.
+- Pooler Supabase `mahira-cms` memutus koneksi ("Connection terminated unexpectedly") di 4 dari 15 run integrasi M3-03 (2026-11-12); run diulang, tidak ada assertion yang gagal karena perilaku aplikasi. Bila pemutusan terjadi saat cleanup `after`, fixture tertinggal sampai file area yang sama jalan lagi (cleanup di awal file).
 
 ### 12.6 Exit code di Node 26.13.0
 
-Di Node lokal v26.13.0 semua run M3-10 (unit, matriks build, integrasi, termasuk run rusak-sengaja) mengembalikan exit code aslinya: 0 lulus, 1 gagal. Assertion libuv / exit 9 yang tercatat di SPIKE-001 §8 (Node 26.4.0) tidak muncul. Exit code tidak disamarkan dan `--test-force-exit` tidak dipakai.
+Di Node lokal v26.13.0 semua run M3-10 dan M3-03 (unit, matriks build, integrasi, termasuk run rusak-sengaja) mengembalikan exit code aslinya: 0 lulus, 1 gagal. Assertion libuv / exit 9 yang tercatat di SPIKE-001 §8 (Node 26.4.0) tidak muncul. Exit code tidak disamarkan dan `--test-force-exit` tidak dipakai.
 
 ### 12.7 Tes race saat upgrade Payload
 
@@ -199,3 +205,5 @@ Row lock Translation Group bergantung pada internal `@payloadcms/drizzle` (ENVIR
 - langsung tanpa server: `node --import tsx --test --test-reporter=spec tests/integration/race.test.ts`.
 
 Helper `closeTestPayload` mengakhiri pool `pg` lewat internal `pg-pool` 3.14.0; tes race yang selesai dan keluar sendiri juga membuktikan helper ini masih berfungsi.
+
+Tes workflow (M3-03) juga bergantung pada perilaku Payload 3.93.0 (ENVIRONMENTS §3.1): jalankan ulang `bun run test:integration --only race,workflow` pada setiap upgrade Payload.

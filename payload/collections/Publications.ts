@@ -1,13 +1,11 @@
-import type { CollectionConfig, Where } from "payload";
-import { isAnonymousLocalRead, isStaff, staffRoleOf } from "../access/roles";
+import type { CollectionConfig } from "payload";
+import { PUBLIC_PUBLICATION_READ } from "../access/public-read";
+import { isAnonymousLocalRead, isStaff, isStaffField, staffRoleOf } from "../access/roles";
 import { validateSlug } from "../fields/slug";
 import { enforceSharedFields } from "../hooks/enforce-shared-fields";
+import { readLiveOnSite } from "../hooks/live-on-site";
 import { setPublicationLifecycleFields } from "../hooks/publication-lifecycle";
-
-/** What an anonymous Local API read may see (DEC-002). */
-const PUBLIC_READ: Where = {
-  and: [{ _status: { equals: "published" } }, { accessLevel: { equals: "public" } }],
-};
+import { markStatusNotSent, refuseImplicitStatusOverPendingDraft } from "../hooks/refuse-implicit-status-over-pending-draft";
 
 /**
  * Publication (DEC-004 linked-record model): one record per language, linked
@@ -21,6 +19,8 @@ export const Publications: CollectionConfig = {
   slug: "publications",
   admin: {
     useAsTitle: "title",
+    // DECISIONS §2.6 P4 B: status columns of the minimum workflow (DEC-015).
+    defaultColumns: ["title", "locale", "_status", "liveOnSite", "everPublished", "publishedAt", "updatedAt"],
   },
   versions: {
     drafts: true,
@@ -32,7 +32,7 @@ export const Publications: CollectionConfig = {
     // (DEC-002); anonymous REST is denied (Owner 2026-11-10, P1 A).
     read: ({ req }) => {
       if (staffRoleOf(req) !== null) return true;
-      if (isAnonymousLocalRead(req)) return PUBLIC_READ;
+      if (isAnonymousLocalRead(req)) return PUBLIC_PUBLICATION_READ;
       return false;
     },
     create: isStaff,
@@ -47,9 +47,13 @@ export const Publications: CollectionConfig = {
     },
   },
   hooks: {
-    // Lifecycle fields first (P3 B, DEC-016), then DEC-004: shared fields
-    // stay equal across the Translation Group.
-    beforeChange: [setPublicationLifecycleFields, enforceSharedFields],
+    // P5 (DECISIONS §2.6): record whether an update sends `_status` before
+    // Payload fills missing fields from the stored document.
+    beforeOperation: [markStatusNotSent],
+    // First the P5 refusal, so a refused save never takes the Translation
+    // Group lock; then lifecycle fields (P3 B, DEC-016); then DEC-004:
+    // shared fields stay equal across the Translation Group.
+    beforeChange: [refuseImplicitStatusOverPendingDraft, setPublicationLifecycleFields, enforceSharedFields],
   },
   indexes: [
     { fields: ["locale", "slug"], unique: true },
@@ -141,6 +145,35 @@ export const Publications: CollectionConfig = {
         readOnly: true,
         position: "sidebar",
         description: "Diisi sistem. Versi bahasa yang pernah terbit hanya boleh dihapus Admin (DEC-016).",
+      },
+    },
+    {
+      // Virtual, staff only, computed on read (DECISIONS §2.6 P4 B): no
+      // column, no migration. Payload refuses list filters on virtual fields
+      // and does not sort them.
+      name: "liveOnSite",
+      type: "select",
+      label: "Tayang di situs",
+      virtual: true,
+      options: [
+        { label: "Ya", value: "yes" },
+        { label: "Tidak", value: "no" },
+      ],
+      access: {
+        read: isStaffField,
+        create: () => false,
+        update: () => false,
+      },
+      hooks: {
+        afterRead: [readLiveOnSite],
+      },
+      admin: {
+        readOnly: true,
+        position: "sidebar",
+        disableListFilter: true,
+        disableBulkEdit: true,
+        description:
+          "Dihitung sistem, tidak disimpan: Ya bila versi yang tayang berstatus published dan Access Level public (yang dilihat pengunjung, DEC-002). Status Changed + Ya = tayang dengan revisi tertunda.",
       },
     },
     {
