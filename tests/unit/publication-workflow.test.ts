@@ -82,6 +82,28 @@ describe("payload/hooks/live-on-site.ts â€” readLiveOnSite", () => {
     assert.equal(calls.length, 1);
   });
 
+  test("L5 a list read (concurrent hooks on one req): one query at a time, each doc gets its own answer", async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const live = new Set([1, 3]);
+    const payload = {
+      db: {
+        findOne: async ({ where }: { where: { and: [{ id: { equals: number } }, unknown] } }) => {
+          inFlight++;
+          maxInFlight = Math.max(maxInFlight, inFlight);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          inFlight--;
+          const id = where.and[0].id.equals;
+          return live.has(id) ? { id } : null;
+        },
+      },
+    };
+    const req = fakeReq({ user: fakeUser("editor", 2), payload });
+    const results = await Promise.all([1, 2, 3, 4].map((id) => runLiveOnSite(req, { id })));
+    assert.deepEqual(results, ["yes", "no", "yes", "no"]);
+    assert.equal(maxInFlight, 1, "queries of one request must not run in parallel");
+  });
+
   test("L4 doc without id: no, no query", async () => {
     const { calls, payload } = fakeDb({ id: 1 });
     assert.equal(await runLiveOnSite(fakeReq({ user: fakeUser("admin", 1), payload }), { _status: "published" }), "no");

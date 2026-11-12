@@ -2,6 +2,22 @@ import type { FieldHook } from "payload";
 import { PUBLIC_PUBLICATION_READ } from "../access/public-read";
 import { staffRoleOf } from "../access/roles";
 
+/** Last pending liveOnSite query per request (see `oneAtATime`). */
+const pending = new WeakMap<object, Promise<unknown>>();
+
+/**
+ * Runs the liveOnSite queries of one request one after another. Payload runs
+ * the afterRead hooks of every doc in a list concurrently, so a list of N
+ * publications would otherwise open up to N pool connections at once
+ * (session pooler of `mahira-cms`); one by one it holds at most one.
+ */
+function oneAtATime<T>(key: object, task: () => Promise<T>): Promise<T> {
+  const previous = pending.get(key) ?? Promise.resolve();
+  const next = previous.then(task, task);
+  pending.set(key, next.catch(() => undefined));
+  return next;
+}
+
 /**
  * afterRead hook of the virtual field `liveOnSite` ("Tayang di situs",
  * DECISIONS §2.6 P4): "yes" when the record in the main table (the version
@@ -20,11 +36,13 @@ export const readLiveOnSite: FieldHook = async ({ data, overrideAccess, req }) =
   if (!overrideAccess && staffRoleOf(req) === null) return undefined;
   const id = (data as { id?: number | string } | undefined)?.id;
   if (id === undefined || id === null) return "no";
-  const record = await req.payload.db.findOne({
-    collection: "publications",
-    where: { and: [{ id: { equals: id } }, PUBLIC_PUBLICATION_READ] },
-    select: { id: true },
-    req,
-  });
+  const record = await oneAtATime(req, () =>
+    req.payload.db.findOne({
+      collection: "publications",
+      where: { and: [{ id: { equals: id } }, PUBLIC_PUBLICATION_READ] },
+      select: { id: true },
+      req,
+    }),
+  );
   return record ? "yes" : "no";
 };
