@@ -5,6 +5,7 @@ import { validateSlug } from "../fields/slug";
 import { enforceSharedFields } from "../hooks/enforce-shared-fields";
 import { readLiveOnSite } from "../hooks/live-on-site";
 import { setPublicationLifecycleFields } from "../hooks/publication-lifecycle";
+import { markStatusNotSent, refuseImplicitStatusOverPendingDraft } from "../hooks/refuse-implicit-status-over-pending-draft";
 
 /**
  * Publication (DEC-004 linked-record model): one record per language, linked
@@ -46,9 +47,13 @@ export const Publications: CollectionConfig = {
     },
   },
   hooks: {
-    // Lifecycle fields first (P3 B, DEC-016), then DEC-004: shared fields
-    // stay equal across the Translation Group.
-    beforeChange: [setPublicationLifecycleFields, enforceSharedFields],
+    // P5 (DECISIONS §2.6): record whether an update sends `_status` before
+    // Payload fills missing fields from the stored document.
+    beforeOperation: [markStatusNotSent],
+    // First the P5 refusal, so a refused save never takes the Translation
+    // Group lock; then lifecycle fields (P3 B, DEC-016); then DEC-004:
+    // shared fields stay equal across the Translation Group.
+    beforeChange: [refuseImplicitStatusOverPendingDraft, setPublicationLifecycleFields, enforceSharedFields],
   },
   indexes: [
     { fields: ["locale", "slug"], unique: true },

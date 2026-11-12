@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
+import { ValidationError } from "payload";
 import type { Payload, RequiredDataFromCollectionSlug } from "payload";
 
+import { updateSharedFields } from "../../lib/publications/update-shared-fields";
+import { PENDING_DRAFT_MESSAGE } from "../../payload/hooks/refuse-implicit-status-over-pending-draft";
 import type { Publication } from "../../payload/payload-types";
 import {
   areaEmail,
@@ -57,6 +60,24 @@ function escapeRegExp(value: string): string {
 function titleOnPage(html: string, slug: string): string | undefined {
   const match = new RegExp(`data-publication-slug="${escapeRegExp(slug)}"[^>]*>([^<]*)<`).exec(html);
   return match ? match[1] : undefined;
+}
+
+function describeError(error: unknown): string {
+  if (error instanceof ValidationError) {
+    const items = error.data.errors.map((item) => `${item.path}: ${item.message}`).join("; ");
+    return `ValidationError ${error.status} [${items}]`;
+  }
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  return String(error);
+}
+
+/** True for the P5 refusal: ValidationError 400 on path _status with PENDING_DRAFT_MESSAGE. */
+function isPendingDraftRefusal(error: unknown): boolean {
+  return (
+    error instanceof ValidationError &&
+    error.status === 400 &&
+    error.data.errors.some((item) => item.path === "_status" && item.message === PENDING_DRAFT_MESSAGE)
+  );
 }
 
 function isRecent(value: string | null | undefined, startedAt: number): boolean {
@@ -357,6 +378,77 @@ describe("workflow (M3-03 draft, publish, revise, unpublish, public page, liveOn
     });
     const doc = found.docs[0];
     assert.ok(doc !== undefined && !("liveOnSite" in doc), `docs=${found.docs.length}; liveOnSite key present=${doc ? "liveOnSite" in doc : "no doc"}`);
+  });
+
+  // ------------------------------------------------------------ W10–W12 P5: save without _status over a pending draft
+  /** Published + public record with a pending draft revision (title changed in the draft only). */
+  async function liveWithPendingDraft(name: string, group: number, locale: Locale = "id"): Promise<Publication> {
+    const record = await createPub(fullData(`${name} live`, name, group, { locale }), "published");
+    await p().update({
+      collection: "publications",
+      id: record.id,
+      data: { title: `${LABEL}${name} pending draft` },
+      draft: true,
+      depth: 0,
+      overrideAccess: true,
+    });
+    return record;
+  }
+
+  /** Main record still published with its old title and still visible to anonymous readers. */
+  async function stillLive(record: Publication): Promise<{ ok: boolean; fact: string }> {
+    const main = await stored(record.id);
+    const seen = await anonymous(record.id);
+    const ok = main._status === "published" && main.title === record.title && seen === `found:${record.title}`;
+    return { ok, fact: `stored _status=${main._status}, old title kept=${main.title === record.title}, anonymous findByID=${seen}` };
+  }
+
+  test("W10 Local API save without _status over a pending draft: refused 400 on _status, record stays live", async () => {
+    const record = await liveWithPendingDraft("w10", await createGroup(p(), AREA, "w10"));
+    let outcome = "ACCEPTED";
+    let refused = false;
+    try {
+      await p().update({ collection: "publications", id: record.id, data: { title: `${LABEL}w10 implicit` }, depth: 0, overrideAccess: true });
+    } catch (error) {
+      outcome = describeError(error);
+      refused = isPendingDraftRefusal(error);
+    }
+    const state = await stillLive(record);
+    assert.ok(refused && state.ok, `update {title} without _status/draft: ${outcome}; ${state.fact}`);
+  });
+
+  test("W11 editor REST PATCH without _status over a pending draft: 400 with the P5 message, record stays live", async () => {
+    const record = await liveWithPendingDraft("w11", await createGroup(p(), AREA, "w11"));
+    const result = await rest("PATCH", `/api/publications/${record.id}`, { token: token(), body: { title: `${LABEL}w11 implicit` } });
+    const state = await stillLive(record);
+    assert.ok(
+      result.status === 400 && restErrors(result.body).includes(PENDING_DRAFT_MESSAGE) && state.ok,
+      `editor PATCH {title}: ${restFact(result)}; ${state.fact}`,
+    );
+  });
+
+  test("W12 updateSharedFields on a group with a live sibling that has a pending draft: refused, whole transaction rolled back", async () => {
+    const group = await createGroup(p(), AREA, "w12");
+    // ID first (lower id, saved first by updateSharedFields), no draft; EN with a pending draft.
+    const idRecord = await createPub(fullData("w12 ID live", "w12-id", group), "published");
+    const enRecord = await liveWithPendingDraft("w12-en", group, "en");
+    let outcome = "ACCEPTED";
+    let refused = false;
+    try {
+      await updateSharedFields(p(), group, { accessLevel: "registered" });
+    } catch (error) {
+      outcome = describeError(error);
+      refused = isPendingDraftRefusal(error);
+    }
+    const levels: string[] = [];
+    for (const record of [idRecord, enRecord]) {
+      levels.push(`${record.locale} record=${(await stored(record.id)).accessLevel} latest=${(await latest(record.id)).accessLevel}`);
+    }
+    const enState = await stillLive(enRecord);
+    assert.ok(
+      refused && levels.every((line) => !line.includes("registered")) && enState.ok,
+      `updateSharedFields accessLevel=registered: ${outcome}; accessLevel [${levels.join("; ")}] (expected public everywhere); EN ${enState.fact}`,
+    );
   });
 
   // ------------------------------------------------------------ W13 saves without _status that must stay allowed
