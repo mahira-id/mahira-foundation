@@ -13,6 +13,7 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *   guards        Translation Group delete, publishedAt refill, last-Admin guard
  *   locale        locale routes, <html lang>, 404/308, no public locale fallback
  *   race          DEC-004 shared fields under concurrent writers (rerun on every Payload upgrade)
+ *   workflow      draft/publish/revise/unpublish, public page freshness, liveOnSite, P5 guard
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left (always last)
  *
  * Usage: bun run test:integration [--skip-build] [--only access,guards,...]
@@ -23,6 +24,7 @@ const FILES = {
   guards: "tests/integration/guards.test.ts",
   locale: "tests/integration/locale.test.ts",
   race: "tests/integration/race.test.ts",
+  workflow: "tests/integration/workflow.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;
