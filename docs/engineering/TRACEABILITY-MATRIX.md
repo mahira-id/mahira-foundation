@@ -22,7 +22,7 @@ Memetakan kebutuhan PRD/SRS ke spesifikasi, implementasi, dan test. Mapping beri
 | SRS FR-010/011 | Registration/sign-in/out | ADR-0003, API-SPEC | auth/account | AUTH-01.. | MVP or next slice, resolve PRD conflict |
 | SRS FR-012 | Account area | PAGE-SPEC, API-SPEC | account | ACCOUNT-01.. | MVP or next slice |
 | SRS FR-013 | Manual entitlement admin | ACCESS-POLICY, EDITORIAL/ops workflow | entitlement | ENT-01.. | MVP or next slice |
-| SRS FR-014/015 | Editorial CRUD/workflow | CONTENT-ARCH, EDITORIAL-WORKFLOW | Payload | CMS-01.. | MVP |
+| SRS FR-014/015 | Editorial CRUD/workflow | CONTENT-ARCH, EDITORIAL-WORKFLOW §9; DEC-015, DECISIONS §2.6 | Payload (`payload/collections/Publications.ts`, `payload/hooks/live-on-site.ts`, `payload/hooks/refuse-implicit-status-over-pending-draft.ts`) | `tests/integration/workflow.test.ts` W1–W13; `tests/unit/publication-workflow.test.ts` (M3-03); preview M3-05 | MVP |
 | SRS FR-016 | Author/topic management | DATA-MODEL | Payload collections | CMS-REL-01.. | MVP |
 | SRS FR-017 | Media/file upload | ACCESS-POLICY, INTEGRATION-CONTRACTS | Payload/storage | FILE-UP-01.. | MVP |
 | SRS FR-018/019 | Learning catalog/embed | PAGE-SPEC, CONTENT-ARCH | learning | LEARN-01.. | P1 |
