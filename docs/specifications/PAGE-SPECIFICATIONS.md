@@ -51,7 +51,7 @@ Implementasi M3-04 (DECISIONS §2.7):
 - M3-04 (DECISIONS §2.7 P1 A, P3 A):
   - **CMS mati** (tanpa env, atau `VERCEL_ENV=production`): `/` tetap 200 dengan blok statis; blok Publikasi berisi "Belum ada publikasi yang terbit. Publikasi akan tampil di sini setelah diterbitkan."; Indeks dan Bidang kerja tidak tampil.
   - **Tanpa publikasi:** catatan yang sama; Indeks tidak tampil. **Satu publikasi:** lead saja. **Tanpa topik aktif:** Bidang kerja tidak tampil.
-  - **Baca CMS gagal:** blok Publikasi berisi "Publikasi belum dapat dimuat. Coba muat ulang halaman beberapa saat lagi.", Bidang kerja tidak tampil, halaman tetap 200; log server hanya mencatat nama galat.
+  - **Baca CMS gagal:** blok Publikasi berisi "Publikasi belum dapat dimuat. Coba muat ulang halaman beberapa saat lagi.", Bidang kerja tidak tampil, halaman tetap 200; baris log aplikasi `[homepage]` hanya mencatat nama galat. Batas: bila koneksi Postgres gagal saat init Payload, log adapter Payload sendiri (`@payloadcms/db-postgres`) memuat pesan galat koneksi yang dapat berisi host/user pooler (TEST-PLAN §12.5).
 
 ### SEO/a11y
 Unique title/description, canonical, OG, one primary H1, semantic landmarks, descriptive image alt, skip link, keyboard-operable navigation.

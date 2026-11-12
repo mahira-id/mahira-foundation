@@ -94,10 +94,8 @@ export type NextServer = {
  * is already in use, so a test never talks to a server it did not start.
  *
  * `warmPath`: requested once (any status) before the first `GET /`, so that
- * path is the first request the server handles. The DB integration tests pass
- * a REST path: whichever bundle calls `getPayload` first creates the shared
- * Payload instance, and when a page creates it, REST ValidationErrors lose
- * their field details (known issue M3-04, MILESTONES; TEST-PLAN §12.5).
+ * path is the first request the server handles. HP9 passes `/admin` to check
+ * an admin-first Payload init (TEST-PLAN §12.5).
  */
 export async function startNextServer(options: {
   env: ChildEnv;

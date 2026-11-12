@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { after, before, describe, test } from "node:test";
+import { after, before, describe, test, type TestContext } from "node:test";
 import { sql, type PostgresAdapter } from "@payloadcms/db-postgres";
 import type { Payload, RequiredDataFromCollectionSlug } from "payload";
 
@@ -17,7 +17,7 @@ import {
   totalOf,
 } from "../helpers/fixtures";
 import { startNextServer } from "../../scripts/lib/processes";
-import { BASE_URL, assertServerUp, getPage, pageFact, rest, type JsonObject } from "../helpers/http";
+import { BASE_URL, assertServerUp, getPage, pageFact, type JsonObject } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
 
 /**
@@ -35,9 +35,10 @@ import { closeTestPayload, getTestPayload } from "../helpers/payload";
  * "[FIXTURE] test home *". No user is created; the Owner guard runs before
  * any fixture is written and after cleanup.
  *
- * HP8 is a `todo` regression test of a known issue: it starts a second, fresh
- * `next start` on TEST_PORT + 1 (no build), lets GET / create the Payload
- * instance, and checks an anonymous empty login for REST field-error details.
+ * HP8 and HP9 are regression tests of the Payload init-order bug (TEST-PLAN
+ * §12.5): each starts a second, fresh `next start` on TEST_PORT + 1 (no
+ * build), lets GET / (HP8) or GET /admin (HP9) create the Payload instance,
+ * and checks an anonymous empty login for REST field-error details.
  */
 type PubData = RequiredDataFromCollectionSlug<"publications">;
 
@@ -49,7 +50,7 @@ const TOPIC_OFF_NAME = `${LABEL}Topik Nonaktif`;
 
 const slug = (name: string) => `${PREFIX}${name}`;
 
-/** Port of the second, fresh server of HP8 (the shared one is BASE_URL). */
+/** Port of the second, fresh server of HP8/HP9 (the shared one is BASE_URL). */
 const FRESH_PORT = Number(new URL(BASE_URL).port || "3100") + 1;
 
 /** "status=<n> name=<name> data=<yes|no> paths=<a,b>" of the first REST error. */
@@ -63,6 +64,18 @@ function firstErrorFact(status: number, body: JsonObject): string {
 
 function matches(html: string, attribute: string): string[] {
   return [...html.matchAll(new RegExp(`${attribute}="([^"]+)"`, "g"))].map((match) => match[1] as string);
+}
+
+/** Rows of the latest list in page order, with the row's <time datetime> if any. */
+function latestRows(html: string): { slug: string; dateTime?: string }[] {
+  const starts = [...html.matchAll(/data-home-latest="([^"]+)"/g)];
+  return starts.map((match, index) => {
+    const end = starts[index + 1]?.index ?? html.length;
+    const row = html.slice(match.index, end);
+    const close = row.indexOf("</details>");
+    const time = (close === -1 ? row : row.slice(0, close)).match(/<time[^>]*\sdatetime="([^"]+)"/i);
+    return { slug: match[1] as string, dateTime: time?.[1] };
+  });
 }
 
 type Fixtures = {
@@ -180,17 +193,26 @@ describe("homepage (M3-04 / from CMS data)", () => {
     }
   });
 
-  test("HP1 GET /: lead = newest dated, latest starts [old, undated-2, undated-1], at most 4 rows", async () => {
+  // Checks order properties and the relative order of this file's fixtures,
+  // not fixed positions: other published + public ID records in the shared
+  // database (dated or not) may share the four rows.
+  test("HP1 GET /: lead = newest dated, dated rows (newest first) before undated, fixtures in order, at most 4 rows", async () => {
     const html = await home();
     const leads = matches(html, "data-home-lead");
-    const latest = matches(html, "data-home-latest");
     assert.deepEqual(leads, [slug("new")], `data-home-lead values: ${leads.join(", ")}`);
-    assert.deepEqual(
-      latest.slice(0, 3),
-      [slug("old"), slug("undated-2"), slug("undated-1")],
-      `data-home-latest order: ${latest.join(", ")}`,
-    );
-    assert.equal(latest.length <= 4, true, `latest rows: ${latest.length}`);
+    const rows = latestRows(html);
+    const fact = rows.map((row) => `${row.slug}@${row.dateTime ?? "-"}`).join(", ");
+    assert.equal(rows.length >= 1 && rows.length <= 4, true, `latest rows (${rows.length}): ${fact}`);
+    const firstUndated = rows.findIndex((row) => row.dateTime === undefined);
+    const datedAfterUndated = firstUndated !== -1 && rows.slice(firstUndated).some((row) => row.dateTime !== undefined);
+    assert.equal(datedAfterUndated, false, `dated row after an undated row: ${fact}`);
+    const dated = rows.flatMap((row) => (row.dateTime === undefined ? [] : [Date.parse(row.dateTime)]));
+    assert.equal(dated.every((time, index) => index === 0 || (dated[index - 1] as number) >= time), true, `dated rows not newest first: ${fact}`);
+    // "old" (2090) is newer than every non-fixture record, so it is always shown.
+    const expected = [slug("old"), slug("undated-2"), slug("undated-1")];
+    const shown = rows.map((row) => row.slug).filter((rowSlug) => expected.includes(rowSlug));
+    assert.equal(shown[0], slug("old"), `"old" not the first fixture row: ${fact}`);
+    assert.deepEqual(shown, expected.slice(0, shown.length), `fixture rows out of order: ${fact}`);
   });
 
   test("HP2 registered, draft and EN fixtures are not on / (DEC-002, no draft, locale id only)", async () => {
@@ -257,36 +279,40 @@ describe("homepage (M3-04 / from CMS data)", () => {
     }
   });
 
-  // Known issue (M3-04, pre-existing; MILESTONES M3-04, TEST-PLAN §12.5): the
-  // production bundle has two copies of `payload` and getPayload keeps one
-  // global instance. When a page creates it (fresh server, GET / first), REST
-  // ValidationErrors lose `errors[0].data`. Fix candidate:
-  // serverExternalPackages ["payload"] in next.config.ts (Owner approval).
-  // Runs and reports; does not fail the run until the fix lands.
-  test(
-    "HP8 page-first Payload init keeps REST field-error details (errors[0].data)",
-    { todo: "known issue M3-04: page-first getPayload drops REST ValidationError data; fix needs Owner approval (TEST-PLAN §12.5)" },
-    async (t) => {
-      const shared = await rest("POST", "/api/users/login", { body: {} });
-      t.diagnostic(`shared server (REST warmed first), empty login: ${firstErrorFact(shared.status, shared.body)}`);
-      // startNextServer waits for GET / = 200, so a page creates the instance.
-      const env: Record<string, string | undefined> = { ...process.env };
-      delete env.NODE_TEST_CONTEXT; // the child is a server, not a test process
-      const fresh = await startNextServer({ env, port: FRESH_PORT, label: "home-hp8" });
-      try {
-        const response = await fetch(`http://localhost:${FRESH_PORT}/api/users/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: "{}",
-        });
-        const body = (await response.json()) as JsonObject;
-        const fact = firstErrorFact(response.status, body);
-        t.diagnostic(`fresh server (GET / first), empty login: ${fact}`);
-        assert.equal(response.status, 400, `empty login on the fresh server: ${fact}`);
-        assert.equal(fact.includes("data=yes"), true, `errors[0].data missing after page-first init: ${fact}`);
-      } finally {
-        await fresh.stop();
-      }
-    },
-  );
+  // Payload init order (fixed after M3-04; TEST-PLAN §12.5): a fresh
+  // `next start` whose first request is a page or /admin must still return
+  // REST ValidationErrors with their field details (`errors[0].data`).
+  test("HP8 page-first Payload init (GET / first) keeps REST field-error details (errors[0].data)", async (t) => {
+    // startNextServer waits for GET / = 200, so the page creates the instance.
+    await assertFreshServerFieldErrors(t, "home-hp8");
+  });
+
+  test("HP9 admin-first Payload init (GET /admin first) keeps REST field-error details (errors[0].data)", async (t) => {
+    await assertFreshServerFieldErrors(t, "home-hp9", "/admin");
+  });
 });
+
+/**
+ * Starts a second, fresh `next start` on FRESH_PORT (no build), lets
+ * `warmPath` (or GET /) be its first request, then sends an anonymous empty
+ * login and asserts HTTP 400 with `errors[0].data` present.
+ */
+async function assertFreshServerFieldErrors(t: TestContext, label: string, warmPath?: string): Promise<void> {
+  const env: Record<string, string | undefined> = { ...process.env };
+  delete env.NODE_TEST_CONTEXT; // the child is a server, not a test process
+  const fresh = await startNextServer({ env, port: FRESH_PORT, label, warmPath });
+  try {
+    const response = await fetch(`http://localhost:${FRESH_PORT}/api/users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    const body = (await response.json()) as JsonObject;
+    const fact = firstErrorFact(response.status, body);
+    t.diagnostic(`fresh server (${warmPath ?? "/"} first), empty login: ${fact}`);
+    assert.equal(response.status, 400, `empty login on the fresh server: ${fact}`);
+    assert.equal(fact.includes("data=yes"), true, `errors[0].data missing after ${warmPath ?? "/"}-first init: ${fact}`);
+  } finally {
+    await fresh.stop();
+  }
+}
