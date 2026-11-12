@@ -18,21 +18,22 @@ Memetakan kebutuhan PRD/SRS ke spesifikasi, implementasi, dan test. Mapping beri
 | SRS FR-006 | Search | ADR-0007, API-SPEC | search | SEARCH-01.. | MVP |
 | SRS FR-007 | SEO metadata | SEO-SPEC, IA | seo/routes | SEO-01.. | MVP |
 | SRS FR-008 | Public download | ACCESS-POLICY, INTEGRATION-CONTRACTS | storage/download | FILE-PUB-01.. | MVP |
-| SRS FR-009 | Access enforcement | ACCESS-POLICY, ADR-0006 | access/download | ACL-01.. | MVP decision-dependent |
-| SRS FR-010/011 | Registration/sign-in/out | ADR-0003, API-SPEC | auth/account | AUTH-01.. | MVP or next slice, resolve PRD conflict |
-| SRS FR-012 | Account area | PAGE-SPEC, API-SPEC | account | ACCOUNT-01.. | MVP or next slice |
-| SRS FR-013 | Manual entitlement admin | ACCESS-POLICY, EDITORIAL/ops workflow | entitlement | ENT-01.. | MVP or next slice |
+| SRS FR-009 | Access enforcement | ACCESS-POLICY, ADR-0006 | access/download | ACL-01.. | Pra-launch M5 (`registered`) / Phase 2 M7 (subscriber) |
+| SRS FR-010/011 | Registration/sign-in/out | ADR-0003, API-SPEC | auth/account | AUTH-01.. | Pra-launch M5 (DECISIONS §2.8 Q1 A) |
+| SRS FR-012 | Account area | PAGE-SPEC, API-SPEC | account | ACCOUNT-01.. | Pra-launch M5 |
+| SRS FR-013 | Manual entitlement admin | ACCESS-POLICY, EDITORIAL/ops workflow | entitlement | ENT-01.. | Phase 2 M7 |
 | SRS FR-014/015 | Editorial CRUD/workflow | CONTENT-ARCH, EDITORIAL-WORKFLOW §9; DEC-015, DECISIONS §2.6 | Payload (`payload/collections/Publications.ts`, `payload/hooks/live-on-site.ts`, `payload/hooks/refuse-implicit-status-over-pending-draft.ts`) | `tests/integration/workflow.test.ts` W1–W13; `tests/unit/publication-workflow.test.ts` (M3-03); preview M3-05 | MVP |
 | SRS FR-016 | Author/topic management | DATA-MODEL | Payload collections | CMS-REL-01.. | MVP |
 | SRS FR-017 | Media/file upload | ACCESS-POLICY, INTEGRATION-CONTRACTS | Payload/storage | FILE-UP-01.. | MVP |
-| SRS FR-018/019 | Learning catalog/embed | PAGE-SPEC, CONTENT-ARCH | learning | LEARN-01.. | P1 |
+| SRS FR-018/019 | Learning catalog/embed | PAGE-SPEC §9, CONTENT-ARCH; DEC-014, DECISIONS §2.8 | learning | LEARN-01.. | Launch, M3-11–M3-13 |
 | SRS FR-020 | Static pages | CONTENT-ARCH, EDITORIAL-WORKFLOW | Payload pages | PAGE-CMS-01.. | P1 |
-| SRS FR-021 | Event content | Decision register | event | EVENT-01.. | P2/TBD |
-| SRS FR-022–024 | Subscription lifecycle | SUBSCRIPTION-BOUNDARY (later full spec) | billing/entitlement | PAY-01.. | Phase 2 |
-| SRS FR-025 | Email | ENVIRONMENTS/API-SPEC | notification | EMAIL-01.. | Phase TBD |
+| SRS FR-021 | Event content | Decision register | event | EVENT-01.. | Pasca-launch M6 (DECISIONS §2.8 Q3 A) |
+| SRS FR-022–024 | Subscription lifecycle | SUBSCRIPTION-BOUNDARY (later full spec) | billing/entitlement | PAY-01.. | Phase 2 M7 |
+| SRS FR-025 | Email | ENVIRONMENTS/API-SPEC | notification | EMAIL-01.. | Pra-launch M5-02 (verifikasi/reset, DEC-019) / Phase 2 (notifikasi transaksi) |
 | SRS FR-026 | Download audit | ACCESS-POLICY, privacy inventory | audit | AUDIT-01.. | P1/TBD |
 | SRS FR-027 | Bookmark/history | PRD/SRS, DATA-MODEL | account | ENGAGE-01.. | P2 |
-| SRS FR-028 | Newsletter | PRD, legal/privacy | integration | NEWS-01.. | P2 |
+| SRS FR-028 | Newsletter | PRD, legal/privacy | integration | NEWS-01.. | Pasca-launch M6 (DECISIONS §2.8 Q3 A) |
+| SRS FR-029 | Learning Hub guide and toolkit | PAGE-SPEC §9, DATA-MODEL §4.5; DEC-014, DECISIONS §2.8 | learning, storage/download (toolkit storage OPEN, M3-11) | LEARN-01.. | Launch, M3-11–M3-13 |
 | SRS NFR-001..014 | Quality attributes | TEST-PLAN, ENVIRONMENTS, SEO, DESIGN | cross-cutting | NFR-01.. | Release gates |
 
 ## 3. ID convention for test cases

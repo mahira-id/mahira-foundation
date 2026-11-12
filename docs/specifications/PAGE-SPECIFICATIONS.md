@@ -134,7 +134,8 @@ This is a component/pattern reused in publication detail and resource cards.
 
 ## 7. Account overview
 
-**Route:** `/{locale}/account` · **Audience:** authenticated public user · **Indexing:** noindex.
+**Route:** `/{locale}/account` · **Audience:** authenticated public user · **Indexing:** noindex.  
+**Fase:** pra-launch (M5; DECISIONS §2.8 Q1 A); status langganan Phase 2 (M7).
 
 - Account summary, verified-email status if available, profile actions.
 - Access/entitlement summary in user-friendly language.
@@ -146,7 +147,11 @@ This is a component/pattern reused in publication detail and resource cards.
 
 Not a public page, but a critical operational surface. Required groups: core metadata, locale/translation link, authors, taxonomy, publication type, lifecycle, access, assets, SEO, preview/publish controls. Exact fields come from DATA-MODEL.md. Inline field validation; unsaved-change warning; preview; clear draft/published state; permission-aware actions.
 
-## 9. Learning Hub index/detail (P1 baseline)
+## 9. Learning Hub index/detail (launch, DEC-014)
+
+**Cakupan launch (DECISIONS §2.8 Q2 A):** katalog per tema, embed video/playlist YouTube, panduan, dan toolkit yang dapat diunduh publik; semua tanpa login; tanpa progress, kuis, atau sertifikat. Referensi struktur: https://www.cips-indonesia.org/cips-learning-hub (identitas dan aset tidak disalin).
+
+**OPEN (M3-11):** model konten dan jenis materi, relasi tema ke Topic/"Bidang kerja", model bilingual, route (IA-ROUTING-I18N §3.1), penyimpanan file toolkit, serta halaman detail per materi vs embed langsung di katalog. Hierarki di bawah adalah baseline lama dan ditinjau ulang di M3-11.
 
 Index: title/intro, topic/format filters only if data exists, resource listing, empty/error/loading. Detail: title, format, summary, thumbnail, external provider/source, embed with accessible title, related publications. External embeds must respect privacy/consent requirements and should not load third-party trackers before necessary consent if policy requires.
 

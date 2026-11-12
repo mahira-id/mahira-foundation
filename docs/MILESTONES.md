@@ -14,7 +14,7 @@
 3. Keputusan tetap dicatat di `decisions/DECISIONS.md`. Dokumen ini hanya merujuk ID-nya.
 4. Setiap task selesai → (a) centang di sini dengan ID task, (b) tambah entri di `CHANGELOG.md` dengan commit/bukti.
 5. Status task: `TODO` · `DOING` · `BLOCKED` · `DONE` (wajib ada commit/bukti di CHANGELOG).
-6. Milestone baru boleh dimulai bila *exit criteria* milestone sebelumnya terpenuhi atau Owner menyetujui paralelisasi.
+6. Milestone baru boleh dimulai bila *exit criteria* milestone sebelumnya terpenuhi atau Owner menyetujui paralelisasi. Urutan eksekusi sejak 2026-11-12: M0 → M1 → M2 → M3 → M5 → M4 (launch) → M6 / M7 (DECISIONS §2.8). ID milestone dan task tidak di-renumber; urutan di §1 dan §2 mengikuti urutan eksekusi.
 
 ## 1. Ringkasan fase
 
@@ -23,11 +23,11 @@
 | M0 | Fondasi homepage & paket dokumen | Inisiasi | DONE | — |
 | M1 | Rekonsiliasi dokumen & keputusan | Requirements | DONE (M1-08 ditunda ke M4-05) | — |
 | M2 | Validasi teknis (spike) | Design / arsitektur | DONE (2026-11-10) | — |
-| M3 | MVP — Platform publikasi | Implementasi | DOING (M3-00, M3-01, M3-02, M3-03, M3-10 selesai) | DEC-017, DEC-024 (DEC-013 Accepted) |
-| M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3) | DEC-020, DEC-022, DEC-023 |
-| M5 | MVP+ — Akses pengguna | Implementasi lanjutan | BLOCKED | DEC-008–011, DEC-019, DEC-020 |
-| M6 | Expansion — Learning Hub & engagement | Evolusi | BLOCKED | DEC-014 |
-| M7 | Phase 2 — Subscription & pembayaran | Evolusi | BLOCKED | PRD D-08 |
+| M3 | MVP — Platform publikasi + Learning Hub | Implementasi | DOING (M3-00, M3-01, M3-02, M3-03, M3-10 selesai) | DEC-017, DEC-024 (DEC-013 Accepted); DEC-014 (detail OPEN, M3-11) |
+| M5 | Akses pengguna publik (pra-launch) | Implementasi | BLOCKED (M3) | DEC-008, DEC-010–DEC-012, DEC-019, DEC-020 |
+| M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3, M5) | DEC-020, DEC-022, DEC-023 |
+| M6 | Expansion pasca-launch | Evolusi | BLOCKED (M4) | Kebutuhan nyata (DECISIONS §2.8 Q3 A) |
+| M7 | Phase 2 — Subscription (pasca-launch) | Evolusi | BLOCKED (M4) | PRD D-08, DEC-010 |
 
 ## 2. Detail milestone
 
@@ -63,7 +63,7 @@
 
 **Exit:** DEC-006/007/018 Accepted dengan bukti spike ✔. DEC-012 tetap Proposed: bagian publik terbukti, bagian privat di M5-04.
 
-### M3 — MVP Publikasi (Implementasi, vertical slice)
+### M3 — MVP Publikasi + Learning Hub (Implementasi, vertical slice)
 Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10, merge di luar rencana; Owner memilih maju, bukan revert). Build produksi Vercel untuk `e7f6876` ERROR (`Missing required environment variable APP_SUPABASE_URL` dari `payload/payload.config.ts`); `mahira.id` masih melayani deploy `3839725`.
 - [x] M3-00 Pulihkan `master`: build Vercel hijau tanpa mengaktifkan `/admin` produksi ke database spike; buang skrip cek dan konfigurasi bertanda "SPIKE ONLY"; bukti build di Vercel Preview + Node 26.x (sisa M2-04) — branch `feat/m3-00-master-cleanup`, commit `2dc2e19`; Owner 2026-11-10: Opsi A (Payload mati di Vercel Production, hidup di Preview); build lulus tanpa env dan dengan env lengkap (CHANGELOG [M3-00]). Commit ter-push langsung ke `master` (upstream branch salah). Production `644833c` READY (`dpl_CEo1P2xzx6phTQPPmicCuHH8ZnSk`, 2026-11-10): `mahira.id/` 200, `/admin` 404, `/api/publications` 404. Preview dengan CMS aktif lulus (Owner 2026-11-10): `dpl_HdrgFNmF49qwQ53vUjjGBSc2ms2N` (redeploy `644833c`, target Preview) — login `/admin` OK, `/api/publications?limit=1` 200 (`totalDocs` 18, fixture). Production `4f6b466` (`dpl_CwFk9zTw3ixvZgBkhKoRWFb6hdvi`) tetap `/admin` 404
 - [x] M3-01 Routing locale `/id` `/en`, language switcher, fallback eksplisit (DEC-004/005); tutup celah `?fallback-locale=` di REST publik (temuan C4c) — branch `feat/m3-02-m3-01-cms-locale`, commit `8641593` (root layout `[locale]`, kerangka `/{locale}/publications`, switcher, `denyPublicFallback`, gerbang proxy); jawaban Owner DECISIONS §2.4 P4; bukti: CHANGELOG [M3-01]. Redirect 308 untuk slug lama menunggu halaman detail (M3-05/M3-07); 404 varian huruf besar perlu dicek ulang di Vercel Preview (artefak NTFS di Windows). Temuan tersisa: logo header di halaman `/en` menaut ke `/` (homepage Indonesia) tanpa `hrefLang` **Deploy (PR #6, merge `4c305ef`, 2026-11-11):** Preview lulus uji Owner (`/id`, `/en` publications, switcher, `/` tidak berubah); `/ID/publications` dialihkan ke huruf kecil, bukan 404 (Owner-observed; sumber pengalihan tidak ada di kode aplikasi, belum diverifikasi; tidak ada konten di URL huruf besar). Production: `/id/publications`, `/en/publications` 404.
@@ -76,8 +76,20 @@ Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10,
 - [ ] M3-08 Unduhan file publik; `access_level` tersimpan sejak awal
 - [ ] M3-09 Halaman About; satu sumber token desain (DEC-024)
 - [x] M3-10 Test framework dipilih + tes kritikal — branch `feat/m3-10-test-framework`, commit `0378252` (runner `node:test` + `tsx` 4.23.15, 69 unit test), `1967756` (matriks build 4 mode + cek gerbang HTTP + CI GitHub Actions tanpa secret), `421de03` (104 tes integrasi DB `mahira-cms` dengan isolasi fixture); jawaban Owner 2026-11-11 DECISIONS §2.5; perintah `bun run test`, `bun run test:integration`, `bun run test:build-matrix` (TEST-PLAN §12); bukti: CHANGELOG [M3-10]. Sisa temuan: belum ada E2E browser (Playwright di M3-05/M5); tes DB dan `migrate:status` tidak jalan di CI; Vercel Preview memakai DB yang sama dengan tes; pooler Supabase `mahira-cms` dua kali memutus koneksi di tengah run dan transaksi yatim menahan row lock ±15 menit (koneksi app tidak dibatasi `idle_in_transaction_session_timeout`; kandidat M4); helper akhir pool tes memakai internal `pg-pool` (cek ulang saat upgrade Payload/`pg`); `getPayload` non-produksi menulis ulang `payload/payload-types.ts` dengan LF di checkout CRLF; varian huruf besar `/ID`, `/EN` (run 2026-11-12 juga `/En`) + `/publications` 200 berisi shell kosong di `next start` Windows (filesystem lokal; varian berubah antar-run; di Linux/Vercel belum dicek); `.kiro/steering/tech.md` masih menyebut belum ada Payload/test framework. **Deploy (PR #7, merge `4945d0d`, 2026-11-11 17:16 UTC):** CI `check` hijau di PR (run `43066390970`, head `c9313de`) dan push `master` (run `43066583204`); status Vercel di `4945d0d` "Deployment has completed" (`dpl_9w1ogeMXtqtaM6y1fP61NZnDdRYZ`). Production dicek HTTP: `/` 200; `/admin`, `/api/publications`, `/id/publications`, `/en/publications` 404. Temuan review 3 (log `next start` di `%TEMP%`) dan 4 (tanggal DECISIONS §2.5 / TEST-PLAN §12.1) ditutup di branch `chore/m3-10-leftovers`
+- [ ] M3-11 Keputusan detail Learning Hub (DEC-014; butir OPEN di DECISIONS §2.8: model konten dan jenis materi, relasi ke Topic/"Bidang kerja", model bilingual, route, storage file toolkit, halaman detail vs embed langsung) + koleksi CMS — workflow terpisah
+- [ ] M3-12 Halaman publik Learning Hub (katalog per tema, embed video/playlist YouTube, panduan) + membuka kembali blok dan menu Learning Hub di homepage (DECISIONS §2.7 P2 A) — workflow terpisah
+- [ ] M3-13 Toolkit Learning Hub yang dapat diunduh publik (bergantung M3-08) — workflow terpisah
 
-**Exit:** PRD §13 AC 1–4 & 7 lulus di staging.
+**Exit:** PRD §13 AC 1–4, 7 dan 9 lulus di staging.
+
+### M5 — Akses pengguna publik (pra-launch)
+Dipindah ke sebelum M4 (DECISIONS §2.8 Q1 A). Bagian khusus subscriber pindah ke M7-02 dan M7-03.
+- [ ] M5-01 SPIKE-002 auth boundary (Supabase Auth publik vs staf Payload)
+- [ ] M5-02 Registrasi/login/logout/reset + verifikasi email, email transaksional (DEC-019), area akun minimal
+- [ ] M5-03 Evaluator akses server-side untuk level `registered` (DEC-010/011); entitlement manual subscriber pindah ke M7-02
+- [ ] M5-04 File `registered`: private bucket + cek sesi di server + signed URL; tes matriks akses SRS §12.1 kolom Visitor/Registered/Editor/Admin (kolom subscriber pindah ke M7-03)
+
+**Exit:** PRD §13 AC 5, 6 (file `registered`) dan 10 lulus di staging.
 
 ### M4 — Launch hardening (Verifikasi & Rilis)
 - [ ] M4-01 Audit aksesibilitas WCAG 2.2 AA & performa
@@ -86,19 +98,15 @@ Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10,
 - [ ] M4-04 Monitoring & analytics (DEC-022)
 - [ ] M4-05 Migrasi konten nyata; `RELEASE-CHECKLIST` lulus; produksi `https://mahira.id`
 
-**Exit:** PRD §13 AC 8 lulus; rilis produksi tercatat di CHANGELOG sebagai versi `1.0.0`.
+**Exit:** PRD §13 AC 8 lulus; AC launch 1–7, 9, 10 tetap lulus; rilis produksi tercatat di CHANGELOG sebagai versi `1.0.0`.
 
-### M5 — MVP+ Akses pengguna
-- [ ] M5-01 SPIKE-002 auth boundary (Supabase Auth publik vs staf Payload)
-- [ ] M5-02 Registrasi/login/reset, email transaksional (DEC-019)
-- [ ] M5-03 Entitlement manual + evaluator akses server-side (DEC-010/011)
-- [ ] M5-04 File eksklusif: private bucket + signed URL; tes matriks akses SRS §12.1
+### M6 — Expansion pasca-launch
+- [ ] M6-01 Event, newsletter, form jaringan dosen, sesuai kebutuhan nyata (DECISIONS §2.8 Q3 A)
 
-### M6 — Expansion
-- [ ] M6-01 Learning Hub katalog + embed (DEC-014); event/newsletter sesuai kebutuhan nyata
-
-### M7 — Phase 2 Subscription
+### M7 — Phase 2 Subscription (pasca-launch)
 - [ ] M7-01 Payment gateway, webhook idempoten, siklus langganan (PRD D-08)
+- [ ] M7-02 Entitlement manual subscriber + evaluator akses level `subscriber` (dari M5-03; DEC-010/011)
+- [ ] M7-03 File subscriber: private bucket + signed URL; kolom subscriber di matriks akses SRS §12.1 (dari M5-04)
 
 ## 3. Blocker aktif
 

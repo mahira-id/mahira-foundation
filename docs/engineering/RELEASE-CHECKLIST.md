@@ -13,6 +13,8 @@ Gunakan checklist ini untuk setiap release candidate. Tandai N/A dengan alasan, 
 - [ ] PDF/asset opens, matches metadata, and is approved for distribution.
 - [ ] No placeholder statistics, fake testimonials, or unverified organization claims.
 - [ ] Translation status is explicit; no silent wrong-language fallback.
+- [ ] Learning Hub launch scope verified (DEC-014; PRD §13 AC 9): catalog by theme, embedded YouTube videos/playlists, guides, and publicly downloadable toolkits, all without login.
+- [ ] Public account flow for the `registered` level verified (DECISIONS §2.8 Q1 A; PRD §13 AC 5, 6, 10): registration, login, password reset, email verification, minimal account area, and `registered` file download authorized on the server through private delivery.
 
 ## 2. Architecture and data
 

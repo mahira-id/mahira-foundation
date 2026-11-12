@@ -33,6 +33,8 @@ Select exact library versions only after reviewing current compatibility and pro
 
 Priority values must be reconciled with the final MVP decision in PRD/SRS.
 
+**Gate launch (DECISIONS §2.8, 2026-11-12):** selain gate P0 di atas, launch (M4) mensyaratkan akun publik (registrasi, login, reset, verifikasi email), unduhan file `registered` yang diotorisasi di server (M5), dan Learning Hub cakupan launch (katalog per tema, embed YouTube, panduan, toolkit publik; DEC-014, M3-11–M3-13). Kolom subscriber di §4 diuji di M7 (Phase 2). "Advanced Learning Hub/LMS" di P2 tetap berarti fitur di luar cakupan launch DEC-014.
+
 ## 4. Minimum authorization matrix tests
 
 | Asset/access | Visitor | Registered no grant | Subscriber active | Subscriber expired | Editor | Admin |
@@ -45,6 +47,8 @@ Priority values must be reconciled with the final MVP decision in PRD/SRS.
 | Change staff role | Deny | Deny | Deny | Deny | Deny | Allow |
 
 DEC-009 (Accepted 2026-11-09): Editor/Admin columns describe the public download endpoint. A CMS session gives no bypass there; only the public account's entitlement counts. Editor/Admin handle assets inside the CMS under Payload access control.
+
+Fase (DECISIONS §2.8 Q1 A): kolom Visitor, Registered no grant, Editor, dan Admin diuji sebelum launch (M5-04); kolom Subscriber active dan Subscriber expired diuji di Phase 2 (M7-03).
 
 ## 5. Unit test cases — access evaluator
 

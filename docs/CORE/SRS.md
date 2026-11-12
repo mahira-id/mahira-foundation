@@ -26,6 +26,7 @@ Spesifikasi fungsional, nonfungsional, arsitektur target, aktor, integrasi, kont
 | Lingkungan      | Development, staging, production.                                                        |
 | Dokumen terkait | PRD-MID sebagai sumber kebutuhan; PDD-MID sebagai kontrak desain dan UX.                 |
 | Status          | Draft spesifikasi; belum menjadi kontrak implementasi final                              |
+| Perubahan 2026-11-12 | Arahan Owner (DECISIONS §2.8): label fase FR-009–FR-013, FR-018/019, FR-021–FR-025, FR-028; FR-029 baru (Learning Hub panduan dan toolkit); catatan §3, §5.1, §13, §14. |
 
 # 1. Pendahuluan
 
@@ -95,6 +96,8 @@ Sistem mencakup website publik yang SEO-oriented, katalog dan detail publikasi, 
 
 Prioritas: P0 = wajib untuk MVP; P1 = penting setelah inti MVP; P2 = opsional/ekspansi. Requirement harus diuji pada lingkungan staging sebelum dinyatakan selesai.
 
+Catatan fase (DECISIONS §2.8, 2026-11-12): label lama "MVP+ (DEC-002)" pada FR-009–FR-012 menjadi pra-launch M5 untuk level `registered`; FR-013 dan bagian subscriber dari FR-009 menjadi Phase 2 M7. FR-018, FR-019, dan FR-029 wajib saat launch (DEC-014).
+
 | **ID** | **Fitur**                    | **Prioritas** | **Requirement**                                                                                                          | **Kriteria verifikasi**                                                                                       |
 |--------|------------------------------|---------------|--------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | FR-001 | Locale routing               | P0            | Sistem harus menyediakan route locale untuk ID dan EN, misalnya /id dan /en.                                             | Pengguna dapat berpindah bahasa; URL menunjukkan locale aktif.                                                |
@@ -105,26 +108,27 @@ Prioritas: P0 = wajib untuk MVP; P1 = penting setelah inti MVP; P2 = opsional/ek
 | FR-006 | Search                       | P0            | Sistem harus mencari publikasi berdasarkan kata kunci pada field yang ditentukan.                                        | Hasil relevan ditampilkan; query kosong/invalid dan no-results memiliki state yang jelas.                     |
 | FR-007 | SEO metadata                 | P0            | Setiap halaman publikasi harus menyediakan metadata unik dan social preview.                                             | HTML response memiliki title, description, canonical dan Open Graph yang tepat.                               |
 | FR-008 | Public file download         | P0            | Sistem harus mengizinkan unduhan file publik tanpa login.                                                                | File public hanya dapat diakses melalui URL/bucket yang memang diklasifikasikan public.                       |
-| FR-009 | Access-level enforcement     | MVP+ (DEC-002) | Sistem harus memeriksa access_level dan entitlement pada server sebelum mengeluarkan akses file.                         | Anonim/registered tanpa hak tidak memperoleh signed URL file subscriber.                                      |
-| FR-010 | Public account registration  | MVP+ (DEC-002) | Sistem harus mendukung registrasi pengguna umum melalui Supabase Auth.                                                   | Akun dibuat, validasi/verifikasi sesuai konfigurasi, dan session tersedia setelah flow selesai.               |
-| FR-011 | Public user sign-in/out      | MVP+ (DEC-002) | Sistem harus mendukung login, logout, dan reset password.                                                                | Session dibuat/dihapus dengan aman; route akun memerlukan session valid.                                      |
-| FR-012 | Account area                 | MVP+ (DEC-002) | Sistem harus menyediakan area akun dasar bagi pengguna terdaftar.                                                        | Pengguna dapat melihat profil dan status akses; halaman tidak diindeks mesin pencari.                         |
-| FR-013 | Entitlement administration   | MVP+ (DEC-002) | Staf berwenang harus dapat memberikan/mencabut entitlement manual sebelum payment aktif.                                 | Perubahan dicatat dan berdampak pada keputusan akses berikutnya.                                              |
+| FR-009 | Access-level enforcement     | Pra-launch M5 (`registered`); subscriber: Phase 2 M7 | Sistem harus memeriksa access_level dan entitlement pada server sebelum mengeluarkan akses file.                         | Anonim/registered tanpa hak tidak memperoleh signed URL file subscriber.                                      |
+| FR-010 | Public account registration  | Pra-launch M5 (DECISIONS §2.8 Q1 A) | Sistem harus mendukung registrasi pengguna umum melalui Supabase Auth.                                                   | Akun dibuat, validasi/verifikasi sesuai konfigurasi, dan session tersedia setelah flow selesai.               |
+| FR-011 | Public user sign-in/out      | Pra-launch M5 (DECISIONS §2.8 Q1 A) | Sistem harus mendukung login, logout, dan reset password.                                                                | Session dibuat/dihapus dengan aman; route akun memerlukan session valid.                                      |
+| FR-012 | Account area                 | Pra-launch M5 (DECISIONS §2.8 Q1 A) | Sistem harus menyediakan area akun dasar bagi pengguna terdaftar.                                                        | Pengguna dapat melihat profil dan status akses; halaman tidak diindeks mesin pencari.                         |
+| FR-013 | Entitlement administration   | Phase 2 M7 (DECISIONS §2.8 Q1 A) | Staf berwenang harus dapat memberikan/mencabut entitlement manual sebelum payment aktif.                                 | Perubahan dicatat dan berdampak pada keputusan akses berikutnya.                                              |
 | FR-014 | Editorial content management | P0            | Editor harus dapat membuat, membaca, memperbarui, dan mengarsipkan konten publikasi (MVP: arsip dipenuhi unpublish, DECISIONS §2.6 P1). | CRUD mengikuti access control staf dan validasi field wajib.                                                  |
 | FR-015 | Editorial workflow           | P0            | Sistem CMS harus mendukung draft, preview, dan publish; review/schedule dikonfirmasi pada proses editorial (preview: M3-05, DECISIONS §2.6 P2). | Konten draft tidak tampil di halaman publik; konten published tampil sesuai locale.                           |
 | FR-016 | Author and topic management  | P0            | Staf harus dapat mengelola penulis dan topik (DEC-003) sebagai entitas terstruktur.                                           | Referensi dapat digunakan ulang pada beberapa publikasi.                                                      |
 | FR-017 | Media and file upload        | P0            | Staf harus dapat mengunggah cover dan file publik/privat ke object storage.                                              | Upload memiliki validasi tipe/ukuran, status, dan lokasi penyimpanan sesuai klasifikasi.                      |
-| FR-018 | Learning Hub catalog         | P1            | Sistem harus menampilkan katalog materi pembelajaran dengan kategori dan metadata.                                       | Pengguna dapat membuka detail/resource dan mengikuti embed/tautan yang tersedia.                              |
-| FR-019 | Video embed                  | P1            | Sistem harus mendukung video eksternal melalui embed, misalnya YouTube.                                                  | Embed responsive, memiliki title/accessibility, dan tidak mengunggah file video ke app server.                |
+| FR-018 | Learning Hub catalog         | P0 — launch (DEC-014; DECISIONS §2.8 Q2 A) | Sistem harus menampilkan katalog materi pembelajaran per tema dengan metadata.                                       | Pengguna dapat membuka detail/resource dan mengikuti embed/tautan yang tersedia.                              |
+| FR-019 | Video embed                  | P0 — launch (DEC-014; DECISIONS §2.8 Q2 A) | Sistem harus mendukung video eksternal melalui embed, misalnya YouTube.                                                  | Embed responsive, memiliki title/accessibility, dan tidak mengunggah file video ke app server.                |
 | FR-020 | Static content pages         | P1            | Staf harus dapat mengelola halaman About dan halaman informasi lain yang disepakati.                                     | Perubahan konten dapat diterbitkan tanpa deployment aplikasi.                                                 |
-| FR-021 | Event content                | P2            | Sistem dapat menyediakan konten event bila diperlukan organisasi.                                                        | Event memiliki detail dan status; scope final ditentukan terpisah.                                            |
-| FR-022 | Subscription lifecycle       | P1            | Sistem harus menyediakan model subscription dan entitlement saat fase pembayaran dimulai.                                | Status langganan diperbarui dari sumber pembayaran server-side, bukan redirect browser.                       |
-| FR-023 | Payment webhook              | P1            | Sistem harus menerima dan memproses webhook gateway secara idempotent.                                                   | Webhook duplikat tidak menggandakan transaksi atau mengubah entitlement secara salah.                         |
-| FR-024 | Subscription account view    | P1            | Pengguna harus dapat melihat status langganan dan informasi tagihan yang tersedia.                                       | Status, tanggal, dan tindakan sesuai kontrak provider dan policy organisasi.                                  |
-| FR-025 | Email notifications          | P1            | Sistem dapat mengirim email verifikasi, reset password, dan notifikasi transaksi sesuai fase.                            | Pengiriman melalui SMTP/provider transaksional; hasil gagal dicatat dan dapat diretry dengan aman.            |
+| FR-021 | Event content                | P2 — pasca-launch M6 (§2.8 Q3 A) | Sistem dapat menyediakan konten event bila diperlukan organisasi.                                                        | Event memiliki detail dan status; scope final ditentukan terpisah.                                            |
+| FR-022 | Subscription lifecycle       | Phase 2 M7    | Sistem harus menyediakan model subscription dan entitlement saat fase pembayaran dimulai.                                | Status langganan diperbarui dari sumber pembayaran server-side, bukan redirect browser.                       |
+| FR-023 | Payment webhook              | Phase 2 M7    | Sistem harus menerima dan memproses webhook gateway secara idempotent.                                                   | Webhook duplikat tidak menggandakan transaksi atau mengubah entitlement secara salah.                         |
+| FR-024 | Subscription account view    | Phase 2 M7    | Pengguna harus dapat melihat status langganan dan informasi tagihan yang tersedia.                                       | Status, tanggal, dan tindakan sesuai kontrak provider dan policy organisasi.                                  |
+| FR-025 | Email notifications          | Pra-launch M5-02 untuk verifikasi/reset (DEC-019); notifikasi transaksi Phase 2 | Sistem dapat mengirim email verifikasi, reset password, dan notifikasi transaksi sesuai fase.                            | Pengiriman melalui SMTP/provider transaksional; hasil gagal dicatat dan dapat diretry dengan aman.            |
 | FR-026 | Download audit log           | P1            | Sistem dapat mencatat event unduhan file terbatas.                                                                       | Log memuat user, document, timestamp dan hasil sesuai kebijakan privasi.                                      |
 | FR-027 | Bookmark / download history  | P2            | Sistem dapat menyediakan bookmark atau riwayat unduhan bila disetujui.                                                   | Data bersifat per-user dan dilindungi RLS.                                                                    |
-| FR-028 | Newsletter integration       | P2            | Sistem dapat mengintegrasikan layanan newsletter eksternal.                                                              | Consent dan unsubscribe dikelola sesuai provider dan policy privasi.                                          |
+| FR-028 | Newsletter integration       | P2 — pasca-launch M6 (§2.8 Q3 A) | Sistem dapat mengintegrasikan layanan newsletter eksternal.                                                              | Consent dan unsubscribe dikelola sesuai provider dan policy privasi.                                          |
+| FR-029 | Learning Hub guide and toolkit | P0 — launch (DEC-014; DECISIONS §2.8 Q2 A) | Sistem harus menampilkan panduan Learning Hub dan menyediakan toolkit yang dapat diunduh publik tanpa login. | Panduan tampil dan toolkit dapat diunduh tanpa login; tidak ada file privat di jalur publik. Model konten dan penyimpanan file toolkit OPEN (M3-11). |
 
 # 4. Persyaratan akses dan otorisasi
 
@@ -190,7 +194,7 @@ DEC-009 (Accepted 2026-11-09): role hanya Public user, Editor, Admin. Sesi Edito
 | Publication           | title, slug, summary/abstract, type, language, author relation, topic relation, published_at, access_level, status, cover, file reference, locale relation. | Payload                     |
 | Author                | name, biography, photo (opsional), affiliation (jika perlu), locale/translation policy.                                                                     | Payload                     |
 | Topic / Desk          | name, slug, description, ordering, locale/translation policy.                                                                                               | Payload                     |
-| LearningResource      | title, description, type, topic, embed/external URL, thumbnail, publication relation (opsional).                                                            | Payload                     |
+| LearningResource      | title, description, type, topic, embed/external URL, thumbnail, publication relation (opsional). Cakupan launch (DEC-014): video/playlist YouTube, panduan, toolkit unduhan publik. Field, jenis materi, relasi ke Topic, model bilingual, dan storage toolkit OPEN (M3-11). | Payload                     |
 | Page                  | title, slug, body/blocks, locale, publication status, SEO fields.                                                                                           | Payload                     |
 | StaffUser             | email, role, status, MFA policy.                                                                                                                            | Payload Auth                |
 | PublicUser            | auth identity, profile fields, created_at, updated_at.                                                                                                      | Supabase Auth + app profile |
@@ -344,12 +348,14 @@ Implementasi tidak disarankan menggunakan pola backend-first sampai seluruh back
 | Spike 3 — Storage + gating              | Upload PDF ke private bucket; access level public/registered/subscriber; signed URL.               | Semua kasus allow/deny pada matriks akses berhasil.                            |
 | Foundation                              | Repo, TypeScript, lint, test, CI, environment dev/staging/prod, locale route, logging, migrations. | Tim dapat membuat dan mengirim perubahan ke staging secara repeatable.         |
 | Vertical slice 1: Publication           | CMS entry → list/detail SSR/SSG/ISR → SEO → search → public download.                              | Editor mencoba konten nyata; pengunjung dapat menemukan dan membaca publikasi. |
-| Vertical slice 2: Account & entitlement | Registrasi/login → account view → manual grant → gated download.                                   | E2E access test lengkap dan security review awal lulus.                        |
-| Vertical slice 3: Learning Hub          | Model konten → admin → catalog → detail/embed.                                                     | Konten pembelajaran dikelola editor dan bekerja di mobile.                     |
+| Vertical slice 2: Account & entitlement | Registrasi/login → account view → manual grant → gated download.                                   | E2E access test lengkap dan security review awal lulus. Fase (DECISIONS §2.8): registrasi/login + unduhan `registered` pra-launch (M5); manual grant subscriber Phase 2 (M7). |
+| Vertical slice 3: Learning Hub          | Model konten → admin → catalog → detail/embed.                                                     | Konten pembelajaran dikelola editor dan bekerja di mobile. Fase: pra-launch, M3-11–M3-13 (DEC-014; DECISIONS §2.8). |
 | Phase 2: Subscription                   | Sandbox payment → verified webhook → subscription state → entitlement → user account.              | Payment lifecycle, duplicate/late webhook, dan expiry diuji.                   |
 | Release hardening                       | SEO, performance, a11y, backup/restore, monitoring, legal/privacy, migration/redirect.             | Checklist launch disetujui dan pemulihan terbukti.                             |
 
 # 14. Kriteria penerimaan sistem MVP
+
+Catatan fase (DECISIONS §2.8, 2026-11-12): butir akun dan akses (13–17) berlaku saat launch untuk level `registered` (M5); bagian subscriber dari butir 14–15 berlaku di Phase 2 (M7). Butir 19 (Learning Hub) berlaku saat launch.
 
 9.  Next.js dapat dibuild dan dideploy ke staging dengan koneksi database yang stabil.
 
@@ -370,6 +376,8 @@ Implementasi tidak disarankan menggunakan pola backend-first sampai seluruh back
 17. Area akun dan admin memiliki noindex dan perlindungan route/operation di server.
 
 18. Automated tests meliputi matriks akses; backup restore staging dan monitoring dasar telah diverifikasi.
+
+19. Learning Hub (DEC-014) menampilkan katalog per tema, embed video/playlist YouTube, panduan, dan toolkit yang dapat diunduh publik tanpa login (FR-018, FR-019, FR-029).
 
 # 15. Keputusan teknis yang masih terbuka
 

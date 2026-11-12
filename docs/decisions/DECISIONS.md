@@ -1,8 +1,8 @@
 # Decision Register
 
-**Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-009 and DEC-018 were Accepted on 2026-11-09; DEC-006, DEC-007, and DEC-013 on 2026-11-10 (§2.1). Every other row keeps its earlier status.  
+**Status:** Register in use. Eight decisions are Accepted (DEC-001, DEC-002, DEC-003 structure only, DEC-004, DEC-005, DEC-015, DEC-016, DEC-021), approved by Haidar (Product Owner) on 2026-11-08; their records are in §2.1. DEC-009 and DEC-018 were Accepted on 2026-11-09; DEC-006, DEC-007, and DEC-013 on 2026-11-10 (§2.1). DEC-014 was Accepted on 2026-11-12 for the launch scope only; its details stay Open (§2.1, §2.8). Every other row keeps its earlier status.  
 **Canonical IDs:** `DEC-NNN`. Historical PRD `D-xx` and SRS `T-xx` are retained for traceability.  
-**Last updated:** 2026-11-12 (Owner answers for M3-04 recorded in §2.7; no status change). Earlier the same day: 2026-11-12 (Owner answers for M3-03 recorded in §2.6; no status change). Earlier the same day: 2026-11-12 (§2.5 folder check dated 2026-11-12; dates aligned with M3-10 review finding 4; no status change). Earlier: 2026-11-11 (Owner answers for M3-10 recorded in §2.5; no status change). Earlier the same day: 2026-11-11 (review M3-02 fixes: DEC-005 "Still open" pointer to §2.4 P4c; DEC-006 upgrade review trigger; no status change). Earlier: 2026-11-10 (Owner answers for M3-02/M3-01 recorded in §2.4; no status change). Earlier the same day: DEC-006, DEC-007, DEC-013 Accepted; DEC-004/005 evidence and DEC-018 Node pin recorded (§2.1); M2 spike evidence proposal §2.3. Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
+**Last updated:** 2026-11-12 (Owner direction: Learning Hub and public accounts before launch, recorded in §2.8; DEC-014 Accepted for the launch scope only; DEC-002 status unchanged). Earlier the same day: 2026-11-12 (Owner answers for M3-04 recorded in §2.7; no status change). Earlier the same day: 2026-11-12 (Owner answers for M3-03 recorded in §2.6; no status change). Earlier the same day: 2026-11-12 (§2.5 folder check dated 2026-11-12; dates aligned with M3-10 review finding 4; no status change). Earlier: 2026-11-11 (Owner answers for M3-10 recorded in §2.5; no status change). Earlier the same day: 2026-11-11 (review M3-02 fixes: DEC-005 "Still open" pointer to §2.4 P4c; DEC-006 upgrade review trigger; no status change). Earlier: 2026-11-10 (Owner answers for M3-02/M3-01 recorded in §2.4; no status change). Earlier the same day: DEC-006, DEC-007, DEC-013 Accepted; DEC-004/005 evidence and DEC-018 Node pin recorded (§2.1); M2 spike evidence proposal §2.3. Earlier: 2026-11-08 (columns Approver and Decided added, PUB-DU-14 of spec `01-publication-platform-foundation`; Owner decisions recorded from the 2026-11-08 session, see `.kiro/specs/03-architecture-technical-validation/PROTOTYPE-PLAN.md` §1–§2).
 
 ## 1. How to use this register
 
@@ -30,7 +30,7 @@
 | DEC-011 | Publication-level vs asset-level access | PRD §8; SRS Publication model | Preserve publication `access_level`; evaluate per-asset override with effective access as the stricter of inherited and asset rules. | Proposed — needs approval | Asset schema, CMS, storage, access tests | PO + Engineering | — | — |
 | DEC-012 | File storage and private delivery | SRS T-03 | Object storage; public files only in public locations; exclusive files private and served after server authorization. Validate Payload adapter. | Proposed | Upload, download, backup, provider cost | Engineering + Security | — | — |
 | DEC-013 | Search scope and engine | PRD §9; SRS T-04 | Start with PostgreSQL FTS; `pg_trgm` only where tests justify; PDF full text remains out until extraction spike. | Accepted (start with PostgreSQL FTS; see §2.1) | Search schema, indexing, UX | Engineering + PO | Haidar (Product Owner) | 2026-11-10 |
-| DEC-014 | Learning Hub MVP scope | PRD D-04 | Catalog + external embeds as baseline; no LMS progress, certificates, or assessments unless approved. | Proposed | Scope, schema, page specs | PO / Learning Lead | — | — |
+| DEC-014 | Learning Hub MVP scope | PRD D-04 | Catalog + external embeds as baseline; no LMS progress, certificates, or assessments unless approved. | Accepted (launch scope only; content model, routes, toolkit storage stay Open; see §2.1) | Scope, schema, page specs | PO / Learning Lead | Haidar (Product Owner) | 2026-11-12 |
 | DEC-015 | Editorial workflow | PRD D-05 | Define draft, review, approval, schedule, publish, unpublish, revise, archive and responsibility. | Accepted (minimum workflow; see §2.1) | Payload workflow, role, content guide | Editorial Lead | Haidar (Product Owner) | 2026-11-08 |
 | DEC-016 | Staff roles and operational admin scope | PRD D-07; SRS T-07 | Minimum Admin and Editor; Reviewer/Finance only if workflow justifies. Separate editorial and entitlement permissions. | Accepted (Admin and Editor; both may publish; see §2.1) | CMS access, dashboard routes | PO + Security owner | Haidar (Product Owner) | 2026-11-08 |
 | DEC-017 | Hosting platform and database region | PRD D-10; SRS T-08 | Vercel + Supabase is the baseline proposal; confirm region, commercial plan, cost, backup, and runtime compatibility. | Proposed | Deployment, latency, budget, operations | PO + Engineering | — | — |
@@ -66,6 +66,7 @@ Common fields for every record below:
 - **Affected documents:** PRD §7, §13; SRS FR-009 to FR-013 and §14; `docs/architecture/` subscription-boundary text; homepage copy that promises account or subscription access (spec 00 Sample_Content_Decision).
 - **Validation evidence:** not needed (scope decision).
 - **Review trigger:** the Owner changes MVP scope, or the MVP+ gate (public auth, entitlement) is planned.
+- **Dampak arahan 2026-11-12:** §2.8 (MVP+ → M5 untuk `registered`, M7 untuk `subscriber`; status tidak berubah).
 
 #### DEC-003 — Research taxonomy (structure only)
 
@@ -109,7 +110,7 @@ Common fields for every record below:
 - **Decision:** Self-referencing canonical. `hreflang` is emitted only when the language counterpart is eligible for public display. Search and filter pages are `noindex`.
 - **Affected documents:** spec 01 PUB-006, PUB-017; ADR-0005.
 - **Validation evidence:** not needed (policy decision); the prototype exercises it.
-- **Review trigger:** a structured-data decision (spec 01 PUB-OQ-39), or MVP+ restricted publications.
+- **Review trigger:** a structured-data decision (spec 01 PUB-OQ-39), or MVP+ restricted publications (since §2.8: `registered` in M5, `subscriber` in M7).
 
 #### DEC-005 addendum — Search and type routes (2026-11-09)
 
@@ -142,6 +143,16 @@ Common fields: **Status:** Accepted. **Approver:** Haidar (Product Owner). **Dec
 - **DEC-013 — Search scope and engine.** Start with PostgreSQL full-text search using the `indonesian` text-search configuration (present on Supabase; stemming works, stop words do not). `pg_trgm` only where tests justify it. Relevance is tested in M3-06.
 - **DEC-004 and DEC-005 — validation evidence added.** DEC-004: checks 1–3 and 5–7 PASS, check 4 PARTIAL (a client can force fallback with `?fallback-locale=` on REST; fix in M3) (REST anonim ditutup: §2.4 P1). DEC-005: per-locale slug uniqueness proven by index `locale_slug_idx`; route rules (308, 404, trailing slash, `/id`/`/en`) are tested in M3-01/M3-07. Both stay Accepted.
 - **DEC-012** is unchanged (Proposed): the public part is proven; private delivery waits for M5-04.
+
+#### DEC-014 — Learning Hub launch scope (2026-11-12)
+
+- **Status:** Accepted for the launch scope only. **Approver:** Haidar (Product Owner). **Decided:** 2026-11-12, Owner chat session, relayed by the orchestrator (Q2 A in §2.8).
+- **Decision (Q2 A):** the Learning Hub is required at launch. Launch scope: a catalog grouped by theme, embedded YouTube videos and playlists, guides, and toolkits that anyone can download. No login, progress tracking, quizzes, or certificates.
+- **Still open (not decided by this record; decided at the start of M3-11):** the content model and resource types; the relation to Topic ("Bidang kerja"); the bilingual model; the routes (the "learning hub" item in DEC-005 "Still open"); toolkit file storage (public part of DEC-012); and whether resources get a detail page or are embedded directly in the catalog.
+- **Reference:** https://www.cips-indonesia.org/cips-learning-hub, for structure only. Its identity and assets are not copied.
+- **Affected documents:** PRD §6.2, §7, §10, §12 D-04, §13 AC 9; SRS FR-018, FR-019, FR-029, §5.1, §13, §14; CONTENT-ARCHITECTURE; DATA-MODEL §4.5; PAGE-SPECIFICATIONS §9; IA-ROUTING-I18N §3.1; TEST-PLAN §3; TRACEABILITY-MATRIX; RELEASE-CHECKLIST §1; MILESTONES M3-11 to M3-13.
+- **Validation evidence:** not needed (scope decision); M3-12 and M3-13 test the launch scope (PRD §13 AC 9).
+- **Review trigger:** a Learning Lead is named, or a request appears for login, progress tracking, quizzes, or certificates.
 
 ### 2.2 Spike environment for DEC-007 (not a decision)
 
@@ -238,6 +249,69 @@ Dicatat dari jawaban Haidar (Product Owner) 2026-11-12 atas pertanyaan planner u
 - **P11 baseline lint — A:** `".agents/**"` ditambahkan ke `globalIgnores` di `eslint.config.mjs`.
 - **Temuan "Published At" (cek read-only `mahira-cms` 2026-11-12):** `publishedAt` kosong di 18/18 record publikasi, termasuk 13 yang published (ID public 7, ID registered 2, EN public 4, EN registered 2). Pengamatan Owner benar: record dibuat 2026-11-09, sebelum hook `setPublicationLifecycleFields` (§2.4 P3 B), dan hook itu hanya mengisi tanggal saat record disimpan ulang sebagai published. `@payloadcms/drizzle` 3.93.0 menerjemahkan `sort: "-publishedAt"` menjadi `published_at DESC, created_at DESC` tanpa `NULLS LAST`, dan Postgres menaruh NULL di depan pada urutan DESC; karena itu homepage memakai dua query (bertanggal, lalu tanpa tanggal). Selama record belum disimpan ulang sebagai published, lead dan indeks homepage di Preview diisi fixture lama tanpa tanggal, urut `createdAt` terbaru (P4b (i)). Topic dan Publication Type fixture semuanya `isActive: false`, tanpa deskripsi; Media 0 record.
 
+### 2.8 Arahan Owner 2026-11-12: Learning Hub dan akun publik sebelum launch (catatan; DEC-014 Accepted hanya untuk cakupan launch)
+
+Dicatat dari arahan Haidar (Product Owner) 2026-11-12, diteruskan orchestrator. Satu-satunya perubahan status adalah DEC-014 (Accepted, hanya cakupan launch; record di §2.1). DEC-002 tetap Accepted. Bagian ini tidak menambah kebutuhan di luar Q1–Q3.
+
+**Arahan Owner, verbatim:**
+
+> - Learning Hub wajib tersedia saat launch, diprioritaskan sebelum launch. Hanya Subscription yang post-launch.
+> - Q1 A: akun publik (M5: SPIKE-002 batas auth, registrasi/login/reset, email DEC-019, unduhan file "registered" lewat private bucket + cek server) sebelum launch; entitlement subscriber + pembayaran setelah launch bersama Subscription (M7).
+> - Q2 A (DEC-014): Learning Hub saat launch seperti referensi https://www.cips-indonesia.org/cips-learning-hub (hanya referensi struktur, jangan salin identitas/aset): katalog per tema, embed video/playlist YouTube, panduan, toolkit yang bisa diunduh publik; tanpa login, progress, kuis, sertifikat.
+> - Q3 A: event, newsletter, form jaringan dosen tetap post-launch (M6, sesuai kebutuhan nyata).
+
+Struktur milestone diusulkan orchestrator ("boleh kamu perhalus") dan dihaluskan planner M3-04; hasilnya di bawah.
+
+- **Learning Hub wajib saat launch.** Hanya Subscription yang pasca-launch.
+- **Q1 — A.** Pra-launch (M5): SPIKE-002; registrasi, login, logout, reset, dan verifikasi email (DEC-019); area akun minimal; evaluator akses server-side untuk level `registered`; unduhan file `registered` lewat private bucket + cek sesi di server + signed URL. Pasca-launch bersama M7: entitlement manual subscriber, evaluator level `subscriber`, file subscriber, dan pembayaran.
+- **Q2 — A (DEC-014 → Accepted, hanya cakupan launch).** Katalog per tema, embed video/playlist YouTube, panduan, dan toolkit yang bisa diunduh publik; tanpa login, progress, kuis, atau sertifikat. Referensi struktur: https://www.cips-indonesia.org/cips-learning-hub (identitas dan aset tidak disalin).
+- **Q3 — A.** Event, newsletter, dan form jaringan dosen tetap pasca-launch (M6), sesuai kebutuhan nyata.
+- **Learning Hub — OPEN, diputuskan di awal M3-11:**
+  - model konten dan jenis materi;
+  - relasi ke Topic/"Bidang kerja";
+  - model bilingual;
+  - route (butir "learning hub" di DEC-005 "Still open");
+  - penyimpanan file toolkit (bagian publik DEC-012);
+  - halaman detail per materi vs embed langsung di katalog.
+- **Struktur milestone.** ID lama tidak di-renumber. Urutan eksekusi: M0 → M1 → M2 → M3 → M5 → M4 (launch) → M6 / M7.
+  - M3 menjadi "MVP — Platform publikasi + Learning Hub", dengan task baru yang dikerjakan di workflow terpisah:
+    - **M3-11:** keputusan detail Learning Hub (butir OPEN di atas) + koleksi CMS.
+    - **M3-12:** halaman publik Learning Hub (katalog per tema, embed YouTube, panduan) + membuka kembali blok dan menu Learning Hub di homepage (§2.7 P2 A).
+    - **M3-13:** toolkit unduhan publik (bergantung M3-08).
+  - M5 "Akses pengguna publik (pra-launch)":
+    - M5-01 SPIKE-002.
+    - M5-02 registrasi/login/reset/verifikasi + email DEC-019 + area akun minimal.
+    - M5-03 evaluator akses server-side level `registered`; bagian entitlement manual subscriber pindah ke M7-02.
+    - M5-04 file `registered` lewat private bucket + signed URL, dengan matriks SRS §12.1 kolom Visitor/Registered/Editor/Admin; kolom subscriber pindah ke M7-03.
+  - M4 diblokir M3 + M5.
+  - M6 "Expansion pasca-launch": event, newsletter, form jaringan dosen.
+  - M7 "Phase 2 — Subscription (pasca-launch)":
+    - M7-01 payment gateway, webhook idempoten, siklus langganan.
+    - M7-02 entitlement manual subscriber + evaluator level subscriber (dari M5-03).
+    - M7-03 file subscriber + kolom subscriber di matriks (dari M5-04).
+- **Dampak DEC-002 (status tetap Accepted).** "Sampai MVP+" kini berarti sampai M5 (pra-launch) untuk `registered`, dan sampai M7 (Phase 2) untuk `subscriber`. Pekerjaan M3 tetap publication-only: publikasi `registered`/`subscriber` tidak tampil publik selama M3. Record DEC-002 mendapat pointer ke bagian ini, tanpa perubahan status.
+- **Dokumen yang diubah (satu commit dokumen di branch `feat/m3-04-homepage-cms`):**
+  - `docs/decisions/DECISIONS.md` (bagian ini, baris dan record DEC-014, pointer DEC-002);
+  - `docs/CORE/PRD.md` (§4, §6.2, §6.3, §7, §10, §12 D-04/D-06, §13 AC 5/6/9/10, glosarium);
+  - `docs/CORE/SRS.md` (§3, label FR-009–FR-013, FR-018/019, FR-021–FR-025, FR-028, FR-029 baru, §5.1, §13, §14);
+  - `docs/MILESTONES.md` (urutan eksekusi, tabel ringkasan, M3-11–M3-13, M5 sebelum M4, M6-01, M7-02/M7-03);
+  - `docs/CHANGELOG.md` ([Unreleased]);
+  - `docs/architecture/CONTENT-ARCHITECTURE.md`, `DATA-MODEL.md` (§4.5, §5.2), `ACCESS-POLICY.md`;
+  - `docs/specifications/PAGE-SPECIFICATIONS.md` (§7, §9), `IA-ROUTING-I18N.md` (§3.1, §3.2), `SUBSCRIPTION-BOUNDARY.md` (§2, §3, §6);
+  - `docs/engineering/TEST-PLAN.md` (§3, §4), `TRACEABILITY-MATRIX.md`, `RELEASE-CHECKLIST.md` (§1);
+  - `docs/content/GLOSSARY.md`.
+- **Steering dan skills (tidak diubah; dilaporkan untuk ditinjau Owner):**
+
+  | Baris | Isi | Status |
+  |---|---|---|
+  | `.kiro/steering/product.md:19` | "Learning Hub — catalog of learning resources and external media embeds; a full LMS is not assumed for MVP." | Istilah "MVP": Learning Hub kini cakupan launch (DEC-014), ditambah panduan dan toolkit. Isinya tidak bertentangan, tetapi istilahnya perlu diselaraskan |
+  | `.kiro/steering/tech.md:13` | "Current dependencies do not include Payload CMS, … or a test framework." | Usang: Payload, `tsx`, dan `node:test` sudah terpasang (tercatat sejak M3-10) |
+  | `.kiro/steering/tech.md:14` | "landing page is implemented under `app/page.tsx` … `lib/landing-content.ts`" | Usang: halaman ada di `app/(site)/page.tsx`; sesudah M3-04, `lib/landing-content.ts` hanya berisi teks statis |
+  | `.kiro/steering/tech.md:16`, `:27` | "Candidate target architecture — not yet validated" / "not currently installed code" | Usang: DEC-006 dan DEC-007 Accepted; Payload terpasang |
+  | `.kiro/steering/structure.md:19` | "The current codebase is a homepage foundation …" | Usang |
+  | `.kiro/steering/structure.md:28` | "`lib/landing-content.ts` is a current hardcoded landing-content source" | Sesudah M3-04, file itu hanya berisi teks statis homepage (navigasi, prinsip); publikasi dan topik dari CMS |
+  | `.kiro/skills/feature-spec-authoring/SKILL.md:23` | "Do not add payment gateway, full LMS, analytics, or other Phase 2 scope by implication." | Konsisten |
+
 ## 3. Legacy ID mapping
 
 | Legacy reference | Canonical register item |
@@ -307,3 +381,4 @@ A decision is only `Accepted` after the approver is known and the decision has a
 | 2026-11-12 | §2.5 butir folder `tests/`: cek 2026-11-12 (file `tests/api-publications.json` tidak ada lagi di checkout utama); tanggal `Last updated` dan riwayat diselaraskan (temuan review M3-10 nomor 4); tidak ada status yang berubah. |
 | 2026-11-12 | Jawaban Owner untuk M3-03 (P1–P9) dicatat di §2.6; tidak ada status yang berubah. |
 | 2026-11-12 | Jawaban Owner untuk M3-04 (P1–P11, termasuk koreksi P2 A: Learning Hub disembunyikan sampai M3-12) dan temuan `publishedAt` dicatat di §2.7; tidak ada status yang berubah. |
+| 2026-11-12 | Arahan Owner 2026-11-12 (Learning Hub dan akun publik sebelum launch; Q1 A, Q2 A, Q3 A) dicatat di §2.8. DEC-014 Accepted hanya untuk cakupan launch (record di §2.1; detail tetap Open). DEC-002 tetap Accepted; dampaknya dicatat sebagai pointer di record-nya. |

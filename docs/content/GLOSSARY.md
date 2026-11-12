@@ -40,7 +40,8 @@
 | Vertical slice | End-to-end feature across data, server behavior, and UI. | Must be demoable in staging. |
 | ADR | Architecture Decision Record. | Captures context, options, decision, and consequences. |
 | Technical spike | Time-boxed experiment to reduce a specific technical uncertainty. | Output is evidence, not merely implementation code. |
-| MVP | Minimum viable release. | Definition must be reconciled between PRD and SRS. |
+| MVP | Minimum viable release: the publication platform delivered in M3 (publication-only, DEC-002). | Since 2026-11-12 (DECISIONS §2.8), the MVP alone is not the launch; the old "MVP+" label maps to M5 (`registered`) and M7 (`subscriber`). |
+| Launch | Production release 1.0.0 (M4-05): MVP publication platform + Learning Hub launch scope (DEC-014) + public accounts at the `registered` level (M5). | Subscription, subscriber entitlement, and payment come after launch (Phase 2, M7). |
 
 ## Naming policy
 
