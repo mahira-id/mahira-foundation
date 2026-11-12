@@ -22,7 +22,7 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 
 | Page | Route candidate | Notes |
 |---|---|---|
-| Home | `/{locale}` | Editorial landing page. |
+| Home | `/` (Indonesia; DEC-005, DECISIONS §2.7 P6 A) | Editorial landing page; only `locale: id` publications. Bare `/id` and `/en` stay 404 (DEC-005). English homepage: **OPEN**. |
 | Publication index | `/{locale}/publications` | Search, filters, pagination. |
 | Publication detail | `/{locale}/publications/{slug}` | One localized publication representation. |
 | Publication type index | `/{locale}/publications/type/{typeSlug}` | Only if taxonomy deserves an indexable landing page. |

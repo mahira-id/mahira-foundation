@@ -19,7 +19,9 @@ Shared states:
 
 ## 2. Homepage
 
-**Route:** `/{locale}` · **Audience:** public · **Auth:** none · **Indexing:** indexable.
+**Route:** `/` (Indonesia; DEC-005, DECISIONS §2.7 P6 A) · **Audience:** public · **Auth:** none · **Indexing:** indexable.
+
+Homepage hanya ada di `/` dan hanya menampilkan publikasi `locale: id`; bare `/id` dan `/en` tetap 404 (DEC-005). Header dan footer menampilkan "EN segera" (§2.4 P4b (i)). Homepage Inggris: **OPEN**.
 
 ### Block order (proposed)
 1. Masthead/navigation: logo, primary navigation, locale switcher, CTA jika sudah disahkan.
@@ -27,17 +29,29 @@ Shared states:
 3. Publication lead: satu publikasi unggulan dengan cover, type, title, summary, authors, date, access label.
 4. Latest publications: editorial list/feature layout; link ke katalog.
 5. Topics (Bidang Kerja, DEC-003): tampilkan hanya taksonomi aktif dan terkurasi.
-6. Learning Hub teaser: hanya jika katalog memiliki materi nyata.
+6. Learning Hub teaser: hanya jika katalog memiliki materi nyata. Mulai M3-12 (DECISIONS §2.7 P2 A); sampai saat itu blok dan item menu "Learning Hub" (header, footer) tidak tampil.
 7. About/impact: fakta dan klaim harus memiliki sumber/approval.
 8. Footer: legal, contact, social links yang valid.
 
 ### Data
 CMS-owned page configuration, published publications, active topic, published learning resources. Statistik seperti jumlah publikasi atau jumlah topik tidak boleh hardcoded sebagai klaim; tampilkan hanya dengan query yang tervalidasi atau hilangkan.
 
+Implementasi M3-04 (DECISIONS §2.7):
+- **Statis di kode (P2 A):** hero, Tentang + prinsip kerja, dan CTA penutup adalah konfigurasi yang disepakati (`lib/landing-content.ts`, `app/(site)/page.tsx`), bukan data CMS. Konfigurasi halaman dari CMS belum ada. Kolom "Topik" di footer dihapus.
+- **Dari CMS saat request (P1 A, P2 A):** publikasi lead, indeks publikasi terbaru, dan Bidang kerja dibaca lewat lapisan baca publik anonim (`lib/cms/public-content.ts`: published + public, `locale: id`, tanpa draft, tanpa fallback locale), di dalam `Suspense` dengan `connection()` (§2.6 P3 A).
+- **Lead dan indeks (P4a A, P4b (i)):** lead = publikasi ID terbaru menurut `publishedAt`; indeks = sampai 4 publikasi berikutnya tanpa mengulang lead. Publikasi tanpa `publishedAt` tampil di belakang yang bertanggal, diurutkan menurut `createdAt` terbaru, tanpa tanggal.
+- **Bidang kerja (P10 A):** Topic dengan `isActive: true` dan nama ID, diurutkan menurut nama, dengan deskripsi ID bila ada, tanpa tautan. Label jenis/topik pada publikasi tetap tampil walau term-nya nonaktif.
+- **Cover dan tanggal (P2b (i), P9 A):** cover tipografis dari data (jenis, topik utama, judul, tahun), tanpa nomor edisi dan gambar; tanpa lead, cover hero adalah cover merek. Tanggal "28 Okt 2026" dalam WIB.
+- **Tautan (P5 A):** judul belum ditautkan sampai M3-05; tombol "Lihat semua publikasi" → `/id/publications` hanya dirender saat CMS hidup.
+
 ### States
 - Jika belum ada featured item, gunakan layout latest publications tanpa placeholder klaim.
 - Jika learning hub kosong, sembunyikan blok atau tampilkan state editorial yang disetujui.
 - Error pada satu section tidak harus menjatuhkan seluruh homepage; tentukan graceful degradation.
+- M3-04 (DECISIONS §2.7 P1 A, P3 A):
+  - **CMS mati** (tanpa env, atau `VERCEL_ENV=production`): `/` tetap 200 dengan blok statis; blok Publikasi berisi "Belum ada publikasi yang terbit. Publikasi akan tampil di sini setelah diterbitkan."; Indeks dan Bidang kerja tidak tampil.
+  - **Tanpa publikasi:** catatan yang sama; Indeks tidak tampil. **Satu publikasi:** lead saja. **Tanpa topik aktif:** Bidang kerja tidak tampil.
+  - **Baca CMS gagal:** blok Publikasi berisi "Publikasi belum dapat dimuat. Coba muat ulang halaman beberapa saat lagi.", Bidang kerja tidak tampil, halaman tetap 200; log server hanya mencatat nama galat.
 
 ### SEO/a11y
 Unique title/description, canonical, OG, one primary H1, semantic landmarks, descriptive image alt, skip link, keyboard-operable navigation.
