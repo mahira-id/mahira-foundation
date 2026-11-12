@@ -114,16 +114,8 @@ export async function login(email: string, password: string): Promise<string | u
   return typeof result.body.token === "string" ? result.body.token : undefined;
 }
 
-/**
- * Fails unless GET / answers 200. An anonymous REST GET goes first (403 is
- * expected): when a page, not REST, creates the shared Payload instance of a
- * fresh `next start`, REST ValidationErrors lose their field details
- * (`errors[0].data`; known issue M3-04, TEST-PLAN §12.5, regression test HP8).
- * The runner already warms REST before its first GET /; this covers a server
- * started some other way.
- */
+/** Fails unless GET / answers 200. */
 export async function assertServerUp(): Promise<void> {
-  await rest("GET", "/api/users");
   const home = await getPage("/");
   if (home.status !== 200) {
     throw new Error(

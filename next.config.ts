@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  // One copy of `payload` for pages, /admin and the REST routes. withPayload
+  // externalizes it only in dev; bundled, the RSC and route layers each get a
+  // copy while getPayload shares one global instance, so a page-first init
+  // breaks `instanceof ValidationError` in REST error formatting and drops
+  // errors[0].data (TEST-PLAN §12.5). Re-check on every Payload upgrade (DEC-006).
+  serverExternalPackages: ["payload"],
   turbopack: {
     root: path.resolve(dirname),
     rules: {
