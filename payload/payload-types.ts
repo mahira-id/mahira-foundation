@@ -177,6 +177,10 @@ export interface Publication {
    * Diisi sistem. Versi bahasa yang pernah terbit hanya boleh dihapus Admin (DEC-016).
    */
   everPublished?: boolean | null;
+  /**
+   * Dihitung sistem, tidak disimpan: Ya bila versi yang tayang berstatus published dan Access Level public (yang dilihat pengunjung, DEC-002). Status Changed + Ya = tayang dengan revisi tertunda.
+   */
+  liveOnSite?: ('yes' | 'no') | null;
   coverImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
@@ -391,6 +395,7 @@ export interface PublicationsSelect<T extends boolean = true> {
   accessLevel?: T;
   publishedAt?: T;
   everPublished?: T;
+  liveOnSite?: T;
   coverImage?: T;
   updatedAt?: T;
   createdAt?: T;

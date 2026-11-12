@@ -8,6 +8,7 @@ import {
   isAdminOrSelf,
   isAnonymousLocalRead,
   isStaff,
+  isStaffField,
   isStaffOrAnonymousLocalRead,
   staffRoleOf,
 } from "../../payload/access/roles";
@@ -59,6 +60,13 @@ describe("payload/access/roles.ts", () => {
     assert.equal(runField(isAdminField, admin()), true);
     assert.equal(runField(isAdminField, editor()), false);
     assert.equal(runField(isAdminField, anonymousRest()), false);
+  });
+
+  test("isStaffField: admin and editor, never anonymous Local API or REST", () => {
+    assert.equal(runField(isStaffField, admin()), true);
+    assert.equal(runField(isStaffField, editor()), true);
+    assert.equal(runField(isStaffField, anonymousLocal()), false);
+    assert.equal(runField(isStaffField, anonymousRest()), false);
   });
 
   test("isAnonymousLocalRead: only no user + Local API", () => {
