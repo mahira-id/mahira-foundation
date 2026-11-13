@@ -59,7 +59,7 @@ Aturan set:
 - Hanya sebagian terisi: build dan start gagal; pesan error menyebut nama variabel yang hilang, tidak pernah nilainya.
 - `VERCEL_ENV=production`: CMS selalu mati, apa pun yang di-set. Menghidupkan CMS di Production memerlukan PR yang di-review (M4).
 
-Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`, dan sejak M3-01 juga untuk halaman publik berbasis CMS `/id/publications` dan `/en/publications` (Production tidak menampilkan halaman publikasi sampai M4). Homepage `/` tetap 200 dengan blok statis dan catatan "Belum ada publikasi yang terbit" di blok Publikasi, tanpa konten sampel (M3-04, DECISIONS §2.7 P1 A). Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku.
+Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`, dan sejak M3-01 juga untuk halaman publik berbasis CMS `/id/publications` dan `/en/publications` (Production tidak menampilkan halaman publikasi sampai M4). Homepage `/` tetap 200 dengan blok statis dan catatan "Belum ada publikasi yang terbit" di blok Publikasi, tanpa konten sampel (M3-04, DECISIONS §2.7 P1 A). Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku. Sejak butir 1c (DECISIONS §2.10), saat CMS hidup, `GET` ke halaman admin yang dilindungi tanpa cookie `payload-token` dijawab 307 ke `/admin/login` (subbagian "Login admin" di bawah); saat CMS mati, 404 tetap dijawab lebih dulu.
 
 TLS ke database: CA Supabase Root 2021 di-pin di `payload/db/supabase-root-ca.ts` (sertifikat publik, bukan secret). Tidak ada variabel `CMS_SUPABASE_DB_CA_CERT`. `CMS_SUPABASE_DATABASE_URI` tidak boleh berisi parameter `sslmode`, karena `pg` akan mengganti objek `ssl` yang memuat CA tersebut.
 
@@ -99,6 +99,32 @@ Masalah di Preview 2026-11-12: reload `/admin` gagal dengan "This page couldn't 
 5. Reload `/admin` tiga kali. Hasil yang diharapkan: admin tampil setiap kali, tanpa "This page couldn't load".
 6. Bila langkah 4 atau 5 gagal: Vercel → **Logs**, Environment `preview`, rentang waktu cek. Cari `EMAXCONNSESSION`, `unhandledRejection`, `exited with exit status`, dan `cannot connect to Postgres`, lalu kirim waktu dan baris log (tanpa nilai env) ke orchestrator. Opsional: Supabase `mahira-cms` → **Observability** → "Shared Pooler (Supavisor) Client Connections" pada rentang yang sama.
 
+*Hasil (laporan Owner 2026-11-13, sesudah merge PR #14):* langkah 4 dan 5 lulus di Preview `dpl_2T1NC5dUchqDfFNBQJh4Hcw8hR4R`. Cek yang sama menemukan loop login admin (butir 1c, subbagian berikut).
+
+#### Login admin dan langkah Owner butir 1c (jawaban Owner 2026-11-13, DECISIONS §2.10)
+
+Masalah di Preview 2026-11-13: sesudah login, URL bolak-balik cepat antara `/admin` dan `/admin/login` sampai hard reload. Penyebabnya di browser: dengan `cacheComponents` dan `partialPrefetching` (`next.config.ts`), router Next menyimpan redirect anonim Payload sebagai halaman `/admin` dan menjalankannya lagi sesudah login. Rincian penyebab dan bukti: DECISIONS §2.10, CHANGELOG [M3-04] (Fixed).
+
+**Perilaku sejak perbaikan (CMS hidup; Preview dan lokal).**
+
+| Request | Jawaban |
+|---|---|
+| `GET` halaman admin yang dilindungi (`/admin`, `/admin/collections/…`, `/admin/globals/…`, `/admin/account`) tanpa cookie `payload-token` | 307 dari `proxy.ts` ke `/admin/login`; untuk selain `/admin`, dengan `?redirect=<path dan query>` sehingga Payload kembali ke halaman itu sesudah login |
+| Route admin publik Payload (`/admin/login`, `/admin/forgot`, `/admin/reset/…`, `/admin/create-first-user`, `/admin/logout…`, `/admin/unauthorized`, `/admin/<koleksi>/verify/<token>`) | Diteruskan ke Payload |
+| `POST /admin` (Server Function), `/api/*`, `/id/publications`, `/en/publications` | Diteruskan tanpa cek cookie |
+| Request dengan cookie `payload-token` (sah atau tidak) | Diteruskan; Payload memverifikasi token dan memutuskan |
+
+Halaman admin juga menunggu `connection()` sebelum `RootPage` (`app/(payload)/admin/[[...segments]]/page.tsx`). Production tidak berubah: CMS mati, jadi semua path di atas tetap 404. Satu pantulan (`/admin` → `/admin/login` → `/admin`) sesudah login masih mungkin bila browser membawa cookie yang ditolak Payload, misalnya sesudah `PAYLOAD_SECRET` Preview diganti atau user dihapus; sesudah pantulan itu dashboard tetap tampil (bug Next [vercel/next.js#92767](https://github.com/vercel/next.js/issues/92767)).
+
+**Langkah Owner (cek Preview tertunda):**
+
+1. Sesudah orchestrator mem-push branch `fix/admin-login-loop`: Vercel → **Deployments** → pilih deployment Preview branch itu, tunggu status **Ready**, lalu salin URL-nya. Setiap deployment punya host sendiri, jadi browser belum punya cookie di sana.
+2. Buka jendela private/incognito baru, lalu buka `<URL>/admin`. Hasil yang diharapkan: URL langsung menjadi `/admin/login` tanpa kedip, dan form login tampil.
+3. Login sebagai staf tanpa reload. Hasil yang diharapkan: dashboard tampil dalam beberapa detik dan URL tetap `/admin`, tanpa bolak-balik `/admin` ↔ `/admin/login`.
+4. Tutup jendela itu. Di jendela private baru, buka `<URL>/admin/collections/topics`, lalu login. Hasil yang diharapkan: daftar Topics tampil sesudah login.
+5. Di admin, pilih **Log out**, lalu login lagi tanpa reload. Hasil yang diharapkan: dashboard tampil tanpa bolak-balik.
+6. Bila URL bolak-balik lagi: jangan reload dulu. Catat waktu (UTC) dan langkahnya; di DevTools → **Network** (centang **Preserve log**) salin daftar request (path dan status saja, tanpa header `Cookie`). Lalu Vercel → **Logs**, Environment `preview`, rentang waktu yang sama; kirim keduanya ke orchestrator. Log error `new Date()` pada `/admin/[[...segments]]` tetap muncul untuk request yang login (known issue, subbagian P2 A di bawah) dan bukan tanda kegagalan.
+
 #### Langkah Owner dari jawaban 2026-11-10 (M3-02)
 
 **P7 C — matikan Data API di `mahira-cms`.** Payload tidak memakai Data API; ia tersambung langsung ke Postgres lewat pooler. Project APP `mahira.id` jangan diubah (Storage dipakai Media).
@@ -113,7 +139,7 @@ Masalah di Preview 2026-11-12: reload `/admin` gagal dengan "This page couldn't 
 
 Sampai langkah ini dilakukan, RLS (tanpa policy) adalah satu-satunya penjaga tabel `mahira-cms` dari publishable key. Sumber: [Supabase — Securing your API](https://supabase.com/docs/guides/api/securing-your-api), [Supabase — Next.js quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs).
 
-**P2 A — log `cacheComponents` di Vercel.** Pesan `Route "/admin/[[...segments]]": Next.js encountered the unstable value new Date() while prerendering` muncul berlevel error pada route `/admin/[[...segments]]`, hanya di Preview dan lokal (CMS mati di Production). Di Vercel → project → **Logs**: pilih Environment `preview`, lalu pada filter **Route** pilih route selain `/admin/[[...segments]]` saat mencari error lain. Ditinjau ulang saat upgrade Payload/Next. Sumber: [Vercel — Runtime Logs](https://vercel.com/docs/logs/runtime).
+**P2 A — log `cacheComponents` di Vercel.** Pesan `Route "/admin/[[...segments]]": Next.js encountered the unstable value new Date() while prerendering` muncul berlevel error pada route `/admin/[[...segments]]`, hanya di Preview dan lokal (CMS mati di Production). Di Vercel → project → **Logs**: pilih Environment `preview`, lalu pada filter **Route** pilih route selain `/admin/[[...segments]]` saat mencari error lain. Ditinjau ulang saat upgrade Payload/Next. Sumber: [Vercel — Runtime Logs](https://vercel.com/docs/logs/runtime). Asal log terbukti di butir 1c (DECISIONS §2.4 P2 A, §2.10 jawaban 2 (i)): `jwtVerify` jose 5.10.0 di strategi JWT Payload memanggil `new Date()` hanya bila request membawa token, jadi log hanya muncul untuk request admin yang login. Next menandainya karena `partialPrefetching` menyala, lalu memindahkan sisa render ke tahap Dynamic; user tetap terautentikasi, dan log ini bukan penyebab loop login.
 
 #### Pemicu review saat upgrade Payload (DEC-006)
 
@@ -124,6 +150,7 @@ Sampai langkah ini dilakukan, RLS (tanpa policy) adalah satu-satunya penjaga tab
 - **Log `cacheComponents` di admin** (P2 A di atas).
 - **`serverExternalPackages: ["payload"]` di `next.config.ts`.** Periksa ulang `withPayload` versi baru (`node_modules/@payloadcms/next/dist/withPayload/withPayload.js`): apakah `payload` kini di-externalize juga di build, dan apakah paket lain perlu didaftarkan. Jalankan ulang `bun run test:integration --only homepage` sampai HP8/HP9 lulus, dan cek `.nft.json` route masih memuat `node_modules/payload`.
 - **Wrapper `db.init` di `payload/payload.config.ts` (butir 1b, DECISIONS §2.9 jawaban 3 A).** `handleInitFailure` menangani promise internal `initializing` milik `@payloadcms/db-postgres` 3.93.0 (dibuat di `dist/index.js`, ditolak di `dist/connect.js` saat connect gagal; tanpa handler, Vercel menghentikan instance). Periksa bahwa field itu masih ada dan masih ditolak saat connect gagal, lalu jalankan `bun run test` sampai DB1/DB2 di `tests/unit/db-connection.test.ts` lulus (TEST-PLAN §12.7).
+- **Login admin butir 1c (DECISIONS §2.10).** (1) `app/(payload)/admin/[[...segments]]/page.tsx` dibuat Payload dan ditandai "DO NOT MODIFY", tetapi kini diedit tangan: `await connection()` sebelum `RootPage`. Bila upgrade Payload membuat ulang atau mengganti file itu, pasang lagi edit tersebut. (2) `proxy.ts` mengasumsikan cookie auth Payload bernama `payload-token` (`cookiePrefix` default `payload`; tidak di-set di `payload/payload.config.ts`) dan menyalin daftar route admin publik dari `isPublicAdminRoute` (`node_modules/@payloadcms/next/dist/utilities/isPublicAdminRoute.js`, `admin.routes` default). Bila nama cookie berubah, semua halaman admin akan dialihkan ke login walaupun sudah login; bila daftar route berubah, route publik baru akan dialihkan ke login (tidak pernah memberi akses). Pada setiap upgrade Payload atau Next, jalankan `bun run test` sampai PX1–PX6 (`tests/unit/proxy.test.ts`) lulus dan `bun run test:integration --only admin` sampai AD1–AD7 lulus, lalu ulangi langkah 2–5 subbagian "Login admin" di build lokal atau Preview. Pada upgrade Next, cek juga apakah [vercel/next.js#92767](https://github.com/vercel/next.js/issues/92767) sudah diperbaiki (TEST-PLAN §12.7).
 
 ## 4. Database and storage separation
 

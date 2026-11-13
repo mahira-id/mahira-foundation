@@ -94,8 +94,9 @@ export type NextServer = {
  * is already in use, so a test never talks to a server it did not start.
  *
  * `warmPath`: requested once (any status) before the first `GET /`, so that
- * path is the first request the server handles. HP9 passes `/admin` to check
- * an admin-first Payload init (TEST-PLAN §12.5).
+ * path is the first request the server handles. HP9 passes `/admin/login` to
+ * check an admin-first Payload init (TEST-PLAN §12.5); an anonymous `/admin`
+ * gets a 307 from proxy.ts since item 1c and never reaches Payload.
  */
 export async function startNextServer(options: {
   env: ChildEnv;
