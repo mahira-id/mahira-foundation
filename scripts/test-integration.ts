@@ -17,6 +17,7 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *   homepage      / from CMS data: lead, latest (dated before undated), active topics, freshness (M3-04);
  *                 HP8/HP9: page-first and admin-first Payload init (second server on TEST_PORT + 1)
  *   admin         admin login redirect in proxy.ts, staff session on /admin (item 1c)
+ *   index         /{locale}/publications: order, filters, pagination, URL state, noindex (M3-05)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left (always last)
  *
  * Usage: bun run test:integration [--skip-build] [--only access,guards,...]
@@ -30,6 +31,7 @@ const FILES = {
   workflow: "tests/integration/workflow.test.ts",
   homepage: "tests/integration/homepage.test.ts",
   admin: "tests/integration/admin.test.ts",
+  index: "tests/integration/publication-index.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;

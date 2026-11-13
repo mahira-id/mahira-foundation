@@ -17,12 +17,15 @@ import {
 } from "../helpers/fixtures";
 import { assertServerUp, getPage, pageFact, type PageResult } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
+import { fetchAllIndexPages } from "../helpers/publication-pages";
 
 /**
  * Locale checks (M3-01; port of the archived m3-01-locale-checks, M3-10):
  * locale routes, <html lang>, per-locale publication sets, language switcher,
  * status codes and no public locale fallback (C4c).
  * Needs `next start` with the full env (bun run test:integration).
+ * Since M3-05 the index has 12 rows per page, so the publication sets (L*.3,
+ * L*.4, Q1–Q3) are the union of all pages.
  *
  * Fixtures: topic fixture-test-locale-topic-id-only (ID name only) and staff
  * user fixture-test-locale-editor@example.invalid (only the `user` of one
@@ -55,6 +58,7 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
   const expected: Record<Locale, Set<string>> = { id: new Set(), en: new Set() };
   const totals: Record<Locale, number> = { id: 0, en: 0 };
   const pages = new Map<Locale, PageResult>();
+  const listedSets = new Map<Locale, Set<string>>();
 
   function p(): Payload {
     if (!payload) throw new Error("Payload not initialised (before hook failed)");
@@ -72,6 +76,15 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
     const page = await getPage(`/${locale}/publications`);
     pages.set(locale, page);
     return page;
+  }
+
+  /** Slugs listed on every page of /{locale}/publications. */
+  async function listedSlugs(locale: Locale): Promise<Set<string>> {
+    const cached = listedSets.get(locale);
+    if (cached) return cached;
+    const set = new Set((await fetchAllIndexPages(locale)).slugs);
+    listedSets.set(locale, set);
+    return set;
   }
 
   before(async (t) => {
@@ -130,12 +143,12 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
     });
     test(`L${n}.3 /${locale}/publications lists exactly the published + public ${locale} slugs`, async (t) => {
       t.diagnostic(`OBSERVED E.${locale} expected ${locale} slugs ${list(expected[locale])} (${expected[locale].size} of ${totals[locale]} ${locale} records)`);
-      const seen = slugSet((await indexPage(locale)).body);
+      const seen = await listedSlugs(locale);
       assert.ok(sameSet(seen, expected[locale]), `listed ${list(seen)} expected ${list(expected[locale])}`);
     });
     test(`L${n}.4 /${locale}/publications lists none of the ${other}-only slugs`, async () => {
       // Slugs are unique per locale only, so compare with slugs that exist in the other locale alone.
-      const seen = slugSet((await indexPage(locale)).body);
+      const seen = await listedSlugs(locale);
       const otherOnly = [...expected[other]].filter((slug) => !expected[locale].has(slug));
       const leaked = otherOnly.filter((slug) => seen.has(slug));
       assert.equal(leaked.length, 0, `${other}-only published slugs listed: ${leaked.join(", ")} (of ${otherOnly.length})`);
@@ -156,11 +169,11 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
   }
 
   // ------------------------------------------------------------ Q query parameters do not change the page
-  for (const [index, query] of ["?fallback-locale=id", "?locale=id", "?fallbackLocale=id"].entries()) {
-    test(`Q${index + 1} GET /en/publications${query}: 200 with the en set`, async () => {
-      const page = await getPage(`/en/publications${query}`);
-      const seen = slugSet(page.body);
-      assert.ok(page.status === 200 && sameSet(seen, expected.en), `${pageFact(page)}; listed ${list(seen)} expected ${list(expected.en)}`);
+  for (const [index, query] of ["fallback-locale=id", "locale=id", "fallbackLocale=id"].entries()) {
+    test(`Q${index + 1} GET /en/publications?${query}: 200 with the en set (all pages)`, async () => {
+      // fetchAllIndexPages asserts HTTP 200 on every page.
+      const seen = new Set((await fetchAllIndexPages("en", query)).slugs);
+      assert.ok(sameSet(seen, expected.en), `listed ${list(seen)} expected ${list(expected.en)}`);
     });
   }
 
