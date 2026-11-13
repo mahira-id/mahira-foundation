@@ -37,7 +37,7 @@ import { closeTestPayload, getTestPayload } from "../helpers/payload";
  *
  * HP8 and HP9 are regression tests of the Payload init-order bug (TEST-PLAN
  * §12.5): each starts a second, fresh `next start` on TEST_PORT + 1 (no
- * build), lets GET / (HP8) or GET /admin (HP9) create the Payload instance,
+ * build), lets GET / (HP8) or GET /admin/login (HP9) create the Payload instance,
  * and checks an anonymous empty login for REST field-error details.
  */
 type PubData = RequiredDataFromCollectionSlug<"publications">;
@@ -287,8 +287,10 @@ describe("homepage (M3-04 / from CMS data)", () => {
     await assertFreshServerFieldErrors(t, "home-hp8");
   });
 
-  test("HP9 admin-first Payload init (GET /admin first) keeps REST field-error details (errors[0].data)", async (t) => {
-    await assertFreshServerFieldErrors(t, "home-hp9", "/admin");
+  test("HP9 admin-first Payload init (GET /admin/login first) keeps REST field-error details (errors[0].data)", async (t) => {
+    // Since item 1c an anonymous GET /admin gets a 307 from proxy.ts and never
+    // reaches Payload; /admin/login is rendered by the same admin page.
+    await assertFreshServerFieldErrors(t, "home-hp9", "/admin/login");
   });
 });
 

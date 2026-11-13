@@ -90,9 +90,10 @@ export function restDoc(result: RestResult): JsonObject {
 
 export type PageResult = { status: number; location: string; postponed: boolean; body: string; error?: string };
 
-export async function getPage(path: string): Promise<PageResult> {
+/** GET without following redirects; `headers` e.g. a Cookie or `RSC: 1` (never printed). */
+export async function getPage(path: string, headers: Record<string, string> = {}): Promise<PageResult> {
   try {
-    const raw = await request("GET", path, {});
+    const raw = await request("GET", path, { headers });
     return {
       status: raw.status,
       location: raw.headers.get("location") ?? "",
