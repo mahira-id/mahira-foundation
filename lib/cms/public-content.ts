@@ -2,8 +2,20 @@ import config from "@payload-config";
 import { getPayload } from "payload";
 import { cache } from "react";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
+import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import type { Locale } from "@/lib/i18n/locales";
+import {
+  buildFacets,
+  inIdOrder,
+  planIndex,
+  termIds,
+  toIndexItem,
+  toIndexRef,
+  type IndexFacets,
+  type IndexItem,
+  type IndexPlan,
+} from "@/lib/publications/index-view";
 import { isCmsEnabled } from "@/payload/env";
 
 /**
@@ -16,26 +28,8 @@ import { isCmsEnabled } from "@/payload/env";
  * - always pass `fallbackLocale: false` (no text of another language);
  * - filter linked-entry records by their own `locale` field.
  *
- * Returns null when the CMS is off (see payload/env.ts).
+ * Returns `{ status: "off" }` when the CMS is off (see payload/env.ts).
  */
-export async function listPublishedPublications(locale: Locale) {
-  if (!isCmsEnabled()) return null;
-
-  const payload = await getPayload({ config });
-  const result = await payload.find({
-    collection: "publications",
-    where: { locale: { equals: locale } },
-    locale,
-    fallbackLocale: false,
-    draft: false,
-    overrideAccess: false,
-    depth: 0,
-    select: { title: true, slug: true },
-    sort: "-publishedAt",
-    limit: 100,
-  });
-  return result.docs;
-}
 
 /**
  * Data of the homepage `/` (M3-04, DECISIONS §2.7): the newest Indonesian
@@ -56,3 +50,36 @@ export const getHomepageData = cache(async (): Promise<HomepageData> => {
     return { status: "error" };
   }
 });
+
+export type PublicationIndexResult =
+  | { status: "off" }
+  | { status: "error" }
+  | { status: "ok"; plan: IndexPlan; items: IndexItem[]; facets: IndexFacets };
+
+/**
+ * One URL of the publication index `/{locale}/publications` (M3-05,
+ * DECISIONS §2.11 P1 A–P5 A): state, rows of the page and filter options.
+ * Primitive arguments, so React `cache` gives generateMetadata and the page
+ * the same read. A failed read is logged with the error name only (P15 A)
+ * and gives `{ status: "error" }`; the page still answers 200 (noindex).
+ */
+export const getPublicationIndex = cache(
+  async (locale: Locale, type?: string, topic?: string, year?: string, page?: string): Promise<PublicationIndexResult> => {
+    if (!isCmsEnabled()) return { status: "off" };
+    try {
+      const payload = await getPayload({ config });
+      const refs = (await findIndexRefs(payload, locale)).map(toIndexRef);
+      const ids = termIds(refs);
+      const types = await findIndexTerms(payload, "publication-types", locale, ids.types);
+      const topics = await findIndexTerms(payload, "topics", locale, ids.topics);
+      const facets = buildFacets(refs, types, topics, locale);
+      const plan = planIndex({ query: { type, topic, year, page }, refs, facets });
+      const docs = await findIndexPage(payload, locale, plan.pageIds);
+      const items = inIdOrder(docs, plan.pageIds).map((doc) => toIndexItem(doc, locale));
+      return { status: "ok", plan, items, facets };
+    } catch (error) {
+      console.error("[publications] CMS read failed:", readErrorLabel(error));
+      return { status: "error" };
+    }
+  },
+);

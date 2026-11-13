@@ -1,3 +1,4 @@
+import { formatPublicationDate as formatLocaleDate, publicationYear } from "@/lib/publications/dates";
 import type { Publication } from "@/payload/payload-types";
 
 /**
@@ -61,21 +62,12 @@ export type HomeTopicDoc = {
 };
 
 // P9 A: "28 Okt 2026", in WIB (dates from the admin are stored in UTC).
-const DATE_FORMAT = new Intl.DateTimeFormat("id-ID", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  timeZone: "Asia/Jakarta",
-});
-const YEAR_FORMAT = new Intl.DateTimeFormat("id-ID", { year: "numeric", timeZone: "Asia/Jakarta" });
-
+// The homepage is Indonesian only; lib/publications/dates.ts has both locales.
 export function formatPublicationDate(iso: string): string {
-  return DATE_FORMAT.format(new Date(iso));
+  return formatLocaleDate(iso, "id");
 }
 
-export function publicationYear(iso: string): string {
-  return YEAR_FORMAT.format(new Date(iso));
-}
+export { publicationYear };
 
 function nonEmpty(value: string | null | undefined): string | null {
   return value && value.trim() ? value : null;
