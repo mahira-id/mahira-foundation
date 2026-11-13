@@ -13,10 +13,10 @@ Publication is the primary product value. The platform should help the public di
 
 ## Product domains
 
-1. **Public publication experience** — home, publication index, publication detail, discovery/search, topics/desks, about, SEO and social sharing.
-2. **Editorial management** — staff-operated content creation, metadata, authors, taxonomy, assets, localization, review and publication workflow.
-3. **Public user account and access** — public identity, profile, access state, entitlement, and future membership/subscription experience.
-4. **Learning Hub** — catalog of learning resources and external media embeds; a full LMS is not assumed for MVP.
+1. **Public publication experience** — home, publication index, publication detail, discovery/search, topics (public Indonesian label "Bidang Kerja"; Desk and Tag are not in MVP, DEC-003), about, SEO and social sharing.
+2. **Editorial management** — staff-operated content creation, metadata, authors, taxonomy, assets, localization, and the minimum draft → publish/unpublish workflow (DEC-015). Staff roles are Editor and Admin only (DEC-009, DEC-016).
+3. **Public user account and access** — public identity, profile, access state, and entitlement. Registration, login, reset, email verification, and access to `registered` files are required before launch (M5); subscriber entitlement and payment are post-launch (M7) (DECISIONS §2.8).
+4. **Learning Hub** — required at launch (DEC-014, launch scope only): catalog by theme, YouTube video/playlist embeds, guides, and publicly downloadable toolkits; no login, progress tracking, quizzes, or certificates. Content model, routes, and toolkit storage stay OPEN until M3-11.
 
 ## Audience and access principles
 
@@ -43,11 +43,11 @@ Read the core context before proposing product behavior:
 #[[file:docs/CORE/PDD.md]]
 #[[file:docs/CORE/SRS.md]]
 
-For detailed architecture, decisions, and implementation specs, consult the corresponding `docs/` files when present. AI chat exports, brainstorming boards, and external references provide context, not approved requirements by themselves.
+For current phase, status, and blockers read `docs/MILESTONES.md`; for finished work and its evidence read `docs/CHANGELOG.md`. For detailed architecture, decisions, and implementation specs, consult the corresponding `docs/` files when present. AI chat exports, brainstorming boards, and external references provide context, not approved requirements by themselves.
 
 ## Scope discipline
 
 - Do not silently decide MVP boundaries, subscription terms, taxonomy, review workflow, localization model, or staff access policy.
 - Mark unknowns as `OPEN` or `TBD`; propose options and affected decisions.
-- Keep Phase 2 payment integration out of MVP unless the Product Owner explicitly changes scope and updates PRD/SRS.
+- Keep subscription entitlement and payment integration out of the launch scope (post-launch, M7) unless the Product Owner explicitly changes scope and updates PRD/SRS.
 - A feature is not complete merely because the code compiles; it must satisfy approved acceptance criteria and the relevant tests.
