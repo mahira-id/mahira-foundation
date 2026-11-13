@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { s3Storage } from "@payloadcms/storage-s3";
-import { buildConfig } from "payload";
+import { buildConfig, type DatabaseAdapterObj } from "payload";
 import { DEFAULT_LOCALE } from "../lib/i18n/locales";
 import { Authors } from "./collections/Authors";
 import { Media } from "./collections/Media";
@@ -27,6 +27,32 @@ const appSupabaseRef = cms ? new URL(appSupabaseUrl).hostname.split(".")[0] : ""
 // Spike bucket and prefix are kept until M3-08 (Owner 2026-11-10, M3-00 U2).
 const PUBLIC_BUCKET = "spike-m2-public";
 const MEDIA_PREFIX = "spike-m2";
+
+/**
+ * Keeps the process alive when the database connect of `payload.init` fails
+ * (Owner 2026-11-12, item 1b answer 3 a, DECISIONS §2.9).
+ *
+ * `@payloadcms/db-postgres` 3.93.0 rejects its internal `initializing`
+ * promise when the connect fails (`dist/connect.js`), and nothing awaits that
+ * promise during init. The unhandled rejection made Vercel exit the function
+ * instance (exit 128) and fail every request on it. With a handler attached,
+ * `getPayload` still throws a catchable init error for that request only, the
+ * next request retries init, and code that awaits `initializing` (drizzle
+ * `beginTransaction`) still sees the rejection. `initializing` is not public
+ * API: re-check on every Payload upgrade (DEC-006).
+ */
+function handleInitFailure<T>(db: DatabaseAdapterObj<T>): DatabaseAdapterObj<T> {
+  const init = db.init;
+  return {
+    ...db,
+    init: (args) => {
+      const adapter = init(args);
+      const initializing: unknown = (adapter as { initializing?: unknown }).initializing;
+      if (initializing instanceof Promise) initializing.catch(() => undefined);
+      return adapter;
+    },
+  };
+}
 
 export default buildConfig({
   admin: {
@@ -87,15 +113,26 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
-  db: postgresAdapter({
-    pool: {
-      connectionString: cms?.CMS_SUPABASE_DATABASE_URI,
-      // TLS verified against Supabase Root 2021 CA (M3-00 U1 S1). The URI must
-      // not contain `sslmode`; pg would replace this `ssl` object.
-      ssl: { ca: SUPABASE_ROOT_CA_2021 },
-    },
-    // Schema changes only through committed migrations; never dev push.
-    push: false,
-    migrationDir: path.resolve(dirname, "migrations"),
-  }),
+  db: handleInitFailure(
+    postgresAdapter({
+      pool: {
+        connectionString: cms?.CMS_SUPABASE_DATABASE_URI,
+        // TLS verified against Supabase Root 2021 CA (M3-00 U1 S1). The URI must
+        // not contain `sslmode`; pg would replace this `ssl` object.
+        ssl: { ca: SUPABASE_ROOT_CA_2021 },
+        // Pool limits per process (Owner 2026-11-12, item 1b answer 2 a). The
+        // pg-pool defaults (10 clients, wait forever) filled the 15-client
+        // Supabase session pooler from Vercel Preview. Payload keeps 1 client
+        // checked out after connect, so 4 serve queries; idle ones close after
+        // 5 s; a request that waits 10 s for a client fails instead of hanging
+        // until the function timeout.
+        max: 5,
+        idleTimeoutMillis: 5_000,
+        connectionTimeoutMillis: 10_000,
+      },
+      // Schema changes only through committed migrations; never dev push.
+      push: false,
+      migrationDir: path.resolve(dirname, "migrations"),
+    }),
+  ),
 });
