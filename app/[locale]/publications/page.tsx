@@ -30,6 +30,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   if (!isLocale(locale)) return {};
   const title = getDictionary(locale).publications.title;
   if (!isCmsEnabled()) return { title };
+  // Request-time data, as in the detail page: without it a read failure
+  // logs Next's "unstable value ... while prerendering".
+  await connection();
   const query = readIndexQuery(await searchParams);
   const result = await getPublicationIndex(locale, query.type, query.topic, query.year, query.page);
   if (result.status === "off") return { title };
