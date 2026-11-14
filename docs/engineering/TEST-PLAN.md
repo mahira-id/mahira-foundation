@@ -135,7 +135,7 @@ A release candidate passes all P0 tests, has no unresolved critical/high securit
 
 ## 12. Tes yang ada di repo (M3-10, M3-03, M3-04, M3-05)
 
-Keputusan Owner 2026-11-11: DECISIONS §2.5 (P1a A, P1b (i), P1c (i), P2 A, P3 B, P4 A, folder (a)). Runner: `node:test` bawaan Node 26 dengan loader `tsx` 4.23.15. Semua tes jalan di Node (DEC-018); Bun hanya meluncurkan script. Vitest, Jest, `bun test`, dan Playwright tidak dipasang. Tes workflow editorial M3-03 mengikuti jawaban Owner 2026-11-12 (DECISIONS §2.6); tes homepage M3-04 mengikuti jawaban Owner 2026-11-12 (DECISIONS §2.7); tes indeks, detail, dan pratinjau M3-05 mengikuti jawaban Owner 2026-11-13 beserta amandemennya (DECISIONS §2.11); tes halaman not-found Mahira dan tujuan "Keluar dari pratinjau" M3-05b mengikuti persetujuan Owner 2026-11-13 ("Setuju dengan saran"; PAGE-SPECIFICATIONS §4).
+Keputusan Owner 2026-11-11: DECISIONS §2.5 (P1a A, P1b (i), P1c (i), P2 A, P3 B, P4 A, folder (a)). Runner: `node:test` bawaan Node 26 dengan loader `tsx` 4.23.15. Semua tes jalan di Node (DEC-018); Bun hanya meluncurkan script. Vitest, Jest, `bun test`, dan Playwright tidak dipasang. Tes workflow editorial M3-03 mengikuti jawaban Owner 2026-11-12 (DECISIONS §2.6); tes homepage M3-04 mengikuti jawaban Owner 2026-11-12 (DECISIONS §2.7); tes indeks, detail, dan pratinjau M3-05 mengikuti jawaban Owner 2026-11-13 beserta amandemennya (DECISIONS §2.11); tes halaman not-found Mahira dan tujuan "Keluar dari pratinjau" M3-05b mengikuti persetujuan Owner 2026-11-14 ("Setuju dengan saran"; PAGE-SPECIFICATIONS §4).
 
 ### 12.1 Perintah
 
