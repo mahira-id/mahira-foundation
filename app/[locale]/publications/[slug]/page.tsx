@@ -20,7 +20,7 @@ import { isCmsEnabled } from "@/payload/env";
  * an empty static shell per locale for this route (the [locale] layout has
  * generateStaticParams) and sends it with 200 before the page runs
  * (streaming.md "The HTTP contract"). So an unknown or ineligible slug gets
- * notFound() = 200 + robots noindex + the not-found page, and a failed read
+ * notFound() = 200 + robots noindex + app/[locale]/not-found.tsx, and a failed read
  * gets the error state rendered here on the server = 200 + noindex.
  * `instant = false`: no Suspense and no loading file, so nothing of the
  * page shows before the database answers.
