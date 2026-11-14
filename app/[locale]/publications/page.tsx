@@ -84,7 +84,7 @@ async function PublicationIndexResults({ locale, searchParams }: { locale: Local
   const { plan, items, facets } = result;
   const clearLink = (
     <Link className="mt-3 inline-block font-semibold text-brand-700 underline underline-offset-4" href={`/${locale}/publications`}>
-      {dictionary.clear}
+      {query.q ? dictionary.clearSearch : dictionary.clear}
     </Link>
   );
 
@@ -96,7 +96,7 @@ async function PublicationIndexResults({ locale, searchParams }: { locale: Local
       data-index-total={plan.total}
       data-index-unknown={plan.unknown.length > 0 ? plan.unknown.join(",") : undefined}
     >
-      <IndexFilters facets={facets} locale={locale} query={query} />
+      <IndexFilters facets={facets} locale={locale} query={query} searchable={plan.state !== "empty"} />
       {plan.state === "list" || plan.state === "no-results" ? (
         <p aria-live="polite" className="mt-6 text-sm font-semibold text-muted">
           {dictionary.count(plan.total)}
@@ -115,7 +115,7 @@ async function PublicationIndexResults({ locale, searchParams }: { locale: Local
       ) : null}
       {plan.state === "no-results" ? (
         <Notice>
-          <p>{dictionary.noResults}</p>
+          <p>{query.q ? dictionary.noResultsSearch : dictionary.noResults}</p>
           {clearLink}
         </Notice>
       ) : null}
