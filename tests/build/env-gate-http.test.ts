@@ -6,10 +6,13 @@ import { describe, test } from "node:test";
  * M3-01; ENVIRONMENTS §3.1). Started by `bun run test:build-matrix`, once per
  * build mode. No Payload import, so it also runs where the CMS is off.
  *
- * GATE_MODE: off  = CMS env absent         -> /admin, /api/*, /{id,en}/publications and
+ * GATE_MODE: off  = CMS env absent         -> /admin, /api/* (preview handlers included),
+ *                                             /{id,en}/publications and
  *                                             /{id,en}/publications/{slug} 404
  *            prod = VERCEL_ENV=production  -> same as off
  *            on   = full .env.local        -> /admin reachable, anonymous /api/* 403,
+ *                                             anonymous /api/preview 404 without the
+ *                                             Draft Mode cookie,
  *                                             /{id,en}/publications 200, unknown or
  *                                             upper-case detail slug: not-found page
  *                                             with noindex (M3-05)
@@ -118,6 +121,9 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
       ["GET", "/api/publications"],
       ["GET", "/api/users"],
       ["POST", "/admin"],
+      // M3-05 (DECISIONS §2.11 P11 A): the staff preview handlers are closed too.
+      ["GET", "/api/preview?id=1"],
+      ["POST", "/api/preview/exit"],
     ];
     for (const [index, [method, path]] of rows.entries()) {
       test(`G3.${index + 1} ${method} ${path}: 404, noindex, no-store`, async () => {
@@ -164,5 +170,15 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
         assert.equal((await request("GET", path)).status, 403);
       });
     }
+    // M3-05 (DECISIONS §2.11 P11 A): without a staff session the preview
+    // handler answers 404 and never sets the Draft Mode cookie.
+    test("G4.4 GET /api/preview?id=1 anonymous: 404, noindex, no-store, no __prerender_bypass", async () => {
+      const result = await request("GET", "/api/preview?id=1");
+      assert.equal(result.status, 404, "GET /api/preview?id=1 anonymous");
+      assert.equal(result.headers?.get("x-robots-tag"), "noindex", "X-Robots-Tag");
+      assert.equal(result.headers?.get("cache-control"), "no-store", "Cache-Control");
+      const cookies = result.headers?.getSetCookie() ?? [];
+      assert.equal(cookies.some((cookie) => cookie.startsWith("__prerender_bypass=")), false, "__prerender_bypass set");
+    });
   }
 });

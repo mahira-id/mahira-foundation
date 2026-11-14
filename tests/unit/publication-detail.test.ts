@@ -4,6 +4,7 @@ import { describe, test } from "node:test";
 import type { Payload } from "payload";
 
 import { findPublicPublication } from "../../lib/cms/publication-detail-query";
+import { findDraftPublication, type StaffUser } from "../../lib/cms/staff-preview";
 import {
   isPublicationSlug,
   summaryParagraphs,
@@ -161,5 +162,33 @@ describe("lib/cms/publication-detail-query.ts", () => {
 
     const none = recordingFind([]);
     assert.equal(await findPublicPublication(none.payload, "id", "nope"), null);
+  });
+});
+
+describe("lib/cms/staff-preview.ts", () => {
+  test("DTU6 findDraftPublication: latest version as the staff user, access control on, no fallback, same where/fields as the public read", async () => {
+    const staff = { id: 2, collection: "users", role: "editor" } as unknown as StaffUser;
+    const found = recordingFind([{ id: 1, slug: "pub", title: "T2" }]);
+    assert.deepEqual(await findDraftPublication(found.payload, "id", "pub", staff), { id: 1, slug: "pub", title: "T2" });
+    assert.equal(found.calls.length, 1);
+    const [args] = found.calls;
+    assert.ok(args);
+    assert.equal(args.collection, "publications");
+    assert.equal(args.draft, true);
+    assert.equal(args.user, staff, "the verified staff user is passed");
+    assert.equal(args.overrideAccess, false);
+    assert.equal(args.fallbackLocale, false);
+    assert.equal(args.locale, "id");
+    assert.deepEqual(args.where, { and: [{ locale: { equals: "id" } }, { slug: { equals: "pub" } }] });
+    assert.equal(args.limit, 1);
+    assert.equal(args.depth, 1);
+
+    const pub = recordingFind([]);
+    await findPublicPublication(pub.payload, "id", "pub");
+    assert.deepEqual(args.select, pub.calls[0]?.select, "select = the public detail fields");
+    assert.deepEqual(args.populate, pub.calls[0]?.populate, "populate = the public detail names");
+
+    const none = recordingFind([]);
+    assert.equal(await findDraftPublication(none.payload, "en", "nope", staff), null);
   });
 });

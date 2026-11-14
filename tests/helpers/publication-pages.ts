@@ -129,9 +129,14 @@ export type IndexPages = { slugs: string[]; titles: Map<string, string>; bodies:
 
 /**
  * Every page of one index URL: page 1, then `page=2..data-index-pages`.
- * Asserts HTTP 200 and a list or empty state on each page.
+ * Asserts HTTP 200 and a list or empty state on each page. `headers` (e.g.
+ * preview cookies) go with every request and are never printed.
  */
-export async function fetchAllIndexPages(locale: "id" | "en", query = ""): Promise<IndexPages> {
+export async function fetchAllIndexPages(
+  locale: "id" | "en",
+  query = "",
+  headers: Record<string, string> = {},
+): Promise<IndexPages> {
   const url = (page: number) => {
     const params = [query, page > 1 ? `page=${page}` : ""].filter(Boolean).join("&");
     return `/${locale}/publications${params ? `?${params}` : ""}`;
@@ -142,7 +147,7 @@ export async function fetchAllIndexPages(locale: "id" | "en", query = ""): Promi
   let pages = 1;
   for (let page = 1; page <= pages; page++) {
     const path = url(page);
-    const result = await getPage(path);
+    const result = await getPage(path, headers);
     assert.equal(result.status, 200, `GET ${path} ${pageFact(result)}`);
     const state = indexState(result.body);
     assert.ok(state.state === "list" || state.state === "empty", `GET ${path}: data-index-state=${state.state}`);

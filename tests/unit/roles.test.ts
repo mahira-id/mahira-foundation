@@ -11,6 +11,7 @@ import {
   isStaffField,
   isStaffOrAnonymousLocalRead,
   staffRoleOf,
+  staffRoleOfUser,
 } from "../../payload/access/roles";
 import { Publications } from "../../payload/collections/Publications";
 import { PublicationTypes } from "../../payload/collections/PublicationTypes";
@@ -48,6 +49,16 @@ describe("payload/access/roles.ts", () => {
     assert.equal(staffRoleOf(fakeReq({ user: fakeUser("superuser", 3) })), null);
     assert.equal(staffRoleOf(fakeReq({ user: null })), null);
     assert.equal(staffRoleOf(fakeReq({ user: fakeUser("admin", 4, "members") })), null);
+  });
+
+  test("staffRoleOfUser (preview session, no request): admin, editor, unknown role, no user, other collection", () => {
+    const user = (role: string, collection = "users") => fakeUser(role, 5, collection) as unknown as PayloadRequest["user"];
+    assert.equal(staffRoleOfUser(user("admin")), "admin");
+    assert.equal(staffRoleOfUser(user("editor")), "editor");
+    assert.equal(staffRoleOfUser(user("superuser")), null);
+    assert.equal(staffRoleOfUser(user("")), null);
+    assert.equal(staffRoleOfUser(null), null);
+    assert.equal(staffRoleOfUser(user("editor", "members")), null);
   });
 
   test("isAdmin / isStaff / isAdminField", async () => {

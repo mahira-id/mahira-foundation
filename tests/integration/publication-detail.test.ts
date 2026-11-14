@@ -327,7 +327,14 @@ describe("publication detail (M3-05 published + public only, switcher, not-found
     const failing = await startNextServer({ env, port: FAILING_PORT, label: "detail-dt10" });
     const get = async (path: string): Promise<PageResult> => {
       const response = await fetch(`http://localhost:${FAILING_PORT}${path}`, { redirect: "manual" });
-      return { status: response.status, location: response.headers.get("location") ?? "", postponed: false, body: await response.text() };
+      return {
+        status: response.status,
+        location: response.headers.get("location") ?? "",
+        postponed: false,
+        body: await response.text(),
+        setCookies: response.headers.getSetCookie(),
+        cacheControl: response.headers.get("cache-control") ?? "",
+      };
     };
     try {
       const cases: [string, string, string, string][] = [
