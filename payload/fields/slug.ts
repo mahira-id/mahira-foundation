@@ -1,6 +1,7 @@
 import type { TextField, TextFieldSingleValidation } from "payload";
 
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** Lowercase letters, digits and single hyphens; also the slug check of the public detail route (M3-05). */
+export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const validateSlug: TextFieldSingleValidation = (value) => {
   if (!value) {

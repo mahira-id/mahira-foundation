@@ -2,9 +2,12 @@ import config from "@payload-config";
 import { getPayload } from "payload";
 import { cache } from "react";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
+import { findPublicPublication } from "@/lib/cms/publication-detail-query";
 import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import type { Locale } from "@/lib/i18n/locales";
+import { getPublicationAlternates } from "@/lib/publications/alternates";
+import { toPublicationDetail, type PublicationDetail } from "@/lib/publications/detail-view";
 import {
   buildFacets,
   inIdOrder,
@@ -28,7 +31,7 @@ import { isCmsEnabled } from "@/payload/env";
  * - always pass `fallbackLocale: false` (no text of another language);
  * - filter linked-entry records by their own `locale` field.
  *
- * Returns `{ status: "off" }` when the CMS is off (see payload/env.ts).
+ * Returns `{ status: "off" }` (detail: `null`) when the CMS is off (see payload/env.ts).
  */
 
 /**
@@ -80,6 +83,49 @@ export const getPublicationIndex = cache(
     } catch (error) {
       console.error("[publications] CMS read failed:", readErrorLabel(error));
       return { status: "error" };
+    }
+  },
+);
+
+/**
+ * Thrown by getPublicationDetail when the CMS read fails. Fixed message and
+ * no cause, so nothing of the database error (host, user) reaches the page
+ * or the logs of Next.js.
+ */
+export class PublicationReadError extends Error {
+  constructor() {
+    super("Publication could not be loaded");
+    this.name = "PublicationReadError";
+  }
+}
+
+export type PublicationDetailResult = {
+  mode: "public" | "preview";
+  publication: PublicationDetail;
+  /** Paths of the published + public records of the Translation Group, by locale ({} without a counterpart). */
+  alternates: Partial<Record<Locale, string>>;
+};
+
+/**
+ * The detail page `/{locale}/publications/{slug}` (M3-05, DECISIONS §2.11
+ * P7 A, P8 A): the published + public record of this locale, or null (the
+ * page calls notFound()). Deduplicated per request by React `cache`
+ * (generateMetadata and the page). A failed read is logged with the error
+ * name only and throws PublicationReadError; the page catches it and renders
+ * its error state (P15 A as amended 2026-11-13: HTTP 200 + noindex).
+ */
+export const getPublicationDetail = cache(
+  async (locale: Locale, slug: string): Promise<PublicationDetailResult | null> => {
+    if (!isCmsEnabled()) return null;
+    try {
+      const payload = await getPayload({ config });
+      const doc = await findPublicPublication(payload, locale, slug);
+      if (!doc) return null;
+      const alternates = await getPublicationAlternates(payload, doc);
+      return { mode: "public", publication: toPublicationDetail(doc, locale), alternates };
+    } catch (error) {
+      console.error("[publication-detail] CMS read failed:", readErrorLabel(error));
+      throw new PublicationReadError();
     }
   },
 );

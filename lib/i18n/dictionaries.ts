@@ -33,6 +33,20 @@ export type Dictionary = {
       page: (page: number) => string;
     };
   };
+  detail: {
+    breadcrumbLabel: string;
+    type: string;
+    topics: string;
+    published: string;
+    language: string;
+    authors: string;
+    access: string;
+    /** Note of the language switcher when the publication has no counterpart in the other language. */
+    unavailable: string;
+    errorTitle: string;
+    errorBody: string;
+    reload: string;
+  };
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -67,6 +81,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
         page: (page) => `Halaman ${page}`,
       },
     },
+    detail: {
+      breadcrumbLabel: "Navigasi lokasi",
+      type: "Jenis",
+      topics: "Bidang kerja",
+      published: "Terbit",
+      language: "Bahasa",
+      authors: "Penulis",
+      access: "Akses",
+      unavailable: "Belum tersedia dalam English",
+      errorTitle: "Publikasi belum dapat dimuat.",
+      errorBody: "Coba muat ulang halaman beberapa saat lagi.",
+      reload: "Muat ulang",
+    },
   },
   en: {
     skipLink: "Skip to content",
@@ -98,6 +125,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
         pageOf: (page, pages) => `Page ${page} of ${pages}`,
         page: (page) => `Page ${page}`,
       },
+    },
+    detail: {
+      breadcrumbLabel: "Breadcrumb",
+      type: "Type",
+      topics: "Topics",
+      published: "Published",
+      language: "Language",
+      authors: "Authors",
+      access: "Access",
+      unavailable: "Not available in Bahasa Indonesia",
+      errorTitle: "This publication could not be loaded.",
+      errorBody: "Please reload the page in a moment.",
+      reload: "Reload",
     },
   },
 };
