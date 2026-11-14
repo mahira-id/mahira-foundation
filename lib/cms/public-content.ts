@@ -1,10 +1,12 @@
 import config from "@payload-config";
+import type { PostgresAdapter } from "@payloadcms/db-postgres";
 import { draftMode, headers } from "next/headers";
 import { getPayload } from "payload";
 import { cache } from "react";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
 import { findPublicPublication } from "@/lib/cms/publication-detail-query";
 import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
+import { findSearchRanks } from "@/lib/cms/publication-search-query";
 import { findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import type { Locale } from "@/lib/i18n/locales";
@@ -21,6 +23,7 @@ import {
   type IndexItem,
   type IndexPlan,
 } from "@/lib/publications/index-view";
+import { toTsqueryText } from "@/lib/publications/search-terms";
 import { isCmsEnabled } from "@/payload/env";
 
 /**
@@ -34,6 +37,15 @@ import { isCmsEnabled } from "@/payload/env";
  *   lib/cms/staff-preview.ts);
  * - always pass `fallbackLocale: false` (no text of another language);
  * - filter linked-entry records by their own `locale` field.
+ *
+ * The one read outside the Local API is the index search (M3-06, DECISIONS
+ * §2.12, ADR-0007): raw SQL in lib/cms/publication-search-query.ts, run by
+ * getPublicationIndex only. It is held to the same result in four layers:
+ * (1) its WHERE repeats PUBLIC_PUBLICATION_READ and the record `locale` on
+ * the main table only; (2) it reads taxonomy names of the route locale only;
+ * (3) it returns ids and ranks only, and planIndex keeps the ids that the
+ * anonymous scan (findIndexRefs) returned; (4) the rows of the page come
+ * from the anonymous findIndexPage.
  *
  * Returns `{ status: "off" }` (detail: `null`) when the CMS is off (see payload/env.ts).
  */
@@ -65,13 +77,23 @@ export type PublicationIndexResult =
 
 /**
  * One URL of the publication index `/{locale}/publications` (M3-05,
- * DECISIONS §2.11 P1 A–P5 A): state, rows of the page and filter options.
+ * DECISIONS §2.11 P1 A–P5 A; search M3-06, §2.12): state, rows of the page
+ * and filter options. `q` is the normalized search text (readIndexQuery).
  * Primitive arguments, so React `cache` gives generateMetadata and the page
  * the same read. A failed read is logged with the error name only (P15 A)
  * and gives `{ status: "error" }`; the page still answers 200 (noindex).
+ * Read at request time (no `"use cache"`), so a publish or unpublish shows
+ * on the next request.
  */
 export const getPublicationIndex = cache(
-  async (locale: Locale, type?: string, topic?: string, year?: string, page?: string): Promise<PublicationIndexResult> => {
+  async (
+    locale: Locale,
+    q?: string,
+    type?: string,
+    topic?: string,
+    year?: string,
+    page?: string,
+  ): Promise<PublicationIndexResult> => {
     if (!isCmsEnabled()) return { status: "off" };
     try {
       const payload = await getPayload({ config });
@@ -80,7 +102,12 @@ export const getPublicationIndex = cache(
       const types = await findIndexTerms(payload, "publication-types", locale, ids.types);
       const topics = await findIndexTerms(payload, "topics", locale, ids.topics);
       const facets = buildFacets(refs, types, topics, locale);
-      const plan = planIndex({ query: { type, topic, year, page }, refs, facets });
+      // A search text without any word (only punctuation) matches nothing, without a query.
+      const tsquery = q ? toTsqueryText(q) : null;
+      const ranks = tsquery
+        ? await findSearchRanks((query) => (payload.db as unknown as PostgresAdapter).drizzle.execute(query), locale, tsquery)
+        : new Map<number, number>();
+      const plan = planIndex({ query: { q, type, topic, year, page }, refs, facets, ranks });
       const docs = await findIndexPage(payload, locale, plan.pageIds);
       const items = inIdOrder(docs, plan.pageIds).map((doc) => toIndexItem(doc, locale));
       return { status: "ok", plan, items, facets };

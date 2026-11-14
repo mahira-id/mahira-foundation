@@ -16,10 +16,11 @@ import { isCmsEnabled } from "@/payload/env";
 
 /**
  * Publication index (M3-05, DECISIONS §2.11 P1 A–P5 A, P15 A): published +
- * public publications of this locale, 12 per page, filters type/topic/year
- * in the URL. The shell (header, H1, intro) is static; the list is read at
- * request time inside Suspense, so every state answers 200 and the invalid
- * ones get `noindex, follow` through generateMetadata.
+ * public publications of this locale, 12 per page, search `q` (M3-06,
+ * §2.12) and filters type/topic/year in the URL. The shell (header, H1,
+ * intro) is static; the list is read at request time inside Suspense, so
+ * every state answers 200 and the invalid ones get `noindex, follow`
+ * through generateMetadata.
  */
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -34,7 +35,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   // logs Next's "unstable value ... while prerendering".
   await connection();
   const query = readIndexQuery(await searchParams);
-  const result = await getPublicationIndex(locale, query.type, query.topic, query.year, query.page);
+  const result = await getPublicationIndex(locale, query.q, query.type, query.topic, query.year, query.page);
   if (result.status === "off") return { title };
   const state = result.status === "ok" ? result.plan.state : "error";
   return indexNoindex(query, state) ? { title, robots: { index: false, follow: true } } : { title };
@@ -67,7 +68,7 @@ async function PublicationIndexResults({ locale, searchParams }: { locale: Local
   // Request-time data: keeps the CMS query out of the build prerender.
   await connection();
   const query = readIndexQuery(await searchParams);
-  const result = await getPublicationIndex(locale, query.type, query.topic, query.year, query.page);
+  const result = await getPublicationIndex(locale, query.q, query.type, query.topic, query.year, query.page);
   const dictionary = getDictionary(locale).publications;
 
   if (result.status !== "ok") {

@@ -101,10 +101,11 @@ function assertAnonymousRead(args: FindArgs, label: string, locale: string, with
 }
 
 describe("lib/publications/index-params.ts", () => {
-  test("IXU1 readIndexQuery: first value of an array, empty value = absent, other keys dropped", () => {
+  test("IXU1 readIndexQuery: first value of an array, empty value = absent, other keys (also sort) dropped", () => {
     assert.deepEqual(
       readIndexQuery({ type: ["a", "b"], topic: "", year: "2090", page: "2", utm_source: "x", q: "kata", sort: "title" }),
-      { type: "a", year: "2090", page: "2" },
+      { q: "kata", type: "a", year: "2090", page: "2" },
+      "q is read since M3-06; sort is not a parameter (DECISIONS §2.12 P4)",
     );
     assert.deepEqual(readIndexQuery({ type: ["", "b"], topic: [], page: "" }), {}, "first value empty -> absent");
     assert.deepEqual(readIndexQuery({}), {});
