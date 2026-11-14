@@ -88,20 +88,57 @@ export function restDoc(result: RestResult): JsonObject {
   return doc && typeof doc === "object" ? (doc as JsonObject) : {};
 }
 
-export type PageResult = { status: number; location: string; postponed: boolean; body: string; error?: string };
+export type PageResult = {
+  status: number;
+  location: string;
+  postponed: boolean;
+  body: string;
+  /** Every Set-Cookie header (values may hold session data: assert on names, never print). */
+  setCookies: string[];
+  cacheControl: string;
+  error?: string;
+};
+
+function pageResult(raw: Raw): PageResult {
+  return {
+    status: raw.status,
+    location: raw.headers.get("location") ?? "",
+    postponed: raw.headers.get("x-nextjs-postponed") === "1",
+    body: raw.text,
+    setCookies: raw.headers.getSetCookie(),
+    cacheControl: raw.headers.get("cache-control") ?? "",
+  };
+}
+
+function failedPage(error: unknown): PageResult {
+  return { status: 0, location: "", postponed: false, body: "", setCookies: [], cacheControl: "", error: networkError(error) };
+}
 
 /** GET without following redirects; `headers` e.g. a Cookie or `RSC: 1` (never printed). */
 export async function getPage(path: string, headers: Record<string, string> = {}): Promise<PageResult> {
   try {
-    const raw = await request("GET", path, { headers });
-    return {
-      status: raw.status,
-      location: raw.headers.get("location") ?? "",
-      postponed: raw.headers.get("x-nextjs-postponed") === "1",
-      body: raw.text,
-    };
+    return pageResult(await request("GET", path, { headers }));
   } catch (error) {
-    return { status: 0, location: "", postponed: false, body: "", error: networkError(error) };
+    return failedPage(error);
+  }
+}
+
+/** POST of an urlencoded form (as a native <form method="post">), without following redirects; never retried. */
+export async function postForm(
+  path: string,
+  fields: Record<string, string>,
+  headers: Record<string, string> = {},
+): Promise<PageResult> {
+  try {
+    const body = new URLSearchParams(fields).toString();
+    return pageResult(
+      await request("POST", path, {
+        headers: { ...headers, "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+      }),
+    );
+  } catch (error) {
+    return failedPage(error);
   }
 }
 

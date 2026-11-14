@@ -8,7 +8,14 @@ import type { Access, FieldAccess, PayloadRequest } from "payload";
 export type StaffRole = "admin" | "editor";
 
 export function staffRoleOf(req: PayloadRequest): StaffRole | null {
-  const user = req.user;
+  return staffRoleOfUser(req.user);
+}
+
+/**
+ * The same rule for a user without a request, e.g. the result of
+ * `payload.auth({ headers })` (draft preview, lib/cms/staff-preview.ts).
+ */
+export function staffRoleOfUser(user: PayloadRequest["user"]): StaffRole | null {
   if (!user || user.collection !== "users") return null;
   return user.role === "admin" || user.role === "editor" ? user.role : null;
 }

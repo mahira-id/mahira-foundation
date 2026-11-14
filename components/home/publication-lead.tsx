@@ -11,8 +11,8 @@ function Dot() {
 }
 
 /**
- * Lead publication of `/` (DECISIONS §2.7 P4a A). The title is not linked
- * until the detail page exists (M3-05, P5 A).
+ * Lead publication of `/` (DECISIONS §2.7 P4a A). The title links to the
+ * detail page `/id/publications/{slug}` (M3-05, §2.11 P10 A).
  */
 export function PublicationLead({ publication }: { publication: HomePublication }) {
   const meta: ReactNode[] = [];
@@ -59,7 +59,12 @@ export function PublicationLead({ publication }: { publication: HomePublication 
         ) : null}
 
         <h3 className="mt-6 text-[clamp(1.75rem,3vw,2.75rem)] font-bold leading-[1.08] tracking-[-0.03em] text-ink">
-          {publication.title}
+          <Link
+            className="underline-offset-[0.12em] transition-colors hover:text-brand-700 hover:underline"
+            href={`/id/publications/${publication.slug}`}
+          >
+            {publication.title}
+          </Link>
         </h3>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">{publication.summary}</p>
 

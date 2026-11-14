@@ -59,7 +59,7 @@ Aturan set:
 - Hanya sebagian terisi: build dan start gagal; pesan error menyebut nama variabel yang hilang, tidak pernah nilainya.
 - `VERCEL_ENV=production`: CMS selalu mati, apa pun yang di-set. Menghidupkan CMS di Production memerlukan PR yang di-review (M4).
 
-Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`, dan sejak M3-01 juga untuk halaman publik berbasis CMS `/id/publications` dan `/en/publications` (Production tidak menampilkan halaman publikasi sampai M4). Homepage `/` tetap 200 dengan blok statis dan catatan "Belum ada publikasi yang terbit" di blok Publikasi, tanpa konten sampel (M3-04, DECISIONS §2.7 P1 A). Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku. Sejak butir 1c (DECISIONS §2.10), saat CMS hidup, `GET` ke halaman admin yang dilindungi tanpa cookie `payload-token` dijawab 307 ke `/admin/login` (subbagian "Login admin" di bawah); saat CMS mati, 404 tetap dijawab lebih dulu.
+Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control: no-store`) untuk `/admin` dan `/api/*`, dan sejak M3-01 juga untuk halaman publik berbasis CMS `/id/publications` dan `/en/publications`, sejak M3-05 juga untuk setiap `/{locale}/publications/{slug}` dan untuk `/api/preview` serta `/api/preview/exit` (matcher `/api/:path*` yang sudah ada; kedua handler juga memeriksa gerbang sendiri) (Production tidak menampilkan halaman publikasi sampai M4; DECISIONS §2.11 P14 A). Homepage `/` tetap 200 dengan blok statis dan catatan "Belum ada publikasi yang terbit" di blok Publikasi, tanpa konten sampel (M3-04, DECISIONS §2.7 P1 A). Config Payload juga mendapat secret kosong, sehingga `payload.init` gagal sebelum koneksi DB walaupun proxy terlewati. Proxy ini gerbang, bukan otorisasi; saat CMS hidup, access control Payload tetap berlaku. Sejak butir 1c (DECISIONS §2.10), saat CMS hidup, `GET` ke halaman admin yang dilindungi tanpa cookie `payload-token` dijawab 307 ke `/admin/login` (subbagian "Login admin" di bawah); saat CMS mati, 404 tetap dijawab lebih dulu.
 
 TLS ke database: CA Supabase Root 2021 di-pin di `payload/db/supabase-root-ca.ts` (sertifikat publik, bukan secret). Tidak ada variabel `CMS_SUPABASE_DB_CA_CERT`. `CMS_SUPABASE_DATABASE_URI` tidak boleh berisi parameter `sslmode`, karena `pg` akan mengganti objek `ssl` yang memuat CA tersebut.
 
@@ -124,6 +124,21 @@ Halaman admin juga menunggu `connection()` sebelum `RootPage` (`app/(payload)/ad
 4. Tutup jendela itu. Di jendela private baru, buka `<URL>/admin/collections/topics`, lalu login. Hasil yang diharapkan: daftar Topics tampil sesudah login.
 5. Di admin, pilih **Log out**, lalu login lagi tanpa reload. Hasil yang diharapkan: dashboard tampil tanpa bolak-balik.
 6. Bila URL bolak-balik lagi: jangan reload dulu. Catat waktu (UTC) dan langkahnya; di DevTools → **Network** (centang **Preserve log**) salin daftar request (path dan status saja, tanpa header `Cookie`). Lalu Vercel → **Logs**, Environment `preview`, rentang waktu yang sama; kirim keduanya ke orchestrator. Log error `new Date()` pada `/admin/[[...segments]]` tetap muncul untuk request yang login (known issue, subbagian P2 A di bawah) dan bukan tanda kegagalan.
+
+#### Halaman publikasi dan pratinjau draf (M3-05): langkah Owner di Preview
+
+Perilaku (DECISIONS §2.11; PAGE-SPECIFICATIONS §3–§4): indeks `/{locale}/publications` dengan filter, pagination, dan URL state; detail `/{locale}/publications/{slug}` hanya untuk publikasi published + `public`; slug lain mendapat halaman not-found berstatus 200 dengan `noindex` (amandemen P7 A). Pratinjau draf hanya untuk sesi staf: tombol **Preview** di admin membuka `/api/preview?id=<id>` di tab baru, yang mengaktifkan Draft Mode (cookie `__prerender_bypass`, `Secure; HttpOnly; SameSite=None`) lalu mengalihkan ke halaman detail draf. Tanpa sesi staf, `/api/preview` menjawab 404 tanpa cookie, dan cookie Draft Mode tanpa sesi staf diabaikan. Data `mahira-cms` saat ini: record "[FIXTURE]" ID tidak bertanggal dan jenisnya nonaktif, jadi `/id/publications` hanya menampilkan pilihan "Bidang kerja" bila ada topik aktif yang dipakai, tanpa "Jenis" dan "Tahun", dalam satu halaman.
+
+**Langkah Owner (cek Preview tertunda, sesudah orchestrator mem-push branch `feat/m3-05-publication-index-detail` dan deployment Preview-nya Ready):**
+
+1. Buka `<URL>/id/publications` tanpa login. Hasil yang diharapkan: daftar publikasi published + public berbahasa Indonesia, judul bertautan ke detail.
+2. Bila ada form filter: pilih satu nilai, tekan **Terapkan**. Hasil yang diharapkan: URL berisi nilai itu tanpa `page`, daftar tersaring; tombol Back browser mengembalikan daftar sebelumnya. Tekan **Hapus filter** untuk kembali.
+3. Bila ada lebih dari 12 publikasi: buka halaman 2 lewat pagination, lalu kembali.
+4. Buka satu judul. Hasil yang diharapkan: halaman detail dengan breadcrumb, jenis, bidang kerja, H1, ringkasan, penulis, badge akses. Tekan switcher bahasa: ke pasangan EN bila ada, selain itu ke `/en/publications` dengan keterangan "Belum tersedia dalam English".
+5. Buka `<URL>/id/publications/tidak-ada`. Hasil yang diharapkan: halaman not-found.
+6. Login di `<URL>/admin`, buka publikasi yang masih draft (atau yang punya perubahan belum terbit), tekan **Preview**. Hasil yang diharapkan: tab baru menampilkan versi draf dengan banner "Pratinjau draf: belum tentu terlihat pengunjung.".
+7. Tekan **Keluar dari pratinjau**. Hasil yang diharapkan: halaman detail publik (versi yang tayang) tanpa banner, atau halaman not-found bila publikasi belum pernah terbit.
+8. Bila langkah 6 atau 7 gagal: catat waktu (UTC) dan langkahnya; di DevTools → **Network** salin daftar request (path dan status saja, tanpa header `Cookie`), lalu Vercel → **Logs**, Environment `preview`, rentang waktu yang sama, dan kirim ke orchestrator.
 
 #### Langkah Owner dari jawaban 2026-11-10 (M3-02)
 

@@ -23,10 +23,10 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 | Page | Route candidate | Notes |
 |---|---|---|
 | Home | `/` (Indonesia; DEC-005, DECISIONS §2.7 P6 A) | Editorial landing page; only `locale: id` publications. Bare `/id` and `/en` stay 404 (DEC-005). English homepage: **OPEN**. |
-| Publication index | `/{locale}/publications` | Search, filters, pagination. |
-| Publication detail | `/{locale}/publications/{slug}` | One localized publication representation. |
-| Publication type index | `/{locale}/publications/type/{typeSlug}` | Only if taxonomy deserves an indexable landing page. |
-| Topic detail | `/{locale}/topics/{topicSlug}` | Implement only if user-facing taxonomy requires it. |
+| Publication index | `/{locale}/publications` | Search, filters, pagination. Filter `type`/`topic`/`year` dan pagination diterapkan di M3-05 (§7; DECISIONS §2.11 P1–P3); search di M3-06. |
+| Publication detail | `/{locale}/publications/{slug}` | One localized publication representation. Diterapkan di M3-05: hanya published + `public` di locale itu; selain itu not-found (HTTP 200 + `noindex`, DECISIONS §2.11 amandemen P7 A); PAGE-SPECIFICATIONS §4. |
+| Publication type index | `/{locale}/publications/type/{typeSlug}` | Only if taxonomy deserves an indexable landing page. Tidak dibuat di M3-05; diputuskan saat nilai taksonomi final (B-04, M4-05) atau di M3-07 (DECISIONS §2.11 P6 A). |
+| Topic detail | `/{locale}/topics/{topicSlug}` | Implement only if user-facing taxonomy requires it. Tidak dibuat di M3-05; sama dengan baris di atas (DECISIONS §2.11 P6 A). |
 | Learning Hub index | `/{locale}/learning-hub` | Catalog per tema; wajib saat launch (DEC-014). Route kandidat; route final OPEN (DEC-005 "Still open"; M3-11). |
 | Learning resource detail | `/{locale}/learning-hub/{slug}` | Detail or outbound/embed page. Route kandidat; route final dan halaman detail vs embed langsung OPEN (DEC-005 "Still open"; M3-11). |
 | About | `/{locale}/about` | Organization-controlled content. |
@@ -61,6 +61,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 - Explicit URL locale wins over browser preference.
 - Unknown locale: return a controlled not-found or redirect to an approved default; never create an unbounded redirect loop.
 - Locale switcher: switch to the equivalent translated record only when a valid translation relationship exists. Otherwise, show a clear unavailable state or navigate to the destination locale's index according to approved UX; do not fabricate a slug.
+  - Diterapkan di M3-05 (DECISIONS §2.11 P2 A, P8 A): di indeks, switcher ke indeks locale lain tanpa parameter. Di detail, pasangan = record Translation Group yang sama di locale lain yang published + `public` → tautan ke detail pasangan dengan `hrefLang`; tanpa pasangan → `/{locale lain}/publications` dengan `title` "Belum tersedia dalam English" / "Not available in Bahasa Indonesia". Dalam pratinjau draf hanya pasangan yang published dipakai. Logo header di halaman EN → `/` dengan `hrefLang="id"` (`components/site/locale-header.tsx`, `lib/publications/detail-view.ts` `switcherFor`).
 - Fallback content: if field-level fallback is chosen, indicate the source language in UI and metadata wherever fallback could mislead. Recommended default: do not silently publish fallback-language body copy as a localized page.
 - Date/number formatting: use locale-aware formatting; store timestamps in a timezone-safe canonical format and organization timezone separately if required.
 
@@ -68,7 +69,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 
 1. Lowercase, URL-safe slug; normalize whitespace and punctuation deterministically.
 2. Store slug per localized content record if linked translations are selected; uniqueness should be scoped deliberately (e.g. locale + route collection), not assumed.
-3. Slug change requires a redirect record from old path to new path. Redirects must be locale-aware and loop-checked.
+3. Slug change requires a redirect record from old path to new path. Redirects must be locale-aware and loop-checked. Redirect 308 slug lama dibuat di M3-07 (DECISIONS §2.11 P9 A); sampai itu slug lama → not-found, dan editor tidak mengganti slug publikasi yang sudah terbit (EDITORIAL-WORKFLOW §9).
 4. Reserved path segments (`admin`, `account`, `api`, `internal`, `topics`, `publications`, `learning-hub`) must not be accepted as conflicting content slugs in their respective route namespace.
 5. Do not derive a permanent slug from a mutable title at request time.
 6. Use stable IDs for cache tags, relations, and internal links; do not use localized slug as a foreign key.
@@ -95,6 +96,13 @@ Recommended query contract for publication listing:
 - Shareable filters are preserved by links; transient input keystrokes need not update URL until committed.
 - Define maximum page size and maximum query length in API specification.
 
+Subset yang diterapkan di M3-05 (DECISIONS §2.11 P1–P4; `lib/publications/index-params.ts`):
+- `?type=<slug>&topic=<slug>&year=<yyyy>&page=<n>`, ditulis dalam urutan itu; slug term sama di ID dan EN. `q` dan `sort` di M3-06.
+- Satu nilai per parameter (nilai pertama bila berulang); nilai kosong = tidak ada; parameter lain diabaikan; `page` dihilangkan untuk halaman 1. `page` harus `^[1-9][0-9]{0,5}$`.
+- Nilai filter tak dikenal → state "filter tidak dikenal"; `page` tidak valid atau lewat halaman terakhir → state "halaman tidak ada". Keduanya HTTP 200 + `noindex, follow`, seperti setiap URL dengan filter berisi (DEC-021).
+- 12 per halaman; urutan stabil: `publishedAt` terbaru, lalu tanpa tanggal menurut `createdAt` terbaru, pemecah seri `id` terbaru.
+- Pencarian dan filter terbatas pada locale route.
+
 ## 8. Sitemap and robots route ownership
 
 - Public sitemap includes published, indexable content only, per locale.
@@ -120,6 +128,6 @@ Recommended query contract for publication listing:
 | IA-01 | Default locale — dijawab Owner 2026-11-10: `id`, hanya untuk `/` dan Payload (DECISIONS §2.4 P4c; §4) | Routing implementation |
 | IA-02 | Linked records vs field localization | Content schema |
 | IA-03 | Locale fallback behavior | UX and CMS implementation |
-| IA-04 | Topic public index strategy (Desk out of scope, DEC-003) | Sitemap and taxonomy routes |
+| IA-04 | Topic public index strategy (Desk out of scope, DEC-003) — M3-05: hanya filter query `topic` di indeks; route topik dan jenis ditunda (DECISIONS §2.11 P6 A) | Sitemap and taxonomy routes |
 | IA-05 | Search locale scope | Search implementation |
-| IA-06 | Slug uniqueness and redirect retention | Migration and route implementation |
+| IA-06 | Slug uniqueness and redirect retention — keunikan per locale terbukti (DEC-005); redirect slug lama di M3-07 (DECISIONS §2.11 P9 A) | Migration and route implementation |

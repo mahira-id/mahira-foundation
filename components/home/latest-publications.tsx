@@ -1,10 +1,13 @@
+import Link from "next/link";
+
 import { AccessBadge } from "@/components/home/access-badge";
-import { PlusIcon } from "@/components/ui/icons";
+import { ArrowIcon, PlusIcon } from "@/components/ui/icons";
 import type { HomePublication } from "@/lib/home/homepage-view";
 
 /**
  * Index rows of `/` (DECISIONS §2.7 P4a A, P5 A): each row opens to show the
- * summary; titles are not linked until the detail page exists (M3-05).
+ * summary and a "Baca publikasi" link to the detail page, outside the
+ * `<summary>` so the row still only toggles (M3-05, §2.11 P10 A).
  */
 export function LatestPublications({ items }: { items: HomePublication[] }) {
   return (
@@ -44,9 +47,17 @@ export function LatestPublications({ items }: { items: HomePublication[] }) {
             </span>
           </summary>
           <div className="px-1 pb-6 md:grid md:grid-cols-12 md:px-3">
-            <p className="max-w-2xl text-sm leading-relaxed text-muted md:col-span-9 md:col-start-4">
-              {publication.summary}
-            </p>
+            <div className="md:col-span-9 md:col-start-4">
+              <p className="max-w-2xl text-sm leading-relaxed text-muted">{publication.summary}</p>
+              <Link
+                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 underline underline-offset-4 transition-colors hover:text-brand-900"
+                data-home-read={publication.slug}
+                href={`/id/publications/${publication.slug}`}
+              >
+                Baca publikasi
+                <ArrowIcon className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           </div>
         </details>
       ))}

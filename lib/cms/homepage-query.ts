@@ -11,7 +11,8 @@ import { HOME_PUBLICATION_LIMIT } from "@/lib/home/homepage-view";
  */
 type FindPort = Pick<Payload, "find">;
 
-const PUBLICATION_SELECT = {
+/** Row fields of the homepage and the publication index (M3-05); no staff field. */
+export const PUBLICATION_SELECT = {
   title: true,
   slug: true,
   summary: true,
@@ -23,7 +24,7 @@ const PUBLICATION_SELECT = {
   createdAt: true,
 } as const;
 
-const PUBLICATION_POPULATE = {
+export const PUBLICATION_POPULATE = {
   "publication-types": { name: true },
   topics: { name: true },
   authors: { displayName: true },

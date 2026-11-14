@@ -19,6 +19,7 @@ import {
 import { startNextServer } from "../../scripts/lib/processes";
 import { BASE_URL, assertServerUp, getPage, pageFact, type JsonObject } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
+import { inlineSegments } from "../helpers/publication-pages";
 
 /**
  * Homepage `/` from CMS data (M3-04, DECISIONS §2.7): lead = newest dated
@@ -277,6 +278,30 @@ describe("homepage (M3-04 / from CMS data)", () => {
     for (const field of ["liveOnSite", "everPublished", "translationGroup"]) {
       assert.equal(html.includes(field), false, `"${field}" in the HTML of /`);
     }
+  });
+
+  // M3-05 (DECISIONS §2.11 P10 A): runs after HP6, so the lead is "old";
+  // the checks hold for whichever record is the lead.
+  test("HP10 the lead title and each latest row link to /id/publications/<slug>; the row link is outside <summary>", async () => {
+    // Streamed rows can arrive as separate segments; put them back first.
+    const html = inlineSegments(await home());
+    const [lead] = matches(html, "data-home-lead");
+    assert.ok(lead, "a lead on /");
+    const leadStart = html.indexOf(`data-home-lead="${lead}"`);
+    const leadTitle = html.slice(leadStart, html.indexOf("</h3>", leadStart));
+    assert.equal(leadTitle.includes(`href="/id/publications/${lead}"`), true, `lead title link to /id/publications/${lead}`);
+    const rows = matches(html, "data-home-latest");
+    assert.equal(rows.length >= 1, true, "latest rows on /");
+    for (const row of rows) {
+      const start = html.indexOf(`data-home-latest="${row}"`);
+      const block = html.slice(start, html.indexOf("</details>", start));
+      const summaryEnd = block.indexOf("</summary>");
+      assert.notEqual(summaryEnd, -1, `${row}: </summary>`);
+      assert.equal(block.slice(0, summaryEnd).includes("data-home-read"), false, `${row}: read link inside <summary>`);
+      const link = new RegExp(`<a\\s[^>]*data-home-read="${row}"[^>]*>`).exec(block.slice(summaryEnd))?.[0] ?? "";
+      assert.equal(link.includes(`href="/id/publications/${row}"`), true, `${row}: read link ${link || "missing"}`);
+    }
+    assert.equal(html.includes("Baca publikasi"), true, '"Baca publikasi" on /');
   });
 
   // Payload init order (fixed after M3-04; TEST-PLAN §12.5): a fresh

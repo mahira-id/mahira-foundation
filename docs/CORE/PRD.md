@@ -176,6 +176,8 @@ Setiap publikasi perlu memiliki access_level sejak model data awal, walaupun pem
 
 - **Tidak cukup menyembunyikan tombol:** semua download endpoint wajib memvalidasi akses di server dan tidak mempercayai parameter dari browser.
 
+- **Sementara (M3 sampai M5):** metadata publikasi `registered`/`subscriber` tidak tampil publik (DEC-002, DECISIONS §2.8, §2.11 P7).
+
 # 9. Bilingual, navigasi, dan pencarian
 
 Target bahasa yang dibahas adalah Bahasa Indonesia dan Bahasa Inggris, dengan URL locale terpisah seperti /id dan /en. Pola penyimpanan terjemahan belum diputuskan: entri publikasi terpisah yang saling terhubung atau field-level localization. Keputusan ini harus dibuat sebelum finalisasi skema konten, slug, dan pencarian.

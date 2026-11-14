@@ -6,10 +6,16 @@ type LanguageSwitcherProps = {
   locale: Locale;
   /** Target of the other language; build it with `languageSwitchHref`. */
   otherHref: string;
+  /**
+   * Note on the link, in the page language, e.g. "Belum tersedia dalam
+   * English" when the page has no counterpart (M3-05, DECISIONS §2.11 P8 A).
+   * Shown as `title` and read by screen readers.
+   */
+  otherTitle?: string;
 };
 
 /** Server-rendered language switcher (DEC-005). */
-export function LanguageSwitcher({ locale, otherHref }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ locale, otherHref, otherTitle }: LanguageSwitcherProps) {
   const dictionary = getDictionary(locale);
   const other = otherLocale(locale);
 
@@ -30,9 +36,15 @@ export function LanguageSwitcher({ locale, otherHref }: LanguageSwitcherProps) {
         href={otherHref}
         hrefLang={other}
         lang={other}
+        title={otherTitle}
       >
         <span aria-hidden="true">{other}</span>
         <span className="sr-only">{dictionary.languageNames[other]}</span>
+        {otherTitle ? (
+          <span className="sr-only" lang={locale}>
+            {` (${otherTitle})`}
+          </span>
+        ) : null}
       </Link>
     </nav>
   );

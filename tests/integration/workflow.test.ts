@@ -20,8 +20,9 @@ import {
   randomPassword,
   totalOf,
 } from "../helpers/fixtures";
-import { assertServerUp, getPage, login, pageFact, rest, restDoc, restErrors, restFact, type JsonObject } from "../helpers/http";
+import { assertServerUp, login, rest, restDoc, restErrors, restFact, type JsonObject } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
+import { fetchAllIndexPages } from "../helpers/publication-pages";
 
 /**
  * Editorial workflow checks (M3-03, DEC-015, DECISIONS §2.6): draft →
@@ -51,16 +52,6 @@ const T2 = `${LABEL}chain T2 revisi`;
 const REQUIRED_ON_PUBLISH = ["summary", "publicationType", "topics", "authors", "accessLevel"] as const;
 /** The admin Unpublish button (Payload 3.93.0): PATCH with these query params and body {_status:"draft"}. */
 const UNPUBLISH_QUERY = "?depth=0&fallback-locale=null&unpublishAllLocales=true";
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-/** Title shown for `slug` on a public index page, or undefined when it is not listed. */
-function titleOnPage(html: string, slug: string): string | undefined {
-  const match = new RegExp(`data-publication-slug="${escapeRegExp(slug)}"[^>]*>([^<]*)<`).exec(html);
-  return match ? match[1] : undefined;
-}
 
 function describeError(error: unknown): string {
   if (error instanceof ValidationError) {
@@ -162,10 +153,9 @@ describe("workflow (M3-03 draft, publish, revise, unpublish, public page, liveOn
     }
   }
 
+  /** Title shown for `slug` on any page of the public index (12 rows per page since M3-05), or undefined. */
   async function listed(locale: Locale, slug: string): Promise<string | undefined> {
-    const page = await getPage(`/${locale}/publications`);
-    assert.equal(page.status, 200, `GET /${locale}/publications ${pageFact(page)}`);
-    return titleOnPage(page.body, slug);
+    return (await fetchAllIndexPages(locale)).titles.get(slug);
   }
 
   /** Staff REST read of the latest version, as the admin edit view loads it. */

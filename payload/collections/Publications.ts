@@ -6,6 +6,7 @@ import { enforceSharedFields } from "../hooks/enforce-shared-fields";
 import { readLiveOnSite } from "../hooks/live-on-site";
 import { setPublicationLifecycleFields } from "../hooks/publication-lifecycle";
 import { markStatusNotSent, refuseImplicitStatusOverPendingDraft } from "../hooks/refuse-implicit-status-over-pending-draft";
+import { previewUrl } from "../../lib/publications/preview";
 
 /**
  * Publication (DEC-004 linked-record model): one record per language, linked
@@ -21,6 +22,10 @@ export const Publications: CollectionConfig = {
     useAsTitle: "title",
     // DECISIONS §2.6 P4 B: status columns of the minimum workflow (DEC-015).
     defaultColumns: ["title", "locale", "_status", "liveOnSite", "everPublished", "publishedAt", "updatedAt"],
+    // DECISIONS §2.11 P11 A: Preview button -> /api/preview?id=<id>, which
+    // checks the staff session before Draft Mode (app/api/preview/route.ts).
+    // Config only: no field, no schema change.
+    preview: (doc) => previewUrl(doc),
   },
   versions: {
     drafts: true,
