@@ -28,13 +28,16 @@ import { assertNotFoundPage, fetchAllIndexPages, robotsContent } from "../helper
  * draft's detail URL; everything else is the same 404 without the cookie.
  * The detail page in Draft Mode checks the staff session again on every
  * request; the Draft Mode cookie alone gives the public page. Index and
- * homepage never show drafts. POST /api/preview/exit clears the cookie.
- * Needs `next start` with the full env (bun run test:integration).
+ * homepage never show drafts. POST /api/preview/exit clears the cookie and,
+ * since M3-05b, sends an Editor/Admin to the live public detail or, without
+ * one, to the record's /admin edit page; everyone else to the posted detail
+ * URL. Needs `next start` with the full env (bun run test:integration).
  *
  * Fixtures (slugs fixture-test-preview-*, titles "[FIXTURE] test preview *"):
  * Editor fixture-test-preview-editor@example.invalid (session token sent as
  * the `payload-token` cookie, never printed); ID draft-only `draft`; ID
- * `live`, published + public, with a pending draft revision titled T2.
+ * `live`, published + public, with a pending draft revision titled T2; ID
+ * `registered`, published with Access Level registered (M3-05b).
  * Relations reuse the first existing author, topic and type. The Owner guard
  * runs before any fixture is written and after cleanup.
  */
@@ -123,7 +126,12 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
       topics: [await firstId(p(), "topics")],
       authors: [await firstId(p(), "authors")],
     };
-    const create = async (name: string, title: string, status: "draft" | "published") => {
+    const create = async (
+      name: string,
+      title: string,
+      status: "draft" | "published",
+      accessLevel: Publication["accessLevel"] = "public",
+    ) => {
       const record = await p().create({
         collection: "publications",
         data: {
@@ -133,7 +141,7 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
           translationGroup: await createGroup(p(), AREA, name),
           summary: `${LABEL}ringkasan ${name}`,
           ...relations,
-          accessLevel: "public",
+          accessLevel,
           publishedAt: PUBLISHED_AT,
           _status: status,
         },
@@ -145,6 +153,8 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
     };
     await create("draft", DRAFT_TITLE, "draft");
     await create("live", LIVE_TITLE, "published");
+    // Published but not public (M3-05b): no page visitors can see.
+    await create("registered", `${LABEL}registered`, "published", "registered");
     // Pending draft revision: the stored record stays live with LIVE_TITLE.
     await p().update({ collection: "publications", id: pub("live").id, data: { title: T2 }, draft: true, depth: 0, overrideAccess: true });
 
@@ -211,6 +221,8 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
     assert.equal(html.includes("data-preview-banner"), true, "data-preview-banner");
     assert.equal(html.includes("Pratinjau draf: belum tentu terlihat pengunjung."), true, "banner text");
     assert.match(html, /<form[^>]*action="\/api\/preview\/exit"[^>]*method="post"/, "exit form");
+    // M3-05b: the exit form posts the record id.
+    assert.equal(/<input[^>]*name="id"[^>]*value="(\d+)"/.exec(html)?.[1], String(pub("draft").id), "exit form id field");
     assert.equal(html.includes(`>${DRAFT_TITLE}</h1>`), true, "H1 = draft title");
     const robots = robotsContent(html) ?? "";
     assert.equal(robots.includes("noindex") && robots.includes("nofollow"), true, `robots ${robots || "missing"}`);
@@ -225,7 +237,7 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
     const invalidSession = { Cookie: `${draftCookie()}; payload-token=invalid.invalid.invalid` };
     for (const headers of [onlyBypass, invalidSession]) {
       const draft = await getPage(`/id/publications/${slug("draft")}`, headers);
-      assertNotFoundPage(draft, "draft URL without a staff session");
+      assertNotFoundPage(draft, "draft URL without a staff session", "id");
       assert.equal(draft.body.includes(DRAFT_TITLE), false, "draft title without a staff session");
       assert.equal(draft.body.includes("data-preview-banner"), false, "banner on the draft URL");
 
@@ -272,7 +284,7 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
   });
 
   // ------------------------------------------------------------ POST /api/preview/exit
-  test("PV9 POST /api/preview/exit: 303 to the valid detail URL (else /) and the Draft Mode cookie is cleared", async () => {
+  test("PV9 POST /api/preview/exit without an id: 303 to the valid detail URL (else /) and the Draft Mode cookie is cleared", async () => {
     const exit = await postForm("/api/preview/exit", { locale: "id", slug: slug("live") }, previewHeaders());
     assert.equal(exit.status, 303, pageFact(exit));
     assert.equal(target(exit), `/id/publications/${slug("live")}`);
@@ -303,5 +315,57 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
     const result = await getPage("/api/preview/exit", { Cookie: draftCookie() });
     assert.equal(result.status, 405, pageFact(result));
     assert.equal(bypassCookie(result) !== undefined, false, `${BYPASS} changed by GET`);
+  });
+
+  test("PV11 exit with an Editor session: live public version -> its detail URL; never published or not public -> /admin edit page (M3-05b)", async (t) => {
+    const exitAs = async (fields: Record<string, string>, label: string) => {
+      const result = await postForm("/api/preview/exit", fields, previewHeaders());
+      assert.equal(result.status, 303, `${label}: ${pageFact(result)}`);
+      const cleared = bypassCookie(result);
+      assert.equal(cleared !== undefined && cleared.value === "", true, `${label}: ${BYPASS} not cleared`);
+      return target(result);
+    };
+    const id = (name: string) => String(pub(name).id);
+    const live = `/id/publications/${slug("live")}`;
+
+    assert.equal(await exitAs({ id: id("live"), locale: "id", slug: slug("live") }, "live"), live);
+    // The live record's own URL, not the posted slug.
+    assert.equal(await exitAs({ id: id("live"), locale: "id", slug: slug("other") }, "live, other slug"), live);
+
+    const adminDraft = `/admin/collections/publications/${id("draft")}`;
+    assert.equal(await exitAs({ id: id("draft"), locale: "id", slug: slug("draft") }, "draft"), adminDraft);
+    assert.equal(
+      await exitAs({ id: id("registered"), locale: "id", slug: slug("registered") }, "registered"),
+      `/admin/collections/publications/${id("registered")}`,
+    );
+    // Unknown record or invalid id: the posted detail URL, as before M3-05b.
+    for (const value of [UNKNOWN_ID, "abc", "01", ""]) {
+      assert.equal(await exitAs({ id: value, locale: "id", slug: slug("draft") }, `id ${value || "empty"}`), `/id/publications/${slug("draft")}`);
+    }
+
+    // The target is the record's edit page for that Editor.
+    const page = await getPage(adminDraft, { Cookie: editor() });
+    t.diagnostic(`GET ${adminDraft} as the Editor: HTTP ${page.status}`);
+    assert.equal(page.status, 200, `GET ${adminDraft} ${pageFact(page)}`);
+    assert.equal(page.body.includes(DRAFT_TITLE), true, "edit page shows the draft title");
+  });
+
+  test("PV12 exit without a staff session never goes to /admin: the posted detail URL, Draft Mode cookie cleared (M3-05b)", async () => {
+    const sessions: [string, Record<string, string>][] = [
+      ["Draft Mode cookie only", { Cookie: draftCookie() }],
+      ["invalid payload-token", { Cookie: `${draftCookie()}; payload-token=invalid.invalid.invalid` }],
+      ["no cookies", {}],
+    ];
+    for (const [label, headers] of sessions) {
+      for (const name of ["draft", "registered", "live"]) {
+        const result = await postForm("/api/preview/exit", { id: String(pub(name).id), locale: "id", slug: slug(name) }, headers);
+        assert.equal(result.status, 303, `${label} ${name}: ${pageFact(result)}`);
+        assert.equal(target(result), `/id/publications/${slug(name)}`, `${label} ${name}: target`);
+        const cleared = bypassCookie(result);
+        assert.equal(cleared !== undefined && cleared.value === "", true, `${label} ${name}: ${BYPASS} not cleared`);
+      }
+      const evil = await postForm("/api/preview/exit", { id: String(pub("draft").id), locale: "id", slug: "//evil.example" }, headers);
+      assert.equal(target(evil), "/", `${label}: invalid slug`);
+    }
   });
 });

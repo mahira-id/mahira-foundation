@@ -3,10 +3,12 @@ import { describe, test } from "node:test";
 
 import type { Payload } from "payload";
 
-import { findDraftRef, staffFromHeaders, type StaffUser } from "../../lib/cms/staff-preview";
+import { findPublicRef } from "../../lib/cms/publication-detail-query";
+import { findDraftRef, previewExitTarget, staffFromHeaders, type StaffUser } from "../../lib/cms/staff-preview";
 import {
   PREVIEW_EXIT_PATH,
   PREVIEW_PATH,
+  adminEditPath,
   exitTarget,
   parsePreviewId,
   previewTarget,
@@ -37,6 +39,22 @@ function recordingFind(docs: unknown[]): { payload: Pick<Payload, "find">; calls
     return { docs };
   };
   return { payload: { find } as unknown as Pick<Payload, "find">, calls };
+}
+
+/**
+ * Payload of the exit (M3-05b): `auth` gives `user`; `find` gives `live` to
+ * a read without a user (the anonymous public read) and `latest` to a read
+ * as a user (the staff draft read).
+ */
+function exitPayload(user: unknown, live: unknown[], latest: unknown[]) {
+  const auth = fakeAuth(user);
+  const calls: Record<string, unknown>[] = [];
+  const find = async (args: Record<string, unknown>) => {
+    calls.push(args);
+    return { docs: "user" in args ? latest : live };
+  };
+  const payload = { auth: auth.payload.auth, find } as unknown as Pick<Payload, "auth" | "find">;
+  return { payload, authCalls: auth.calls, calls };
 }
 
 describe("lib/publications/preview.ts", () => {
@@ -97,6 +115,11 @@ describe("lib/publications/preview.ts", () => {
       assert.equal(exitTarget(locale as string, slug as string), "/", `exitTarget(${locale}, ${slug})`);
     }
   });
+
+  test("PVU8 adminEditPath: the Publication edit page in /admin for a record id (M3-05b)", () => {
+    assert.equal(adminEditPath(5), "/admin/collections/publications/5");
+    assert.equal(adminEditPath(2147483647), "/admin/collections/publications/2147483647");
+  });
 });
 
 describe("lib/cms/staff-preview.ts", () => {
@@ -129,6 +152,72 @@ describe("lib/cms/staff-preview.ts", () => {
     assert.equal(args.limit, 1);
     assert.deepEqual(args.select, { slug: true, locale: true });
     assert.equal(await findDraftRef(recordingFind([]).payload, 10, staff), null);
+  });
+
+  test("PVU10 previewExitTarget: staff -> live public detail, else /admin edit page; no staff, no id or no record -> exitTarget (M3-05b)", async () => {
+    const headers = new Headers({ Cookie: "payload-token=fake" });
+    const editor = fakeUser("editor", 3);
+    const form = { id: 9, locale: "id", slug: "posted-slug" };
+
+    // No id: no session check, no read.
+    const noId = exitPayload(editor, [], []);
+    assert.equal(await previewExitTarget(noId.payload, headers, { ...form, id: null }), "/id/publications/posted-slug");
+    assert.equal(noId.authCalls.length + noId.calls.length, 0, "no auth or find without an id");
+
+    // No staff session: the posted detail path, never /admin, and no record read.
+    for (const user of [null, fakeUser("superuser", 3), fakeUser("editor", 3, "members")]) {
+      const visitor = exitPayload(user, [], [{ id: 9 }]);
+      assert.equal(await previewExitTarget(visitor.payload, headers, form), "/id/publications/posted-slug", `user ${JSON.stringify(user)}`);
+      assert.equal(visitor.authCalls[0]?.headers, headers, "the request headers are passed to payload.auth");
+      assert.equal(visitor.calls.length, 0, `find without a staff session (user ${JSON.stringify(user)})`);
+      assert.equal(await previewExitTarget(visitor.payload, headers, { ...form, slug: "//evil.example" }), "/");
+    }
+
+    for (const role of ["editor", "admin"]) {
+      const staff = fakeUser(role, 3);
+      // Live public version: its own locale and slug, not the posted ones; no draft read.
+      const live = exitPayload(staff, [{ id: 9, locale: "en", slug: "live-slug" }], [{ id: 9 }]);
+      assert.equal(await previewExitTarget(live.payload, headers, form), "/en/publications/live-slug", `${role}: live`);
+      assert.equal(live.calls.length, 1, `${role}: one read for a live record`);
+      const [publicRead] = live.calls;
+      assert.equal("user" in (publicRead ?? {}), false, `${role}: the live read is anonymous`);
+      assert.deepEqual(publicRead?.where, { id: { equals: 9 } });
+
+      // No live public version, the record exists: the edit page.
+      const draft = exitPayload(staff, [], [{ id: 9, locale: "id", slug: "posted-slug" }]);
+      assert.equal(await previewExitTarget(draft.payload, headers, form), "/admin/collections/publications/9", `${role}: never published`);
+      assert.equal(draft.calls.length, 2, `${role}: public read, then staff read`);
+      assert.equal(draft.calls[1]?.user, staff, `${role}: the record is read as the staff user`);
+      assert.equal(draft.calls[1]?.overrideAccess, false);
+
+      // A live record without a valid detail URL is not a public page either.
+      const badLive = exitPayload(staff, [{ id: 9, locale: "id", slug: "Bad Slug" }], [{ id: 9 }]);
+      assert.equal(await previewExitTarget(badLive.payload, headers, form), "/admin/collections/publications/9", `${role}: invalid live slug`);
+
+      // No record at all: the posted detail path, or / for invalid fields.
+      const none = exitPayload(staff, [], []);
+      assert.equal(await previewExitTarget(none.payload, headers, form), "/id/publications/posted-slug", `${role}: unknown record`);
+      assert.equal(await previewExitTarget(none.payload, headers, { id: 9, locale: "xx", slug: "https://evil.example" }), "/");
+    }
+  });
+});
+
+describe("lib/cms/publication-detail-query.ts findPublicRef", () => {
+  test("PVU9 findPublicRef: by id, anonymous, published + public only (draft: false, overrideAccess: false), slug and locale only (M3-05b)", async () => {
+    const found = recordingFind([{ id: 9, slug: "pub", locale: "id" }]);
+    assert.deepEqual(await findPublicRef(found.payload, 9), { id: 9, slug: "pub", locale: "id" });
+    const [args] = found.calls;
+    assert.ok(args);
+    assert.equal(args.collection, "publications");
+    assert.deepEqual(args.where, { id: { equals: 9 } });
+    assert.equal("user" in args, false, "no user: Payload access gives published + public only");
+    assert.equal(args.overrideAccess, false);
+    assert.equal(args.draft, false);
+    assert.equal(args.fallbackLocale, false);
+    assert.equal(args.depth, 0);
+    assert.equal(args.limit, 1);
+    assert.deepEqual(args.select, { slug: true, locale: true });
+    assert.equal(await findPublicRef(recordingFind([]).payload, 10), null);
   });
 });
 

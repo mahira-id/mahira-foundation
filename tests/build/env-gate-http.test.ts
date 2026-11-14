@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
+import { notFoundPageProblems } from "../helpers/publication-pages";
+
 /**
  * HTTP checks of the CMS env gate against a running `next start` (M3-00,
  * M3-01; ENVIRONMENTS §3.1). Started by `bun run test:build-matrix`, once per
@@ -15,7 +17,8 @@ import { describe, test } from "node:test";
  *                                             Draft Mode cookie,
  *                                             /{id,en}/publications 200, unknown or
  *                                             upper-case detail slug: not-found page
- *                                             with noindex (M3-05)
+ *                                             with noindex (M3-05), the Mahira page
+ *                                             since M3-05b
  * `/` (M3-04, DECISIONS §2.7): never sample content (G1); off/prod show the
  * empty notice (G7); on renders the CMS block (G8).
  * TEST_BASE_URL defaults to http://localhost:3100.
@@ -151,13 +154,15 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     // not-found page with robots noindex. Next 16.4.4 sends the route's static
     // shell first, so the status is 200 (404 is accepted too).
     for (const [index, path] of ["/id/publications/gate-no-such-slug", "/id/publications/Gate-Upper"].entries()) {
-      test(`G6.${index + 3} GET ${path}: not-found page with noindex`, async (t) => {
+      test(`G6.${index + 3} GET ${path}: Mahira not-found page with noindex`, async (t) => {
         const result = await request("GET", path);
         t.diagnostic(`GET ${path}: HTTP ${result.status}`);
         assert.equal(result.status === 200 || result.status === 404, true, `GET ${path} answered ${result.status}`);
         assert.equal(/<meta name="robots" content="noindex[^"]*"/.test(result.body), true, `robots noindex on ${path}`);
         assert.equal(result.body.includes(NOT_FOUND_DIGEST), true, `notFound() digest on ${path}`);
         assert.equal(result.body.includes("data-publication-detail"), false, `data-publication-detail on ${path}`);
+        // M3-05b: the Mahira not-found page in Indonesian (app/[locale]/not-found.tsx).
+        assert.deepEqual(notFoundPageProblems(result.body, "id"), [], `Mahira not-found page on ${path}`);
       });
     }
     test("G4.1 GET /admin: 200 or redirect to /admin/login", async () => {
