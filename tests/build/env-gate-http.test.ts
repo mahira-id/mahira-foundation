@@ -6,10 +6,13 @@ import { describe, test } from "node:test";
  * M3-01; ENVIRONMENTS §3.1). Started by `bun run test:build-matrix`, once per
  * build mode. No Payload import, so it also runs where the CMS is off.
  *
- * GATE_MODE: off  = CMS env absent         -> /admin, /api/*, /{id,en}/publications 404
+ * GATE_MODE: off  = CMS env absent         -> /admin, /api/*, /{id,en}/publications and
+ *                                             /{id,en}/publications/{slug} 404
  *            prod = VERCEL_ENV=production  -> same as off
  *            on   = full .env.local        -> /admin reachable, anonymous /api/* 403,
- *                                             /{id,en}/publications 200
+ *                                             /{id,en}/publications 200, unknown or
+ *                                             upper-case detail slug: not-found page
+ *                                             with noindex (M3-05)
  * `/` (M3-04, DECISIONS §2.7): never sample content (G1); off/prod show the
  * empty notice (G7); on renders the CMS block (G8).
  * TEST_BASE_URL defaults to http://localhost:3100.
@@ -27,6 +30,13 @@ const SAMPLE_TEXTS = [
   "Perlu akun",
   "Membaca Data Energi",
 ];
+
+/**
+ * Digest of notFound() in the streamed RSC data (Next 16.4.4). The visible
+ * not-found text is in every page's payload, so it proves nothing; this
+ * digest is only there when notFound() was thrown.
+ */
+const NOT_FOUND_DIGEST = "NEXT_HTTP_ERROR_FALLBACK;404";
 
 type Page = { status: number; location: string; body: string; headers: Headers | null };
 
@@ -114,7 +124,8 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
         assertClosed(await request(method, path), `${method} ${path}`);
       });
     }
-    for (const [index, path] of ["/id/publications", "/en/publications"].entries()) {
+    // G5.3/G5.4 (M3-05, DECISIONS §2.11 P14 A): detail URLs are closed too.
+    for (const [index, path] of ["/id/publications", "/en/publications", "/id/publications/gate-check", "/en/publications/gate-check"].entries()) {
       test(`G5.${index + 1} GET ${path}: 404, noindex, no-store`, async () => {
         assertClosed(await request("GET", path), `GET ${path}`);
       });
@@ -127,6 +138,20 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
         const result = await request("GET", `/${locale}/publications`);
         assert.equal(result.status, 200);
         assert.equal(result.body.includes(`<html lang="${locale}"`), true, `<html lang="${locale}">`);
+      });
+    }
+    // M3-05 (DECISIONS §2.11 P7 A as amended 2026-11-13): a slug without a
+    // published + public record, or not matching the slug pattern, gets the
+    // not-found page with robots noindex. Next 16.4.4 sends the route's static
+    // shell first, so the status is 200 (404 is accepted too).
+    for (const [index, path] of ["/id/publications/gate-no-such-slug", "/id/publications/Gate-Upper"].entries()) {
+      test(`G6.${index + 3} GET ${path}: not-found page with noindex`, async (t) => {
+        const result = await request("GET", path);
+        t.diagnostic(`GET ${path}: HTTP ${result.status}`);
+        assert.equal(result.status === 200 || result.status === 404, true, `GET ${path} answered ${result.status}`);
+        assert.equal(/<meta name="robots" content="noindex[^"]*"/.test(result.body), true, `robots noindex on ${path}`);
+        assert.equal(result.body.includes(NOT_FOUND_DIGEST), true, `notFound() digest on ${path}`);
+        assert.equal(result.body.includes("data-publication-detail"), false, `data-publication-detail on ${path}`);
       });
     }
     test("G4.1 GET /admin: 200 or redirect to /admin/login", async () => {

@@ -17,7 +17,7 @@ import {
 } from "../helpers/fixtures";
 import { assertServerUp, getPage, pageFact, type PageResult } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
-import { fetchAllIndexPages } from "../helpers/publication-pages";
+import { assertNotFoundPage, fetchAllIndexPages } from "../helpers/publication-pages";
 
 /**
  * Locale checks (M3-01; port of the archived m3-01-locale-checks, M3-10):
@@ -178,12 +178,21 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
   }
 
   // ------------------------------------------------------------ R status codes
-  for (const [index, path] of ["/id", "/en", "/id/Publications", "/fr/publications", "/does-not-exist", "/id/publications/x"].entries()) {
+  for (const [index, path] of ["/id", "/en", "/id/Publications", "/fr/publications", "/does-not-exist"].entries()) {
     test(`R1.${index + 1} GET ${path}: 404`, async () => {
       const result = await getPage(path);
       assert.equal(result.status, 404, `GET ${path} ${pageFact(result)}`);
     });
   }
+
+  // Since M3-05 /{locale}/publications/{slug} is the detail route. An unknown
+  // slug gets notFound(): robots noindex and the not-found page, HTTP 200
+  // because Next 16.4.4 sends the route's static shell first (DECISIONS
+  // §2.11 P7 A as amended 2026-11-13).
+  test("R1.6 GET /id/publications/x: not-found page with noindex (HTTP 200 since M3-05)", async (t) => {
+    const status = assertNotFoundPage(await getPage("/id/publications/x"), "GET /id/publications/x");
+    t.diagnostic(`GET /id/publications/x: HTTP ${status}`);
+  });
 
   // Upper/mixed-case locale segments. isLocale() rejects them, so the app
   // answers 404. On Windows (case-insensitive NTFS) `next start` can instead

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { getPage, pageFact } from "./http";
+import { getPage, pageFact, type PageResult } from "./http";
 
 /**
  * HTML readers of the public publication pages (M3-05). The index renders a
@@ -61,6 +61,68 @@ export function robotsContent(html: string): string | null {
 
 export function decodeAmp(value: string): string {
   return value.replace(/&amp;/g, "&");
+}
+
+/**
+ * The HTML with React's streamed segments put back in place, for structural
+ * checks. While streaming, React can leave `<template id="P:n"></template>`
+ * inside an element and send its content later as
+ * `<div hidden id="S:n">…</div><script>…$RS("S:n","P:n")</script>`; the
+ * browser moves it in. Here each such segment is cut out and replaces its
+ * placeholder (repeated for nested placeholders). Suspense boundaries
+ * (`$RC`) are left as they are.
+ */
+export function inlineSegments(html: string): string {
+  const segments = new Map<string, string>();
+  const ranges: [number, number][] = [];
+  for (const match of html.matchAll(/<div hidden id="S:(\d+)">/g)) {
+    const id = match[1] as string;
+    const call = html.indexOf(`$RS("S:${id}","P:${id}")`, match.index);
+    const end = call === -1 ? -1 : html.lastIndexOf("</div><script>", call);
+    if (end === -1 || end < match.index) continue;
+    segments.set(id, html.slice(match.index + match[0].length, end));
+    ranges.push([match.index, end + "</div>".length]);
+  }
+  let result = "";
+  let cursor = 0;
+  for (const [start, end] of ranges) {
+    result += html.slice(cursor, start);
+    cursor = end;
+  }
+  result += html.slice(cursor);
+  for (let pass = 0; pass < 10; pass++) {
+    let replaced = false;
+    result = result.replace(/<template id="P:(\d+)"><\/template>/g, (placeholder, id: string) => {
+      const content = segments.get(id);
+      if (content === undefined) return placeholder;
+      replaced = true;
+      return content;
+    });
+    if (!replaced) break;
+  }
+  return result;
+}
+
+/**
+ * Digest of notFound() in the streamed RSC data (Next 16.4.4). The visible
+ * text of the default not-found page is in the payload of every page, so it
+ * proves nothing; this digest is only there when notFound() was thrown.
+ */
+export const NOT_FOUND_DIGEST = "NEXT_HTTP_ERROR_FALLBACK;404";
+
+/**
+ * A publication URL without a public page (M3-05, DECISIONS §2.11 P7 A as
+ * amended 2026-11-13): notFound() with robots noindex and no detail. Next
+ * 16.4.4 sends the static shell of the detail route first, so the status is
+ * 200; 404 is accepted too. Returns the status for a diagnostic.
+ */
+export function assertNotFoundPage(result: PageResult, label: string): number {
+  assert.ok(result.status === 200 || result.status === 404, `${label}: ${pageFact(result)}`);
+  const robots = robotsContent(result.body);
+  assert.ok(robots !== null && robots.includes("noindex"), `${label}: robots ${robots ?? "missing"}`);
+  assert.ok(result.body.includes(NOT_FOUND_DIGEST), `${label}: no notFound() digest`);
+  assert.equal(result.body.includes("data-publication-detail"), false, `${label}: data-publication-detail present`);
+  return result.status;
 }
 
 export type IndexPages = { slugs: string[]; titles: Map<string, string>; bodies: string[]; pages: number };
