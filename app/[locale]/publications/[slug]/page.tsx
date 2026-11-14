@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { PublicationDetail } from "@/components/publication/publication-detail";
+import { PreviewBanner } from "@/components/publication/preview-banner";
 import { PublicationErrorState } from "@/components/publication/publication-error-state";
 import { LocaleHeader } from "@/components/site/locale-header";
 import { getPublicationDetail, PublicationReadError, type PublicationDetailResult } from "@/lib/cms/public-content";
@@ -23,6 +24,10 @@ import { isCmsEnabled } from "@/payload/env";
  * gets the error state rendered here on the server = 200 + noindex.
  * `instant = false`: no Suspense and no loading file, so nothing of the
  * page shows before the database answers.
+ * Staff draft preview (P11 A): in Draft Mode with a verified Editor/Admin
+ * session the read gives the latest version (mode "preview"): banner,
+ * data-preview="true", robots noindex/nofollow; Draft Mode responses are
+ * no-store (Next).
  */
 export const instant = false;
 
@@ -46,7 +51,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (result === "error") return { robots: { index: false, follow: true } };
   // Not found: the page calls notFound(), which adds noindex.
   if (!result) return {};
-  return { title: result.publication.title, description: result.publication.description };
+  const metadata: Metadata = { title: result.publication.title, description: result.publication.description };
+  // Staff draft preview (P11 A): never indexed, links not followed.
+  if (result.mode === "preview") metadata.robots = { index: false, follow: false };
+  return metadata;
 }
 
 export default async function PublicationDetailPage({ params }: Props) {
@@ -73,12 +81,14 @@ export default async function PublicationDetailPage({ params }: Props) {
     );
   }
   if (!result) notFound();
+  const preview = result.mode === "preview";
 
   return (
     <>
       <LocaleHeader locale={locale} switcher={switcherFor(locale, result.alternates)} />
       <main id="main">
-        <PublicationDetail locale={locale} publication={result.publication} />
+        {preview ? <PreviewBanner locale={locale} slug={result.publication.slug} /> : null}
+        <PublicationDetail locale={locale} preview={preview} publication={result.publication} />
       </main>
     </>
   );

@@ -1,9 +1,11 @@
 import config from "@payload-config";
+import { draftMode, headers } from "next/headers";
 import { getPayload } from "payload";
 import { cache } from "react";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
 import { findPublicPublication } from "@/lib/cms/publication-detail-query";
 import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
+import { findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import type { Locale } from "@/lib/i18n/locales";
 import { getPublicationAlternates } from "@/lib/publications/alternates";
@@ -27,7 +29,9 @@ import { isCmsEnabled } from "@/payload/env";
  * Every read here runs as an anonymous visitor through the Local API, so
  * Payload access control limits publications to published + public
  * (M3-02, P1 A). Rules for public code:
- * - never pass `overrideAccess: true`, `draft: true` or a `user`;
+ * - never pass `overrideAccess: true`, `draft: true` or a `user` (the one
+ *   exception, the staff preview of getPublicationDetail, goes through
+ *   lib/cms/staff-preview.ts);
  * - always pass `fallbackLocale: false` (no text of another language);
  * - filter linked-entry records by their own `locale` field.
  *
@@ -113,16 +117,28 @@ export type PublicationDetailResult = {
  * (generateMetadata and the page). A failed read is logged with the error
  * name only and throws PublicationReadError; the page catches it and renders
  * its error state (P15 A as amended 2026-11-13: HTTP 200 + noindex).
+ *
+ * Staff preview (P11 A): only in Draft Mode, and only when the request's
+ * Payload session is an Editor or Admin (checked on every request), the
+ * latest version is read through lib/cms/staff-preview.ts and `mode` is
+ * "preview". A Draft Mode cookie without a staff session gets exactly the
+ * public result.
  */
 export const getPublicationDetail = cache(
   async (locale: Locale, slug: string): Promise<PublicationDetailResult | null> => {
     if (!isCmsEnabled()) return null;
+    // Request APIs outside the try: Next's own errors must pass through.
+    const { isEnabled } = await draftMode();
+    const requestHeaders = isEnabled ? await headers() : null;
     try {
       const payload = await getPayload({ config });
-      const doc = await findPublicPublication(payload, locale, slug);
+      const staff = requestHeaders ? await staffFromHeaders(payload, requestHeaders) : null;
+      const doc = staff
+        ? await findDraftPublication(payload, locale, slug, staff)
+        : await findPublicPublication(payload, locale, slug);
       if (!doc) return null;
       const alternates = await getPublicationAlternates(payload, doc);
-      return { mode: "public", publication: toPublicationDetail(doc, locale), alternates };
+      return { mode: staff ? "preview" : "public", publication: toPublicationDetail(doc, locale), alternates };
     } catch (error) {
       console.error("[publication-detail] CMS read failed:", readErrorLabel(error));
       throw new PublicationReadError();

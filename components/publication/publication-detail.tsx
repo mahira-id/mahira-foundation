@@ -16,9 +16,17 @@ function Dot() {
  * Publication detail (M3-05, DECISIONS §2.11 P7 A, P15 A): breadcrumb,
  * metadata, title, the full summary, authors and access, with the uploaded
  * cover image or the typographic cover. No download panel until M3-08, no
- * related publications.
+ * related publications. `preview`: the staff draft preview read (P11 A).
  */
-export function PublicationDetail({ publication, locale }: { publication: PublicationDetailData; locale: Locale }) {
+export function PublicationDetail({
+  publication,
+  locale,
+  preview = false,
+}: {
+  publication: PublicationDetailData;
+  locale: Locale;
+  preview?: boolean;
+}) {
   const dictionary = getDictionary(locale);
   const labels = dictionary.detail;
   const topics = publication.topicNames.join(", ");
@@ -47,7 +55,7 @@ export function PublicationDetail({ publication, locale }: { publication: Public
   return (
     <article
       className="container-editorial pt-10 pb-20 md:pt-12 md:pb-28"
-      data-preview="false"
+      data-preview={preview ? "true" : "false"}
       data-publication-detail={publication.slug}
     >
       <nav aria-label={labels.breadcrumbLabel}>

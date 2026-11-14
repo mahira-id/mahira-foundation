@@ -47,6 +47,11 @@ export type Dictionary = {
     errorBody: string;
     reload: string;
   };
+  /** Staff draft preview banner (DECISIONS §2.11 P11 A). */
+  preview: {
+    notice: string;
+    exit: string;
+  };
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -94,6 +99,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
       errorBody: "Coba muat ulang halaman beberapa saat lagi.",
       reload: "Muat ulang",
     },
+    preview: {
+      notice: "Pratinjau draf: belum tentu terlihat pengunjung.",
+      exit: "Keluar dari pratinjau",
+    },
   },
   en: {
     skipLink: "Skip to content",
@@ -138,6 +147,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
       errorTitle: "This publication could not be loaded.",
       errorBody: "Please reload the page in a moment.",
       reload: "Reload",
+    },
+    preview: {
+      notice: "Draft preview: visitors may not see this version.",
+      exit: "Exit preview",
     },
   },
 };
