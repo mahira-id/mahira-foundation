@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 
+import { dictionaries } from "../../lib/i18n/dictionaries";
+import { otherLocale, type Locale } from "../../lib/i18n/locales";
 import { getPage, pageFact, type PageResult } from "./http";
 
 /**
@@ -110,18 +112,63 @@ export function inlineSegments(html: string): string {
  */
 export const NOT_FOUND_DIGEST = "NEXT_HTTP_ERROR_FALLBACK;404";
 
+/** The RSC payload of a page: the strings of `self.__next_f.push([1,"…"])`, decoded and joined. */
+export function flightData(html: string): string {
+  let data = "";
+  for (const match of html.matchAll(/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g)) {
+    data += JSON.parse(match[1] as string) as string;
+  }
+  return data;
+}
+
+/**
+ * What is wrong with the Mahira not-found page of `locale` in a response
+ * (app/[locale]/not-found.tsx, M3-05b); empty when nothing is. For a
+ * notFound() after the static shell, Next 16.4.4 sends its error shell
+ * (`<html id="__next_error__">`) and the RSC payload, and the browser renders
+ * the not-found page from the payload, so the checks read the payload: the
+ * `<main data-not-found="<locale>">` element with the dictionary title and
+ * text and a link to `/<locale>/publications`, and no not-found element of
+ * the other locale. The element is in the payload of every page under
+ * [locale] (it is the not-found boundary), so this only proves which page
+ * renders when the notFound() digest is there too.
+ */
+export function notFoundPageProblems(html: string, locale: Locale): string[] {
+  const flight = flightData(html);
+  const text = dictionaries[locale].notFound;
+  const marker = `"data-not-found":"${locale}"`;
+  const start = flight.indexOf(marker);
+  if (start === -1) return [`no ${marker} element in the RSC payload`];
+  const end = flight.indexOf(`"data-not-found"`, start + marker.length);
+  const element = flight.slice(start, end === -1 ? start + 2000 : end);
+  const problems: string[] = [];
+  const expected: [string, string][] = [
+    ["title", `"children":${JSON.stringify(text.title)}`],
+    ["body", `"children":${JSON.stringify(text.body)}`],
+    ["index link", `"href":"/${locale}/publications","children":${JSON.stringify(text.indexLink)}`],
+  ];
+  for (const [name, fragment] of expected) {
+    if (!element.includes(fragment)) problems.push(`not-found ${name} missing (${fragment})`);
+  }
+  const other = `"data-not-found":"${otherLocale(locale)}"`;
+  if (flight.includes(other)) problems.push(`${other} element in the payload`);
+  return problems;
+}
+
 /**
  * A publication URL without a public page (M3-05, DECISIONS §2.11 P7 A as
  * amended 2026-11-13): notFound() with robots noindex and no detail. Next
  * 16.4.4 sends the static shell of the detail route first, so the status is
- * 200; 404 is accepted too. Returns the status for a diagnostic.
+ * 200; 404 is accepted too. Since M3-05b the page is the Mahira not-found
+ * page of `locale` (notFoundPageProblems). Returns the status for a diagnostic.
  */
-export function assertNotFoundPage(result: PageResult, label: string): number {
+export function assertNotFoundPage(result: PageResult, label: string, locale: Locale): number {
   assert.ok(result.status === 200 || result.status === 404, `${label}: ${pageFact(result)}`);
   const robots = robotsContent(result.body);
   assert.ok(robots !== null && robots.includes("noindex"), `${label}: robots ${robots ?? "missing"}`);
   assert.ok(result.body.includes(NOT_FOUND_DIGEST), `${label}: no notFound() digest`);
   assert.equal(result.body.includes("data-publication-detail"), false, `${label}: data-publication-detail present`);
+  assert.deepEqual(notFoundPageProblems(result.body, locale), [], `${label}: Mahira not-found page (${locale})`);
   return result.status;
 }
 

@@ -224,7 +224,7 @@ describe("publication detail (M3-05 published + public only, switcher, not-found
     assert.equal(robotsContent(html), null, "no robots meta on a public detail");
   });
 
-  test("DT2 not-found page with noindex for draft, registered, subscriber, other-locale, missing, upper-case and invalid slugs", async (t) => {
+  test("DT2 Mahira not-found page of the URL's locale with noindex for draft, registered, subscriber, other-locale, missing, upper-case and invalid slugs", async (t) => {
     const cases: [string, string | null][] = [
       [`/id/publications/${slug("draft")}`, title("draft")],
       [`/id/publications/${slug("registered")}`, title("registered")],
@@ -239,7 +239,7 @@ describe("publication detail (M3-05 published + public only, switcher, not-found
     const statuses: string[] = [];
     for (const [path, hidden] of cases) {
       const result = await getPage(path);
-      statuses.push(`${path}=${assertNotFoundPage(result, `GET ${path}`)}`);
+      statuses.push(`${path}=${assertNotFoundPage(result, `GET ${path}`, path.startsWith("/en/") ? "en" : "id")}`);
       if (hidden) assert.equal(result.body.includes(hidden), false, `GET ${path}: title "${hidden}" in the HTML`);
     }
     t.diagnostic(`statuses: ${statuses.join(" ")}`);
@@ -284,7 +284,7 @@ describe("publication detail (M3-05 published + public only, switcher, not-found
   test("DT7 unpublish: the next request is not-found and the EN switcher loses the pair; republish: 200 again", async () => {
     await setStatus("pub", "draft");
     try {
-      assertNotFoundPage(await getPage(`/id/publications/${slug("pub")}`), "unpublished pub");
+      assertNotFoundPage(await getPage(`/id/publications/${slug("pub")}`), "unpublished pub", "id");
       const en = await page(`/en/publications/${slug("pub-en")}`);
       const links = linksTo(en, "/id/publications");
       assert.equal(

@@ -190,7 +190,7 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
   // because Next 16.4.4 sends the route's static shell first (DECISIONS
   // §2.11 P7 A as amended 2026-11-13).
   test("R1.6 GET /id/publications/x: not-found page with noindex (HTTP 200 since M3-05)", async (t) => {
-    const status = assertNotFoundPage(await getPage("/id/publications/x"), "GET /id/publications/x");
+    const status = assertNotFoundPage(await getPage("/id/publications/x"), "GET /id/publications/x", "id");
     t.diagnostic(`GET /id/publications/x: HTTP ${status}`);
   });
 
