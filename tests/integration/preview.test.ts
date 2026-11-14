@@ -78,7 +78,8 @@ function assertDenied(result: PageResult, label: string): void {
   assert.equal(result.status, 404, `${label}: ${pageFact(result)}`);
   assert.equal(result.body, "Not Found", `${label}: body`);
   assert.equal(result.cacheControl, "no-store", `${label}: Cache-Control`);
-  assert.equal(bypassCookie(result), undefined, `${label}: ${BYPASS} set`);
+  // A boolean, so a failure never prints the cookie value.
+  assert.equal(bypassCookie(result) !== undefined, false, `${label}: ${BYPASS} set`);
 }
 
 describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, exit)", () => {
@@ -186,16 +187,17 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
   test("PV4 Editor session: 307 to the stored draft's detail URL with the Draft Mode cookie", async () => {
     const live = await getPage(`/api/preview?id=${pub("live").id}`, { Cookie: editor() });
     assert.equal(live.status, 307, `live: ${pageFact(live)}`);
+    const cookie = bypassCookie(live);
+    assert.ok(cookie?.value, `live: ${BYPASS} not set`);
+    assert.equal(cookie.attributes.includes("httponly"), true, `${BYPASS} is HttpOnly`);
+    // Kept before the redirect checks, so PV5–PV10 do not depend on them.
+    bypass = cookie.value;
     assert.equal(target(live), `/id/publications/${slug("live")}`);
-    assert.ok(bypassCookie(live)?.value, `live: ${BYPASS} not set`);
 
     const draft = await getPage(`/api/preview?id=${pub("draft").id}&next=https://evil.example`, { Cookie: editor() });
     assert.equal(draft.status, 307, `draft: ${pageFact(draft)}`);
+    assert.ok(bypassCookie(draft)?.value, `draft: ${BYPASS} not set`);
     assert.equal(target(draft), `/id/publications/${slug("draft")}`, "target from the stored record, not the query");
-    const cookie = bypassCookie(draft);
-    assert.ok(cookie?.value, `draft: ${BYPASS} not set`);
-    assert.equal(cookie.attributes.includes("httponly"), true, `${BYPASS} is HttpOnly`);
-    bypass = cookie.value;
   });
 
   // ------------------------------------------------------------ the detail page in Draft Mode
@@ -276,7 +278,7 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
     assert.equal(target(exit), `/id/publications/${slug("live")}`);
     const cleared = bypassCookie(exit);
     assert.ok(cleared, `no ${BYPASS} Set-Cookie on the exit response`);
-    assert.equal(cleared.value, "", `${BYPASS} value not empty`);
+    assert.equal(cleared.value === "", true, `${BYPASS} value not empty`);
     assert.equal(
       /expires=thu, 01 jan 1970/.test(cleared.attributes) || /max-age=0(?:;|$)/.test(cleared.attributes),
       true,
@@ -300,6 +302,6 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
   test("PV10 GET /api/preview/exit: 405 (POST only)", async () => {
     const result = await getPage("/api/preview/exit", { Cookie: draftCookie() });
     assert.equal(result.status, 405, pageFact(result));
-    assert.equal(bypassCookie(result), undefined, `${BYPASS} changed by GET`);
+    assert.equal(bypassCookie(result) !== undefined, false, `${BYPASS} changed by GET`);
   });
 });
