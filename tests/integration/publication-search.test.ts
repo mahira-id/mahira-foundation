@@ -285,4 +285,68 @@ describe("publication search (M3-06 relevance, locale, filters, non-disclosure)"
     // 92 + 8 code points are kept; without the cut the last word would be "brumelakvexmora".
     await assertRows("id", q(`${"!".repeat(92)}brumelakvexmora`), BRUMELAK_ORDER);
   });
+
+  test("SR8 search field: the normalized q is echoed (150 chars -> 100), escaped, with a permanent label and maxlength 100", async () => {
+    const echoed = inputTag((await search("id", q("  Kebijakan   Pembangunan  "))).html);
+    assert.match(echoed, /\bvalue="Kebijakan Pembangunan"/, "normalized q in the input");
+    assert.match(echoed, /\bmaxlength="100"/i, "maxlength 100");
+    assert.match(echoed, /\btype="search"/, "type=search");
+    const long = inputTag((await search("id", q("a".repeat(150)))).html);
+    assert.match(long, new RegExp(`\\bvalue="a{100}"`), "150 chars echoed as 100");
+    assert.doesNotMatch(long, /a{101}/, "no 101st character");
+    const hostile = await search("id", q("<script>alert(1)</script>"));
+    assert.match(inputTag(hostile.html), /value="&lt;script&gt;alert\(1\)&lt;\/script&gt;"/, "q escaped in the input");
+    assert.equal(hostile.html.includes("<script>alert"), false, "no raw <script>alert in the page");
+    assert.match(hostile.html, /<label[^>]*for="filter-q"[^>]*>Cari publikasi<\/label>/, "ID label");
+    assert.match((await search("en", q("tarquell"))).html, /<label[^>]*for="filter-q"[^>]*>Search publications<\/label>/, "EN label");
+    assert.match(inputTag((await search("id", "")).html), /\bname="q"/, "the field is also there without q");
+    assert.match(inputTag((await search("id", "")).html), /\bvalue=""/, "empty value without q");
+  });
+
+  test("SR9 one GET form to /{locale}/publications with q before type, topic and year (URL order)", async () => {
+    const { html } = await search("id", `${q("brumelak")}&type=${TYPE_A}`);
+    assert.match(html, /<form[^>]*\baction="\/id\/publications"/, "form action");
+    const order = ["q", "type", "topic", "year"].map((name) => html.indexOf(`name="${name}"`));
+    assert.equal(order.includes(-1), false, `fields q, type, topic, year all present: ${order.join(",")}`);
+    assert.deepEqual([...order].sort((a, b) => a - b), order, "DOM order = q, type, topic, year");
+    assert.equal(html.includes('name="sort"'), false, "no sort control");
+  });
+
+  test("SR10 no-results copy: search wording without the term, search clear label; filters only keep the filter wording", async () => {
+    const term = "zxqvbnm";
+    const strip = (page: string) =>
+      page
+        .replace(/<script[\s\S]*?<\/script>/g, "")
+        .replace(/<input\b[^>]*>/g, "")
+        .toLowerCase();
+    const id = await assertNoResults("id", q(term));
+    assert.equal(id.html.includes("<p>Tidak ada publikasi yang cocok dengan pencarian ini.</p>"), true, "ID copy");
+    assert.equal(id.html.includes("Hapus pencarian dan filter"), true, "ID clear label");
+    assert.equal(id.html.includes("cocok dengan filter ini"), false, "no filter wording for a search");
+    assert.equal(strip(id.html).includes(term), false, "the term is not quoted on the page");
+    const en = await assertNoResults("en", q(term));
+    assert.equal(en.html.includes("<p>No publications match this search.</p>"), true, "EN copy");
+    assert.equal(en.html.includes("Clear search and filters"), true, "EN clear label");
+    assert.equal(strip(en.html).includes(term), false, "the term is not quoted on the EN page");
+    const filtered = await assertNoResults("id", `${q("brumelak")}&type=${TYPE_B}&topic=${TOPIC_BRUMELAK}`);
+    assert.equal(filtered.html.includes("<p>Tidak ada publikasi yang cocok dengan pencarian ini.</p>"), true, "q + filters: search copy");
+    const onlyFilters = await search("id", `type=${TYPE_B}&topic=${TOPIC_BRUMELAK}`);
+    assert.equal(onlyFilters.state.state, "no-results", "filters only: state");
+    assert.equal(onlyFilters.html.includes("<p>Tidak ada publikasi yang cocok dengan filter ini.</p>"), true, "filters only: filter wording");
+    assert.equal(onlyFilters.html.includes("Hapus filter"), true, "filters only: filter clear label");
+  });
+
+  test("SR11 a page beyond the last keeps q: page-not-found links back to /id/publications?q=", async () => {
+    const found = await search("id", `${q("brumelak")}&page=99`);
+    assert.equal(found.state.state, "page-not-found", "state");
+    assert.equal(robotsContent(found.html), "noindex, follow", "robots");
+    assert.equal(found.html.includes('href="/id/publications?q=brumelak"'), true, "link to page 1 with q");
+  });
 });
+
+/** The search `<input>` of the index (id `filter-q`), as one tag. */
+function inputTag(html: string): string {
+  const tag = /<input\b[^>]*\bid="filter-q"[^>]*>/.exec(html);
+  assert.ok(tag, "search input #filter-q in the page");
+  return tag[0];
+}
