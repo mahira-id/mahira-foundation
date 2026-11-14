@@ -43,6 +43,7 @@ Implementasi M3-04 (DECISIONS §2.7):
 - **Bidang kerja (P10 A):** Topic dengan `isActive: true` dan nama ID, diurutkan menurut nama, dengan deskripsi ID bila ada, tanpa tautan. Label jenis/topik pada publikasi tetap tampil walau term-nya nonaktif.
 - **Cover dan tanggal (P2b (i), P9 A):** cover tipografis dari data (jenis, topik utama, judul, tahun), tanpa nomor edisi dan gambar; tanpa lead, cover hero adalah cover merek. Tanggal "28 Okt 2026" dalam WIB.
 - **Tautan (P5 A):** judul belum ditautkan sampai M3-05; tombol "Lihat semua publikasi" → `/id/publications` hanya dirender saat CMS hidup.
+- **Tautan sejak M3-05 (DECISIONS §2.11 P10 A):** judul lead bertautan ke `/id/publications/{slug}` (`components/home/publication-lead.tsx`); setiap baris indeks tetap `<details>`, dan panelnya (di luar `<summary>`) berisi tautan "Baca publikasi" ke `/id/publications/{slug}` (`data-home-read`, `components/home/latest-publications.tsx`). Saat CMS mati tidak ada tautan publikasi. Header dan footer tidak berubah.
 
 ### States
 - Jika belum ada featured item, gunakan layout latest publications tanpa placeholder klaim.
@@ -85,6 +86,18 @@ Initial, loading, populated, no results, empty catalog, error, invalid filter, p
 ### SEO/a11y
 Index page title; use links for navigation; labels for filters; announce result updates accessibly; avoid indexing infinite filter permutations.
 
+### Implementasi M3-05 (DECISIONS §2.11)
+- **Kode:** `app/[locale]/publications/page.tsx`; kontrak URL `lib/publications/index-params.ts`; view model `lib/publications/index-view.ts`; query `lib/cms/publication-index-query.ts`; baca `getPublicationIndex` di `lib/cms/public-content.ts` (anonim, `overrideAccess: false`, `draft: false`, `fallbackLocale: false`); komponen `components/publication/{publication-list,index-filters,index-pagination}.tsx`.
+- **Yang tampil:** hanya publikasi published + `public` di locale route (P7 A, DEC-002). Search input belum ada (`q`/`sort` di M3-06); tanpa lead dan cover di indeks (P15 A).
+- **Kontrak query (P2 A, P3 A):** `?type=<slug>&topic=<slug>&year=<yyyy>&page=<n>`, urutan tetap, nilai kosong = tidak ada, `page` dihilangkan untuk halaman 1; parameter lain diabaikan. 12 baris per halaman. Form GET `next/form` dengan satu `<select>` per filter yang punya pilihan ("Semua" = kosong), tombol "Terapkan"; tautan "Hapus filter" ke `/{locale}/publications` bila ada filter. Filter tanpa pilihan tidak dirender; tanpa pilihan sama sekali tidak ada form. Menerapkan filter kembali ke halaman 1.
+- **Pilihan filter (P1 A, P5 A):** term `isActive: true` dengan nama di locale halaman dan dipakai ≥ 1 publikasi tampil; tahun = tahun `publishedAt` dalam WIB. `topic` cocok di posisi mana pun; filter digabung AND; `year` mengecualikan publikasi tanpa tanggal.
+- **Urutan (P4 A):** bertanggal (`publishedAt` terbaru) lalu tanpa tanggal (`createdAt` terbaru); seri dipecah dengan `id` terbaru.
+- **Baris (P15 A):** tanggal · jenis (`<time>` hanya bila ada `publishedAt`), judul `<h2>` bertautan ke `/{locale}/publications/{slug}` (anchor hanya berisi judul), penulis, ringkasan dipotong 3 baris, bidang kerja utama, badge akses berbahasa locale. Tanggal "28 Okt 2026" / "28 Oct 2026".
+- **Pagination:** tampil bila lebih dari satu halaman; "Sebelumnya"/"Berikutnya" (nonaktif di ujung, `aria-disabled`), nomor halaman (`aria-current="page"`), "Halaman p dari n"; tautan tidak memuat nilai kosong.
+- **State (`data-index-state`):** `list`; `empty` (katalog kosong, teks lama); `no-results` ("Tidak ada publikasi yang cocok dengan filter ini." + "Hapus filter"); `unknown-filter` (slug tidak ada, term nonaktif atau tanpa publikasi tampil, tahun tanpa publikasi: "Filter tidak dikenal: …" + "Hapus filter"; nilai tidak pernah ditampilkan ulang); `page-not-found` (`page` bukan bilangan bulat positif atau lewat halaman terakhir: "Halaman ini tidak ada." + "Kembali ke halaman 1"); `error` (gagal baca: "Publikasi belum dapat dimuat. …", log `[publications]` hanya nama galat). Pada `no-results` dan `unknown-filter`, "Hapus filter" tampil dua kali (bar filter dan pesan). Semua state HTTP 200 (daftar di-stream di `Suspense`).
+- **Robots (P3 A, DEC-021):** `noindex, follow` bila ada filter berisi, atau state `unknown-filter`, `page-not-found`, `error`. `/{locale}/publications` dan `?page=n` tanpa filter boleh diindeks; canonical di M3-07.
+- **CMS mati:** 404 dari `proxy.ts` (P14 A).
+
 ## 4. Publication detail
 
 **Route:** `/{locale}/publications/{slug}` · **Audience:** public · **Indexing:** published metadata page indexable unless policy says otherwise.
@@ -111,6 +124,17 @@ Published, unpublished/not found, translation unavailable, asset unavailable, pu
 
 ### SEO
 Locale-specific metadata, canonical, reciprocal hreflang only for valid translation pairs, OG image, publication structured data only when fields are reliable. Do not expose private file URL in metadata.
+
+### Implementasi M3-05 (DECISIONS §2.11)
+- **Kode:** `app/[locale]/publications/[slug]/page.tsx` (route blocking, `export const instant = false`, tanpa `Suspense` dan tanpa `loading.tsx`), `app/[locale]/publications/[slug]/error.tsx` (galat tak terduga, tombol `retry()`), `components/publication/{publication-detail,publication-error-state,preview-banner}.tsx`, `lib/publications/detail-view.ts`, `lib/cms/publication-detail-query.ts`, `getPublicationDetail` di `lib/cms/public-content.ts`.
+- **Yang punya halaman (P7 A):** hanya publikasi published + `public` di locale itu. Penyimpangan sementara dari PRD §8 sampai M5: publikasi `registered`/`subscriber` tidak punya halaman metadata (DEC-002, DECISIONS §2.8).
+- **Not-found (amandemen P7 A):** draft, `registered`, `subscriber`, slug locale lain, slug tidak ada, huruf besar, pola slug tidak valid, dan slug lama (308 baru di M3-07, P9 A) → `notFound()`: **HTTP 200** + `<meta name="robots" content="noindex">` + halaman not-found bawaan Next (teks Inggris, juga di halaman ID). Penyebab: static shell per locale dikirim sebelum halaman jalan (DECISIONS §2.11, amandemen). Trailing slash → 308 tanpa slash.
+- **Isi (P7 A):** `<article data-publication-detail data-preview>`; breadcrumb ("Publikasi" → `/{locale}/publications`, lalu judul `aria-current="page"`); jenis, bidang kerja (utama dulu; label term nonaktif tetap tampil bila bernama, P5 A), tanggal terbit bila ada, bahasa; H1; ringkasan penuh per paragraf (dipisah baris kosong); `<dl>` penulis, terbit, bidang kerja, akses (badge berbahasa locale); `coverImage` bila Media gambar dengan `url`, lebar, tinggi (`next/image` `unoptimized`, alt dari Media), selain itu cover tipografis. Tanpa panel unduhan sampai M3-08; tanpa publikasi terkait, isi, sitasi, bagikan.
+- **Metadata:** `<title>` = judul, description = ringkasan. Canonical, hreflang, OG di M3-07.
+- **Switcher (P8 A):** pasangan Translation Group yang published + public di locale lain → tautan ke detail pasangan (`hrefLang`); tanpa pasangan → `/{locale lain}/publications` dengan `title` "Belum tersedia dalam English" / "Not available in Bahasa Indonesia" (juga sebagai teks `sr-only`). Logo di halaman EN → `/` dengan `hrefLang="id"`.
+- **Gagal baca (amandemen P15 A):** halaman merender state galat berbahasa locale di server (`data-publication-error`, "Publikasi belum dapat dimuat." / "This publication could not be loaded.", tautan "Muat ulang" ke URL yang sama): **HTTP 200** + `noindex, follow`; HTML tanpa host DB; log `[publication-detail]` hanya nama galat.
+- **Pratinjau draf staf (P11 A):** lihat EDITORIAL-WORKFLOW §9. Dalam pratinjau: banner `role="status"` `data-preview-banner` "Pratinjau draf: belum tentu terlihat pengunjung." / "Draft preview: visitors may not see this version." dengan tombol "Keluar dari pratinjau" / "Exit preview" (form POST native ke `/api/preview/exit`), `data-preview="true"`, robots `noindex, nofollow`, `Cache-Control` berisi `no-store`. Switcher memakai pasangan yang published saja.
+- **CMS mati:** 404 dari `proxy.ts` (P14 A).
 
 ## 5. Search results
 

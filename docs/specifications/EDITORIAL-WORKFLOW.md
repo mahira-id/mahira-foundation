@@ -141,6 +141,7 @@ Status disimpan per versi bahasa (satu record per bahasa, DEC-004). "Tayang di s
 - **Save Draft**, **Publish** / **Publish changes**, dan **Unpublish** (dengan dialog konfirmasi) adalah tombol bawaan Payload; labelnya tetap Inggris dan sesuai PDD §9 (§2.6 P9).
 - Editor dan Admin sama-sama boleh membuat, mengubah, menerbitkan, dan meng-unpublish (DEC-016). Ini menjawab "Policy TBD" kolom Publish/unpublish Editor di §3 dan pertanyaan §8 nomor 2.
 - Menghapus versi bahasa yang pernah terbit hanya boleh Admin (DEC-016); Editor mendapat 403.
+- **Preview** (sejak M3-05, DECISIONS §2.11 P11 A): tombol bawaan Payload di form Publication membuka `/api/preview?id=<id>` di tab baru. Handler memverifikasi sesi Editor/Admin, mengaktifkan Draft Mode, lalu mengalihkan ke `/{locale}/publications/{slug}` dari data draf. Halaman menampilkan versi terbaru (draft atau revisi tertunda) dengan banner "Pratinjau draf: belum tentu terlihat pengunjung." dan tombol "Keluar dari pratinjau"; halaman itu `noindex` dan tidak di-cache. Hanya halaman detail; indeks dan homepage selalu menampilkan versi yang tayang. Tanpa sesi staf, pratinjau tidak tersedia (404) dan cookie Draft Mode diabaikan. Media yang diunggah tetap mengikuti known issue di §9.3.
 
 ### 9.3 Aturan
 
@@ -149,6 +150,7 @@ Status disimpan per versi bahasa (satu record per bahasa, DEC-004). "Tayang di s
 - Revisi setelah terbit disimpan sebagai draft di atas versi yang tayang; pengunjung tetap melihat versi yang terbit sampai Publish changes (§4.5).
 - Simpan non-draft tanpa `_status` pada publikasi yang tayang dan punya draft tertunda ditolak 400; editor harus memilih Publish atau Save Draft (§2.6 P5). `updateSharedFields()` ikut ditolak dan di-rollback.
 - Status tiap bahasa berdiri sendiri: unpublish versi ID tidak mengubah versi EN.
+- **Slug:** jangan ganti slug publikasi yang sudah terbit sampai redirect slug lama tersedia (M3-07, DECISIONS §2.11 P9 A). Sampai itu URL lama langsung menjadi halaman not-found.
 - Cache (§4.4): halaman publik dibaca saat request; tidak ada hook revalidasi di M3-03. Bacaan publik yang nanti memakai `"use cache"` wajib memberi `cacheTag` dan direvalidasi setelah commit (§2.6 P3).
-- Sitemap dan indeks pencarian (§4.4) mengikuti M3-06/M3-07, preview draft M3-05 (§2.6 P2), jejak audit aktor/waktu (§4.4, §7) M4-02 (§2.6 P7), dan privasi file Media dari draft (§4.1) M3-08 (§2.6 P8; known issue: file di bucket publik terbuka lewat URL-nya).
-- Verifikasi: `tests/integration/workflow.test.ts` (W1–W13) dan `tests/unit/publication-workflow.test.ts` (TEST-PLAN §12.2).
+- Sitemap dan indeks pencarian (§4.4) mengikuti M3-06/M3-07, preview draft M3-05 (§2.6 P2; diterapkan, §9.2), jejak audit aktor/waktu (§4.4, §7) M4-02 (§2.6 P7), dan privasi file Media dari draft (§4.1) M3-08 (§2.6 P8; known issue: file di bucket publik terbuka lewat URL-nya).
+- Verifikasi: `tests/integration/workflow.test.ts` (W1–W13) dan `tests/unit/publication-workflow.test.ts`; preview: `tests/integration/preview.test.ts` (PV1–PV10) dan `tests/unit/preview.test.ts` (PVU1–PVU7) (TEST-PLAN §12.2). Tombol Preview di admin UI belum diuji otomatis (TEST-PLAN §12.5).
