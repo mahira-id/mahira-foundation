@@ -87,7 +87,7 @@ export default async function PublicationDetailPage({ params }: Props) {
     <>
       <LocaleHeader locale={locale} switcher={switcherFor(locale, result.alternates)} />
       <main id="main">
-        {preview ? <PreviewBanner locale={locale} slug={result.publication.slug} /> : null}
+        {preview ? <PreviewBanner id={result.publication.id} locale={locale} slug={result.publication.slug} /> : null}
         <PublicationDetail locale={locale} preview={preview} publication={result.publication} />
       </main>
     </>

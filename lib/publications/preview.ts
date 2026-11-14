@@ -9,7 +9,9 @@ import { SLUG_PATTERN } from "../../payload/fields/slug";
  * Flow: the admin Preview button opens `/api/preview?id=<id>`; the handler
  * (app/api/preview/route.ts) checks the staff session, enables Draft Mode
  * and redirects to the stored draft's detail URL; the banner's form posts
- * to `/api/preview/exit`, which disables Draft Mode.
+ * to `/api/preview/exit`, which disables Draft Mode and redirects to the
+ * live public page or, without one, to the record's edit page in /admin
+ * (M3-05b, lib/cms/staff-preview.ts `previewExitTarget`).
  */
 export const PREVIEW_PATH = "/api/preview";
 export const PREVIEW_EXIT_PATH = "/api/preview/exit";
@@ -42,4 +44,13 @@ export function previewTarget(doc: { locale?: unknown; slug?: unknown }): string
 /** Where the exit form goes: the detail path of valid fields, else the homepage (never an outside URL). */
 export function exitTarget(locale: string, slug: string): string {
   return previewTarget({ locale, slug }) ?? "/";
+}
+
+/**
+ * Edit page of a Publication in /admin (Payload 3.93.0 default `routes.admin`
+ * and `admin/collections/<slug>/<id>`), for an id from parsePreviewId; the
+ * exit of a preview without a public live version goes there (M3-05b).
+ */
+export function adminEditPath(id: number): string {
+  return `/admin/collections/publications/${id}`;
 }

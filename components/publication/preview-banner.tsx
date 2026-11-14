@@ -7,15 +7,17 @@ import { PREVIEW_EXIT_PATH } from "@/lib/publications/preview";
  * only when the detail page read the latest version for a verified staff
  * session. The exit is a native POST form (a full page load, no client
  * router cache involved, DECISIONS §2.10) to the exit handler, which
- * disables Draft Mode and returns to this publication's URL.
+ * disables Draft Mode and goes to this publication's live page, or to its
+ * edit page in /admin when it has none (M3-05b).
  */
-export function PreviewBanner({ locale, slug }: { locale: Locale; slug: string }) {
+export function PreviewBanner({ id, locale, slug }: { id: number; locale: Locale; slug: string }) {
   const labels = getDictionary(locale).preview;
   return (
     <aside className="border-b border-brand-200 bg-brand-50" data-preview-banner role="status">
       <div className="container-editorial flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-semibold text-ink">{labels.notice}</p>
         <form action={PREVIEW_EXIT_PATH} method="post">
+          <input name="id" type="hidden" value={id} />
           <input name="locale" type="hidden" value={locale} />
           <input name="slug" type="hidden" value={slug} />
           <button className="btn btn-outline-dark" type="submit">

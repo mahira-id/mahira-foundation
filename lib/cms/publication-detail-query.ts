@@ -37,6 +37,25 @@ export const DETAIL_POPULATE = {
   authors: { displayName: true },
 } as const;
 
+/**
+ * Locale and slug of a record's live version when visitors can see it
+ * (published + public), by id; or null. Same anonymous read as the detail
+ * page; used by the exit of the staff preview (lib/cms/staff-preview.ts).
+ */
+export async function findPublicRef(payload: FindPort, id: number) {
+  const result = await payload.find({
+    collection: "publications",
+    where: { id: { equals: id } },
+    limit: 1,
+    depth: 0,
+    select: { slug: true, locale: true },
+    fallbackLocale: false,
+    draft: false,
+    overrideAccess: false,
+  });
+  return result.docs[0] ?? null;
+}
+
 /** The published + public record of this locale with this slug, or null. */
 export async function findPublicPublication(payload: FindPort, locale: Locale, slug: string) {
   const result = await payload.find({
