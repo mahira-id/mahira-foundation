@@ -32,6 +32,7 @@ export type Area =
   | "race"
   | "redirect"
   | "search"
+  | "seo"
   | "workflow";
 
 export function areaPrefix(area: Area): string {

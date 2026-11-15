@@ -21,6 +21,11 @@ import { notFoundPageProblems } from "../helpers/publication-pages";
  *                                             since M3-05b
  * `/` (M3-04, DECISIONS §2.7): never sample content (G1); off/prod show the
  * empty notice (G7); on renders the CMS block (G8).
+ * SEO (M3-07, DEC-021, DECISIONS §2.13), G9: canonical of `/` on
+ * https://mahira.id and `/og/site` in every mode; sitemap only `/` with the
+ * CMS off, `/` + both indexes on; robots `Allow: /` + Sitemap only in prod,
+ * `Disallow: /` in off and on; the index and detail OG images 404 with the
+ * CMS off.
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
@@ -137,6 +142,53 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     for (const [index, path] of ["/id/publications", "/en/publications", "/id/publications/gate-check", "/en/publications/gate-check"].entries()) {
       test(`G5.${index + 1} GET ${path}: 404, noindex, no-store`, async () => {
         assertClosed(await request("GET", path), `GET ${path}`);
+      });
+    }
+  }
+
+  // M3-07 (DEC-021, DECISIONS §2.13): sitemap, robots, generated OG images and the homepage canonical per gate mode.
+  test("G9.1 GET / canonical https://mahira.id and og:image /og/site", async () => {
+    const home = await request("GET", "/");
+    assert.match(home.body, /<link rel="canonical" href="https:\/\/mahira\.id\/?"/, "canonical of /");
+    assert.match(home.body, /<meta property="og:image" content="https:\/\/mahira\.id\/og\/site"/, "og:image of /");
+  });
+
+  test("G9.2 GET /og/site: 200 image/png", async () => {
+    const image = await request("GET", "/og/site");
+    assert.equal(image.status, 200);
+    assert.equal(image.headers?.get("content-type"), "image/png");
+  });
+
+  test(`G9.3 GET /sitemap.xml: ${MODE === "on" ? "/, both indexes and more" : "only https://mahira.id/"}`, async () => {
+    const sitemap = await request("GET", "/sitemap.xml");
+    assert.equal(sitemap.status, 200);
+    const locs = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+    if (MODE === "on") {
+      for (const url of ["https://mahira.id/", "https://mahira.id/id/publications", "https://mahira.id/en/publications"]) {
+        assert.equal(locs.includes(url), true, `sitemap lists ${url}`);
+      }
+    } else {
+      assert.deepEqual(locs, ["https://mahira.id/"], "sitemap with the CMS off");
+    }
+  });
+
+  test(`G9.4 GET /robots.txt: ${MODE === "prod" ? "Allow: / + Sitemap" : "Disallow: /, no Sitemap"}`, async () => {
+    const robots = await request("GET", "/robots.txt");
+    assert.equal(robots.status, 200);
+    if (MODE === "prod") {
+      assert.match(robots.body, /User-Agent: \*\s+Allow: \/\s/, "Allow: / on Production");
+      assert.equal(/^Disallow:/m.test(robots.body), false, "a Disallow line on Production");
+      assert.match(robots.body, /^Sitemap: https:\/\/mahira\.id\/sitemap\.xml$/m, "Sitemap line on Production");
+    } else {
+      assert.match(robots.body, /User-Agent: \*\s+Disallow: \/\s/, "Disallow: / outside Production");
+      assert.equal(/Sitemap:/i.test(robots.body), false, "a Sitemap line outside Production");
+    }
+  });
+
+  if (MODE === "off" || MODE === "prod") {
+    for (const [index, path] of ["/og/id/publications", "/og/en/publications/gate-check"].entries()) {
+      test(`G9.${index + 5} GET ${path} with the CMS off: 404`, async () => {
+        assert.equal((await request("GET", path)).status, 404);
       });
     }
   }

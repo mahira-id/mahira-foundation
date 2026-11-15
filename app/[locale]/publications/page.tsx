@@ -11,7 +11,7 @@ import { getPublicationIndex } from "@/lib/cms/public-content";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 import { indexHref, readIndexQuery } from "@/lib/publications/index-params";
-import { indexNoindex } from "@/lib/publications/index-view";
+import { indexMetadata } from "@/lib/seo/metadata";
 import { isCmsEnabled } from "@/payload/env";
 
 /**
@@ -20,7 +20,8 @@ import { isCmsEnabled } from "@/payload/env";
  * §2.12) and filters type/topic/year in the URL. The shell (header, H1,
  * intro) is static; the list is read at request time inside Suspense, so
  * every state answers 200 and the invalid ones get `noindex, follow`
- * through generateMetadata.
+ * through generateMetadata. SEO (M3-07, DEC-021): lib/seo/metadata.ts
+ * indexMetadata (self canonical without `?page=1`, hreflang on page 1).
  */
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -29,7 +30,7 @@ type Props = { params: Promise<{ locale: string }>; searchParams: Promise<Search
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const title = getDictionary(locale).publications.title;
+  const { title, intro } = getDictionary(locale).publications;
   if (!isCmsEnabled()) return { title };
   // Request-time data, as in the detail page: without it a read failure
   // logs Next's "unstable value ... while prerendering".
@@ -38,7 +39,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const result = await getPublicationIndex(locale, query.q, query.type, query.topic, query.year, query.page);
   if (result.status === "off") return { title };
   const state = result.status === "ok" ? result.plan.state : "error";
-  return indexNoindex(query, state) ? { title, robots: { index: false, follow: true } } : { title };
+  // M3-07 (DEC-021): canonical + hreflang only when indexable, Open Graph + Twitter always.
+  return indexMetadata(locale, { title, description: intro }, query, state);
 }
 
 export default async function PublicationsPage({ params, searchParams }: Props) {

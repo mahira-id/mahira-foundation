@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
+import { HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -9,13 +10,13 @@ const hankenGrotesk = Hanken_Grotesk({
   display: "swap",
 });
 
-const description =
-  "Platform publikasi dan pembelajaran Mahira Indonesia Development. Temukan riset, analisis kebijakan, dan materi pembelajaran untuk pembangunan Indonesia yang lebih adil.";
+const description = HOME_DESCRIPTION;
 
 export const metadata: Metadata = {
+  // M3-07 (DEC-021): every relative metadata URL resolves on https://mahira.id, also on Preview.
+  metadataBase: new URL(SITE_URL),
   title: {
-    default:
-      "Mahira Indonesia Development — Riset, Kebijakan, dan Pembelajaran",
+    default: HOME_TITLE,
     template: "%s — Mahira Indonesia Development",
   },
   description,
@@ -34,14 +35,12 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     siteName: "Mahira Indonesia Development",
-    title:
-      "Mahira Indonesia Development — Riset, Kebijakan, dan Pembelajaran",
+    title: HOME_TITLE,
     description,
   },
   twitter: {
     card: "summary_large_image",
-    title:
-      "Mahira Indonesia Development — Riset, Kebijakan, dan Pembelajaran",
+    title: HOME_TITLE,
     description,
   },
   robots: {

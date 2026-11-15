@@ -15,6 +15,7 @@ import {
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 import { isPublicationSlug, switcherFor } from "@/lib/publications/detail-view";
+import { detailMetadata } from "@/lib/seo/metadata";
 import { isCmsEnabled } from "@/payload/env";
 
 /**
@@ -76,10 +77,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (result === "error" || target === "error") return { robots: { index: false, follow: true } };
   // Not found or old slug: the page calls notFound() (adds noindex) or permanentRedirect().
   if (!result) return {};
-  const metadata: Metadata = { title: result.publication.title, description: result.publication.description };
-  // Staff draft preview (P11 A): never indexed, links not followed.
-  if (result.mode === "preview") metadata.robots = { index: false, follow: false };
-  return metadata;
+  // Staff draft preview (P11 A): never indexed, links not followed; no canonical, hreflang or Open Graph.
+  if (result.mode === "preview") {
+    return { title: result.publication.title, description: result.publication.description, robots: { index: false, follow: false } };
+  }
+  // M3-07 (DEC-021): canonical, hreflang with a public counterpart only, Open Graph `article` + Twitter.
+  return detailMetadata(result.publication, result.alternates);
 }
 
 export default async function PublicationDetailPage({ params }: Props) {

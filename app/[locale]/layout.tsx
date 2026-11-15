@@ -3,6 +3,7 @@ import { Hanken_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, LOCALES } from "@/lib/i18n/locales";
+import { SITE_URL } from "@/lib/seo/site";
 import "../(site)/globals.css";
 
 /**
@@ -18,6 +19,8 @@ const hankenGrotesk = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
+  // M3-07 (DEC-021): canonical, hreflang and Open Graph URLs resolve on https://mahira.id, also on Preview.
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Mahira Indonesia Development",
     template: "%s — Mahira Indonesia Development",
