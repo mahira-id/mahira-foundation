@@ -21,9 +21,11 @@ import {
   randomPassword,
   totalOf,
 } from "../helpers/fixtures";
-import { BASE_URL, assertServerUp, login } from "../helpers/http";
+import { BASE_URL, assertServerUp, getPage, login, pageFact } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
 import { fixturePdf } from "../helpers/pdf";
+import { fetchAllIndexPages, inlineSegments } from "../helpers/publication-pages";
+import { fileFormatLabel } from "../../lib/publications/file-labels";
 
 /**
  * Publication files and the public download (M3-08, DECISIONS §2.14),
@@ -136,10 +138,15 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
   }
 
   /** Upload as the Editor through the Local API (access control on). `status` is sent to prove clients cannot set it. */
-  async function upload(name: string, accessLevel: Level, data = fixturePdf(`downloads ${name}`)): Promise<PublicationFile> {
+  async function upload(
+    name: string,
+    accessLevel: Level,
+    data = fixturePdf(`downloads ${name}`),
+    meta: { kind?: PublicationFile["kind"]; language?: PublicationFile["language"] } = {},
+  ): Promise<PublicationFile> {
     const record = await p().create({
       collection: "publication-files",
-      data: { label: `${LABEL}${name}`, kind: "full_document", language: "id", accessLevel, status: "failed" },
+      data: { label: `${LABEL}${name}`, kind: meta.kind ?? "full_document", language: meta.language ?? "id", accessLevel, status: "failed" },
       file: { data, mimetype: "application/pdf", name: fileName(name), size: data.length },
       user: editorUser(),
       overrideAccess: false,
@@ -150,11 +157,17 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     return record;
   }
 
-  async function createPub(name: string, fileNames: string[], status: "published" | "draft", accessLevel: Level = "public"): Promise<Publication> {
+  async function createPub(
+    name: string,
+    fileNames: string[],
+    status: "published" | "draft",
+    accessLevel: Level = "public",
+    locale: "id" | "en" = "id",
+  ): Promise<Publication> {
     const data: PubData = {
       title: `${LABEL}${name}`,
       slug: slug(name),
-      locale: "id",
+      locale,
       translationGroup: await createGroup(p(), AREA, name),
       summary: `${LABEL}ringkasan ${name}`,
       publicationType: await firstId(p(), "publication-types"),
@@ -203,9 +216,12 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
       ["regpub", "public"],
       ["unpub", "public"],
       ["free", "public"],
+      ["onlyreg", "registered"],
     ] as const) {
       await upload(name, level);
     }
+    // Panel fixtures (DLU): an English page with an Indonesian appendix.
+    await upload("enfile", "public", fixturePdf("downloads enfile"), { kind: "appendix", language: "id" });
     await createPub("live", ["a", "reg", "sub"], "published");
     // Pending draft revision: `draft` is listed only in the latest version.
     await p().update({
@@ -219,6 +235,9 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     await createPub("never", ["never"], "draft");
     await createPub("regpub", ["regpub"], "published", "registered");
     await createPub("unpub", ["unpub"], "published");
+    await createPub("nofiles", [], "published");
+    await createPub("restricted", ["onlyreg"], "published");
+    await createPub("enlive", ["enfile"], "published", "public", "en");
   });
 
   after(async (t) => {
@@ -568,5 +587,128 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     const staffFiles = (draft.files ?? []) as unknown[];
     assert.equal(staffFiles.every((value) => value !== null && typeof value === "object"), true, "staff read populates every file");
     assert.deepEqual(toPublicationDetail(draft, "id").files.map((item) => item.id), [file("a").id, file("draft").id], "preview: public files of the draft, in order");
+  });
+
+  // ------------------------------------------------------------ the file panel on the detail page (M3-08 UI, DECISIONS §2.14 item 7)
+  /** The detail page with React's streamed segments put back in place. */
+  async function detailHtml(path: string, headers: Record<string, string> = {}): Promise<string> {
+    const result = await getPage(path, headers);
+    assert.equal(result.status, 200, `GET ${path}: ${pageFact(result)}`);
+    return inlineSegments(result.body);
+  }
+  /** File ids of the panel rows, in page order. */
+  const panelIds = (html: string) => [...html.matchAll(/data-publication-file="(\d+)"/g)].map((match) => Number(match[1]));
+  /** Ids in the download links of the page, in page order. */
+  const linkIds = (html: string) => [...html.matchAll(/<a\s[^>]*href="\/api\/files\/(\d+)\/download"[^>]*>/g)].map((match) => Number(match[1]));
+  /** A label as a whole text node (the file label is the text of its own element). */
+  const hasLabel = (html: string, name: string) => html.includes(`>${LABEL}${name}<`);
+  /** Text of the download link of one file (tags removed). */
+  function linkText(html: string, id: number): string {
+    const match = new RegExp(`<a\\s[^>]*href="/api/files/${id}/download"[^>]*>([\\s\\S]*?)</a>`).exec(html);
+    assert.ok(match, `no link for file ${id}`);
+    return (match[1] as string).replace(/<[^>]*>/g, "");
+  }
+  /** Row HTML of one file. */
+  function rowOf(html: string, id: number): string {
+    const match = new RegExp(`<li[^>]*data-publication-file="${id}"[^>]*>([\\s\\S]*?)</li>`).exec(html);
+    assert.ok(match, `no row for file ${id}`);
+    return (match[1] as string).replace(/<!-- -->/g, "");
+  }
+
+  test("DLU1 panel: a published page lists only the public file with label, kind, document language, 'PDF · size' and a plain download link (ID and EN)", async () => {
+    const html = await detailHtml(`/id/publications/${slug("live")}`);
+    assert.ok(html.includes(`data-publication-detail="${slug("live")}"`), "detail page");
+    assert.ok(html.includes('data-files-mode="live"'), "live mode");
+    assert.deepEqual(panelIds(html), [file("a").id], "panel rows");
+    assert.deepEqual(linkIds(html), [file("a").id], "download links");
+    assert.ok(html.includes(`href="/api/files/${file("a").id}/download"`), "href of the download route");
+    const row = rowOf(html, file("a").id);
+    for (const text of [`${LABEL}a`, "Dokumen lengkap", "Bahasa Indonesia", fileFormatLabel(bytes.get("a")?.length ?? 0, "id")]) {
+      assert.ok(row.includes(text), `row has "${text}"`);
+    }
+    assert.ok(html.includes('id="publication-files-heading"') && html.includes(">Dokumen</h2>"), "heading");
+    assert.equal(linkText(html, file("a").id), `Unduh PDF: ${LABEL}a`, "link name has the action and the label");
+    assert.equal(html.includes("data-files-preview-note"), false, "no preview note on the public page");
+
+    // English page: English copy, the document language is its own (Indonesian), the kind in English.
+    const en = await detailHtml(`/en/publications/${slug("enlive")}`);
+    assert.deepEqual(panelIds(en), [file("enfile").id], "EN panel rows");
+    const enRow = rowOf(en, file("enfile").id);
+    for (const text of [`${LABEL}enfile`, "Appendix", "Bahasa Indonesia", fileFormatLabel(bytes.get("enfile")?.length ?? 0, "en")]) {
+      assert.ok(enRow.includes(text), `EN row has "${text}"`);
+    }
+    assert.ok(en.includes(">Documents</h2>"), "EN heading");
+    assert.equal(linkText(en, file("enfile").id), `Download PDF: ${LABEL}enfile`, "EN link name");
+    assert.equal(en.includes("Unduh PDF"), false, "no Indonesian copy on the EN page");
+    assert.equal(enRow.includes("Lampiran"), false, "no Indonesian kind on the EN page");
+  });
+
+  test("DLU2 no panel without public files: no files, and only a restricted file", async () => {
+    for (const name of ["nofiles", "restricted"]) {
+      const html = await detailHtml(`/id/publications/${slug(name)}`);
+      assert.ok(html.includes(`data-publication-detail="${slug(name)}"`), `${name}: detail page`);
+      assert.equal(html.includes("data-publication-files"), false, `${name}: panel`);
+      assert.equal(html.includes("publication-files-heading"), false, `${name}: heading`);
+      assert.equal(html.includes("/api/files/"), false, `${name}: download link`);
+      assert.equal(hasLabel(html, "onlyreg"), false, `${name}: restricted label`);
+    }
+  });
+
+  test("DLU3 nothing restricted or private reaches the HTML: no restricted label, no storage URL, object key or file name", async () => {
+    const html = await detailHtml(`/id/publications/${slug("live")}`);
+    for (const name of ["reg", "sub", "draft"]) {
+      assert.equal(hasLabel(html, name), false, `label of ${name}`);
+      assert.equal(html.includes(fileName(name)), false, `file name of ${name}`);
+    }
+    assert.equal(html.includes(fileName("a")), false, "file name of the listed file");
+    for (const forbidden of [".storage.supabase.co", "storage/v1", "publication-files/file", "_objectKey", "X-Amz-", "signedDownloads"]) {
+      assert.equal(html.includes(forbidden), false, `"${forbidden}" in the HTML`);
+    }
+    assert.equal(html.includes(`/api/files/${file("reg").id}/`), false, "link of the registered file");
+    assert.equal(html.includes(`/api/files/${file("sub").id}/`), false, "link of the subscriber file");
+    assert.equal(html.includes(`/api/files/${file("draft").id}/`), false, "link of the draft-only file");
+  });
+
+  test("DLU4 staff draft preview: files of the draft listed without links, with the note; the public page of the same record keeps its links", async () => {
+    const start = await getPage(`/api/preview?id=${pub("live").id}`, { Cookie: `payload-token=${token()}` });
+    assert.equal(start.status, 307, `GET /api/preview: ${pageFact(start)}`);
+    let bypass: string | undefined;
+    for (const cookie of start.setCookies) {
+      const [pair = ""] = cookie.split(";");
+      if (pair.startsWith("__prerender_bypass=")) bypass = pair;
+    }
+    assert.ok(bypass, "Draft Mode cookie");
+    const html = await detailHtml(`/id/publications/${slug("live")}`, { Cookie: `${bypass}; payload-token=${token()}` });
+    assert.ok(html.includes('data-preview="true"') && html.includes("data-preview-banner"), "preview page with banner");
+    assert.ok(html.includes('data-files-mode="preview"'), "preview mode");
+    assert.deepEqual(panelIds(html), [file("a").id, file("draft").id], "public files of the draft, in order");
+    assert.equal(hasLabel(html, "a") && hasLabel(html, "draft"), true, "labels");
+    assert.equal(hasLabel(html, "reg") || hasLabel(html, "sub"), false, "restricted labels stay hidden");
+    assert.deepEqual(linkIds(html), [], "no download link");
+    assert.equal(html.includes("/api/files/"), false, "no download path in the HTML");
+    assert.ok(html.includes("data-files-preview-note") && html.includes("Unduhan aktif setelah publikasi diterbitkan."), "note");
+    assert.equal(html.includes("Unduh PDF"), false, "no download button");
+
+    const live = await detailHtml(`/id/publications/${slug("live")}`);
+    assert.deepEqual(linkIds(live), [file("a").id], "the public page of the same record still has the link");
+  });
+
+  test("DLU5 index and homepage show no files: no panel and no download link", async () => {
+    const index = await fetchAllIndexPages("id");
+    assert.ok(index.slugs.includes(slug("live")), "the fixture with files is on the index (the check is meaningful)");
+    const home = await getPage("/");
+    assert.equal(home.status, 200, `GET /: ${pageFact(home)}`);
+    const pages = [
+      ["/id/publications", index.bodies],
+      ["/en/publications", (await fetchAllIndexPages("en")).bodies],
+      ["/", [home.body]],
+    ] as const;
+    for (const [path, bodies] of pages) {
+      assert.ok(bodies.length > 0, `${path}: no page read`);
+      for (const body of bodies) {
+        assert.equal(body.includes("/api/files/"), false, `${path}: download link`);
+        assert.equal(body.includes("data-publication-files"), false, `${path}: panel`);
+      }
+    }
   });
 });

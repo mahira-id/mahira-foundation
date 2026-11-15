@@ -51,6 +51,16 @@ export type Dictionary = {
     errorBody: string;
     reload: string;
   };
+  /** File panel of the detail page (M3-08, DECISIONS §2.14 item 7). */
+  files: {
+    heading: string;
+    kinds: Record<"preview" | "full_document" | "appendix" | "dataset" | "supplementary" | "other", string>;
+    /** Prefix of the document language ("Bahasa dokumen", read by screen readers). */
+    documentLanguage: string;
+    download: string;
+    /** Note of the staff draft preview, where files have no link. */
+    previewNote: string;
+  };
   /** Staff draft preview banner (DECISIONS §2.11 P11 A). */
   preview: {
     notice: string;
@@ -117,6 +127,20 @@ export const dictionaries: Record<Locale, Dictionary> = {
       errorBody: "Coba muat ulang halaman beberapa saat lagi.",
       reload: "Muat ulang",
     },
+    files: {
+      heading: "Dokumen",
+      kinds: {
+        preview: "Pratinjau",
+        full_document: "Dokumen lengkap",
+        appendix: "Lampiran",
+        dataset: "Dataset",
+        supplementary: "Materi tambahan",
+        other: "Lainnya",
+      },
+      documentLanguage: "Bahasa dokumen",
+      download: "Unduh PDF",
+      previewNote: "Unduhan aktif setelah publikasi diterbitkan.",
+    },
     preview: {
       notice: "Pratinjau draf: belum tentu terlihat pengunjung.",
       exit: "Keluar dari pratinjau",
@@ -174,6 +198,20 @@ export const dictionaries: Record<Locale, Dictionary> = {
       errorTitle: "This publication could not be loaded.",
       errorBody: "Please reload the page in a moment.",
       reload: "Reload",
+    },
+    files: {
+      heading: "Documents",
+      kinds: {
+        preview: "Preview",
+        full_document: "Full document",
+        appendix: "Appendix",
+        dataset: "Dataset",
+        supplementary: "Supplementary material",
+        other: "Other",
+      },
+      documentLanguage: "Document language",
+      download: "Download PDF",
+      previewNote: "Downloads become active once the publication is published.",
     },
     preview: {
       notice: "Draft preview: visitors may not see this version.",

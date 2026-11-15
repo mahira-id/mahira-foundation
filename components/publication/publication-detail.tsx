@@ -4,6 +4,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { AccessBadge } from "@/components/home/access-badge";
 import { PublicationCover } from "@/components/home/publication-cover";
+import { PublicationFiles } from "@/components/publication/publication-files";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/locales";
 import type { PublicationDetail as PublicationDetailData } from "@/lib/publications/detail-view";
@@ -15,8 +16,9 @@ function Dot() {
 /**
  * Publication detail (M3-05, DECISIONS §2.11 P7 A, P15 A): breadcrumb,
  * metadata, title, the full summary, authors and access, with the uploaded
- * cover image or the typographic cover. No download panel until M3-08, no
- * related publications. `preview`: the staff draft preview read (P11 A).
+ * cover image or the typographic cover, and (M3-08, DECISIONS §2.14 item 7)
+ * the file panel of the public PDF files; no related publications.
+ * `preview`: the staff draft preview read (P11 A).
  */
 export function PublicationDetail({
   publication,
@@ -126,6 +128,7 @@ export function PublicationDetail({
               </dd>
             </div>
           </dl>
+          <PublicationFiles files={publication.files} locale={locale} preview={preview} />
         </div>
 
         <div className="lg:col-span-4">
