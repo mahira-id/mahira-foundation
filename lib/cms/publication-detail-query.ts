@@ -16,6 +16,10 @@ type FindPort = Pick<Payload, "find">;
  * Detail fields; no staff field. `translationGroup` is read for the language
  * switcher only (lib/publications/alternates.ts) and stays an id: anonymous
  * reads cannot read Translation Groups. Media is populated in full (cover).
+ * Files (M3-08, DECISIONS §2.14) are populated with the panel fields only:
+ * never `url`, `filename`, `prefix` or `_objectKey`, so no storage location
+ * reaches the page; the panel links to `/api/files/{id}/download`. For an
+ * anonymous read a file that is not ready + public stays an id.
  */
 export const DETAIL_SELECT = {
   title: true,
@@ -28,6 +32,7 @@ export const DETAIL_SELECT = {
   topics: true,
   authors: true,
   coverImage: true,
+  files: true,
   translationGroup: true,
 } as const;
 
@@ -35,6 +40,7 @@ export const DETAIL_POPULATE = {
   "publication-types": { name: true },
   topics: { name: true },
   authors: { displayName: true },
+  "publication-files": { label: true, kind: true, language: true, accessLevel: true, status: true, filesize: true, mimeType: true },
 } as const;
 
 /**

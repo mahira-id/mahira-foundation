@@ -7,6 +7,7 @@ import { PUBLIC_PUBLICATION_READ } from "../../payload/access/public-read";
 import { Publications } from "../../payload/collections/Publications";
 import { enforceSharedFields } from "../../payload/hooks/enforce-shared-fields";
 import { readLiveOnSite } from "../../payload/hooks/live-on-site";
+import { refuseFileOfAnotherPublication } from "../../payload/hooks/one-publication-per-file";
 import { setPublicationLifecycleFields } from "../../payload/hooks/publication-lifecycle";
 import {
   markStatusNotSent,
@@ -286,12 +287,13 @@ describe("payload/hooks/refuse-implicit-status-over-pending-draft.ts (DECISIONS 
     );
   });
 
-  test("Publications hooks: beforeOperation marks; beforeChange P5 refusal, lifecycle fields, shared fields, in that order", () => {
+  test("Publications hooks: beforeOperation marks; beforeChange P5 refusal, lifecycle fields, shared fields, one publication per file (M3-08), in that order", () => {
     assert.deepEqual(Publications.hooks?.beforeOperation, [markStatusNotSent]);
     assert.deepEqual(Publications.hooks?.beforeChange, [
       refuseImplicitStatusOverPendingDraft,
       setPublicationLifecycleFields,
       enforceSharedFields,
+      refuseFileOfAnotherPublication,
     ]);
   });
 });

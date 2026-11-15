@@ -29,6 +29,9 @@ import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publica
  * Global 404 (M3-07 item 9), G10: `/foo` and `/id` answer 404 with the
  * Mahira global 404 page in every mode; links to the publication indexes
  * only in on.
+ * Files (M3-08, DECISIONS §2.14): `/api/files/1/download` and
+ * `/api/media/file/x` 404 in off/prod (G3.8, G3.9); `/api/media/file/x` and
+ * `/api/files/abc/download` 404 + noindex + no-store in on (G4.5, G4.6).
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
@@ -135,6 +138,9 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
       // M3-05 (DECISIONS §2.11 P11 A): the staff preview handlers are closed too.
       ["GET", "/api/preview?id=1"],
       ["POST", "/api/preview/exit"],
+      // M3-08 (DECISIONS §2.14 items 6, 10): the file download and the media file path.
+      ["GET", "/api/files/1/download"],
+      ["GET", "/api/media/file/x"],
     ];
     for (const [index, [method, path]] of rows.entries()) {
       test(`G3.${index + 1} ${method} ${path}: 404, noindex, no-store`, async () => {
@@ -252,5 +258,16 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
       const cookies = result.headers?.getSetCookie() ?? [];
       assert.equal(cookies.some((cookie) => cookie.startsWith("__prerender_bypass=")), false, "__prerender_bypass set");
     });
+    // M3-08 (DECISIONS §2.14 items 6, 10): an invalid file id and the media
+    // file path answer 404 + noindex + no-store with the CMS on as well.
+    for (const [index, path] of ["/api/media/file/x", "/api/files/abc/download"].entries()) {
+      test(`G4.${index + 5} GET ${path} with the CMS on: 404, noindex, no-store`, async () => {
+        const result = await request("GET", path);
+        assert.equal(result.status, 404, `GET ${path}`);
+        assert.equal(result.headers?.get("x-robots-tag"), "noindex", `${path}: X-Robots-Tag`);
+        assert.equal(result.headers?.get("cache-control"), "no-store", `${path}: Cache-Control`);
+        assert.equal(result.location, "", `${path}: Location`);
+      });
+    }
   }
 });

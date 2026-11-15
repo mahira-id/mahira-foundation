@@ -1,0 +1,572 @@
+import assert from "node:assert/strict";
+import { after, before, describe, test } from "node:test";
+import { createLocalReq, type Payload, type PayloadRequest, type RequiredDataFromCollectionSlug } from "payload";
+
+import { findPublicPublication } from "../../lib/cms/publication-detail-query";
+import { signedFileUrl } from "../../lib/cms/publication-file-storage";
+import { findDraftPublication, type StaffUser } from "../../lib/cms/staff-preview";
+import { toPublicationDetail } from "../../lib/publications/detail-view";
+import type { Publication, PublicationFile, User } from "../../payload/payload-types";
+import {
+  areaEmail,
+  areaLabel,
+  areaPrefix,
+  assertOwnerIntact,
+  cleanupArea,
+  countLeftovers,
+  createGroup,
+  firstId,
+  formatCounts,
+  hookNote,
+  randomPassword,
+  totalOf,
+} from "../helpers/fixtures";
+import { BASE_URL, assertServerUp, login } from "../helpers/http";
+import { closeTestPayload, getTestPayload } from "../helpers/payload";
+import { fixturePdf } from "../helpers/pdf";
+
+/**
+ * Publication files and the public download (M3-08, DECISIONS §2.14),
+ * area `downloads`. The files go to the private bucket `publication-files`
+ * (shared by Preview, local runs and tests): every object name starts with
+ * `fixture-test-downloads-` and cleanup deletes the file records, and with
+ * them the objects, after the publications. Needs `next start` with the
+ * full env (bun run test:integration).
+ *
+ * Fixtures: Editor fixture-test-downloads-editor@example.invalid (Local API
+ * user and REST token; never printed). Files (all synthetic `[FIXTURE]` PDFs,
+ * uploaded by the Editor through the Local API): `a` public on `live`; `reg`
+ * registered and `sub` subscriber on `live`; `draft` public, only in a
+ * pending draft revision of `live`; `never` public on the draft-only `never`;
+ * `regpub` public on `regpub` (published, Access Level registered); `unpub`
+ * public on `unpub` (published, unpublished in DL5); `free` on no record.
+ * Publications reuse the first existing author, topic and type; ID locale;
+ * publishedAt 2004 so they never lead the homepage. The Owner guard runs
+ * before any fixture is written and after cleanup.
+ *
+ * Signed URLs are bearer credentials: assertions and diagnostics never print
+ * a Location or a URL, only statuses, hosts as booleans and header names.
+ */
+type PubData = RequiredDataFromCollectionSlug<"publications">;
+type Level = PublicationFile["accessLevel"];
+
+const AREA = "downloads";
+const PREFIX = areaPrefix(AREA);
+const LABEL = areaLabel(AREA);
+const EDITOR_EMAIL = areaEmail(AREA, "editor");
+const PUBLISHED_AT = "2004-02-05T03:00:00.000Z";
+/** Larger than any id in the database, inside the Postgres integer range. */
+const UNKNOWN_ID = "2147483647";
+const PANEL_FIELDS = ["accessLevel", "filesize", "id", "kind", "label", "language", "mimeType", "status"];
+const STORAGE_KEYS = ["url", "filename", "prefix", "_objectKey", "thumbnailURL"];
+
+const slug = (name: string) => `${PREFIX}${name}`;
+const fileName = (name: string) => `${PREFIX}${name}.pdf`;
+
+type Raw = { status: number; headers: Headers; bytes: Buffer };
+
+/** GET without following redirects; the URL is never printed. */
+async function rawGet(url: string, headers: Record<string, string> = {}): Promise<Raw> {
+  const response = await fetch(url, { headers, redirect: "manual" });
+  return { status: response.status, headers: response.headers, bytes: Buffer.from(await response.arrayBuffer()) };
+}
+
+/** `/api/files/{id}/download` on the test server. */
+function download(id: number | string, headers: Record<string, string> = {}): Promise<Raw> {
+  return rawGet(`${BASE_URL}/api/files/${id}/download`, headers);
+}
+
+function assertPrivateHeaders(result: Raw, label: string): void {
+  assert.equal(result.headers.get("cache-control"), "no-store", `${label}: Cache-Control`);
+  assert.equal(result.headers.get("x-robots-tag"), "noindex", `${label}: X-Robots-Tag`);
+}
+
+/** The one deny answer of the download route: 404 "Not Found", no Location, no-store + noindex. */
+function assertDenied(result: Raw, label: string): void {
+  assert.equal(result.status, 404, `${label}: HTTP ${result.status}`);
+  assert.equal(result.headers.get("location"), null, `${label}: Location set`);
+  assert.equal(result.bytes.toString("utf8"), "Not Found", `${label}: body`);
+  assertPrivateHeaders(result, label);
+}
+
+/** The host and path of a signed URL as booleans (never the URL itself). */
+function signedUrlFacts(location: string | null): { storageHost: boolean; bucketPath: boolean; ttl60: boolean } {
+  if (!location) return { storageHost: false, bucketPath: false, ttl60: false };
+  const url = new URL(location);
+  return {
+    storageHost: url.protocol === "https:" && url.host.endsWith(".storage.supabase.co"),
+    bucketPath: url.pathname.startsWith("/storage/v1/s3/publication-files/"),
+    ttl60: url.searchParams.get("X-Amz-Expires") === "60",
+  };
+}
+
+describe("publication files and public downloads (M3-08: private bucket, signed URL, access checks)", () => {
+  let payload: Payload | undefined;
+  let editor: User | undefined;
+  let editorToken: string | undefined;
+  const files = new Map<string, PublicationFile>();
+  const bytes = new Map<string, Buffer>();
+  const pubs = new Map<string, Publication>();
+
+  function p(): Payload {
+    if (!payload) throw new Error("Payload not initialised (before hook failed)");
+    return payload;
+  }
+
+  function editorUser(): User {
+    if (!editor) throw new Error("editor not created (before hook failed)");
+    return editor;
+  }
+
+  function token(): string {
+    if (!editorToken) throw new Error("editor login failed (before hook)");
+    return editorToken;
+  }
+
+  function file(name: string): PublicationFile {
+    const record = files.get(name);
+    if (!record) throw new Error(`file ${name} not created (before hook failed)`);
+    return record;
+  }
+
+  function pub(name: string): Publication {
+    const record = pubs.get(name);
+    if (!record) throw new Error(`publication ${name} not created (before hook failed)`);
+    return record;
+  }
+
+  /** Upload as the Editor through the Local API (access control on). `status` is sent to prove clients cannot set it. */
+  async function upload(name: string, accessLevel: Level, data = fixturePdf(`downloads ${name}`)): Promise<PublicationFile> {
+    const record = await p().create({
+      collection: "publication-files",
+      data: { label: `${LABEL}${name}`, kind: "full_document", language: "id", accessLevel, status: "failed" },
+      file: { data, mimetype: "application/pdf", name: fileName(name), size: data.length },
+      user: editorUser(),
+      overrideAccess: false,
+      depth: 0,
+    });
+    files.set(name, record);
+    bytes.set(name, data);
+    return record;
+  }
+
+  async function createPub(name: string, fileNames: string[], status: "published" | "draft", accessLevel: Level = "public"): Promise<Publication> {
+    const data: PubData = {
+      title: `${LABEL}${name}`,
+      slug: slug(name),
+      locale: "id",
+      translationGroup: await createGroup(p(), AREA, name),
+      summary: `${LABEL}ringkasan ${name}`,
+      publicationType: await firstId(p(), "publication-types"),
+      topics: [await firstId(p(), "topics")],
+      authors: [await firstId(p(), "authors")],
+      accessLevel,
+      publishedAt: PUBLISHED_AT,
+      files: fileNames.map((fileNameKey) => file(fileNameKey).id),
+    };
+    const record = await p().create({
+      collection: "publications",
+      data: { ...data, _status: status },
+      draft: status === "draft",
+      depth: 0,
+      overrideAccess: true,
+    });
+    pubs.set(name, record);
+    return record;
+  }
+
+  /** Location of a 307 of the download route (asserted), for one request. */
+  async function signedLocation(name: string): Promise<string> {
+    const result = await download(file(name).id);
+    assert.equal(result.status, 307, `download ${name}: HTTP ${result.status}`);
+    const location = result.headers.get("location");
+    assert.ok(location, `download ${name}: no Location`);
+    return location;
+  }
+
+  before(async (t) => {
+    payload = await getTestPayload();
+    hookNote(t, `cleanup at start removed ${formatCounts(await cleanupArea(payload, AREA))}`);
+    await assertOwnerIntact(payload);
+    await assertServerUp();
+
+    const secret = randomPassword();
+    editor = await p().create({ collection: "users", data: { email: EDITOR_EMAIL, password: secret, role: "editor" }, overrideAccess: true });
+    editorToken = await login(EDITOR_EMAIL, secret);
+
+    for (const [name, level] of [
+      ["a", "public"],
+      ["reg", "registered"],
+      ["sub", "subscriber"],
+      ["draft", "public"],
+      ["never", "public"],
+      ["regpub", "public"],
+      ["unpub", "public"],
+      ["free", "public"],
+    ] as const) {
+      await upload(name, level);
+    }
+    await createPub("live", ["a", "reg", "sub"], "published");
+    // Pending draft revision: `draft` is listed only in the latest version.
+    await p().update({
+      collection: "publications",
+      id: pub("live").id,
+      data: { files: [file("a").id, file("reg").id, file("sub").id, file("draft").id] },
+      draft: true,
+      depth: 0,
+      overrideAccess: true,
+    });
+    await createPub("never", ["never"], "draft");
+    await createPub("regpub", ["regpub"], "published", "registered");
+    await createPub("unpub", ["unpub"], "published");
+  });
+
+  after(async (t) => {
+    try {
+      if (payload) {
+        hookNote(t, `cleanup at end removed ${formatCounts(await cleanupArea(payload, AREA))}`);
+        await assertOwnerIntact(payload);
+        const left = await countLeftovers(payload, AREA);
+        if (totalOf(left) !== 0) throw new Error(`fixtures left after cleanup: ${formatCounts(left)}`);
+      }
+    } finally {
+      await closeTestPayload(payload);
+    }
+  });
+
+  // ------------------------------------------------------------ upload rules
+  test("DL1 an Editor uploads a PDF through the Local API: stored as ready (client status ignored), PDF, size, fixture name", () => {
+    const a = file("a");
+    assert.equal(a.status, "ready", "status is system-set");
+    assert.equal(a.mimeType, "application/pdf");
+    assert.equal(a.filesize, bytes.get("a")?.length);
+    assert.equal(a.filename, fileName("a"));
+    assert.equal(a.accessLevel, "public");
+    assert.equal(file("reg").accessLevel, "registered");
+    assert.equal(file("sub").accessLevel, "subscriber");
+  });
+
+  test("DL2 content check: non-PDF bytes named .pdf, a PDF header without trailer, PNG bytes claimed as PDF, and text/plain are refused", async () => {
+    const cases: [string, Buffer, string, string][] = [
+      ["text bytes as .pdf", Buffer.from("[FIXTURE] not a pdf at all\n".repeat(20)), "application/pdf", fileName("bad-text")],
+      ["%PDF- header without xref/%%EOF", Buffer.from(`%PDF-1.4\n${"[FIXTURE] x\n".repeat(50)}`), "application/pdf", fileName("bad-trailer")],
+      [
+        "PNG bytes claimed as PDF",
+        Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4a20000000049454e44ae426082", "hex"),
+        "application/pdf",
+        fileName("bad-png"),
+      ],
+      ["text/plain", Buffer.from("[FIXTURE] plain text\n"), "text/plain", `${PREFIX}bad-plain.txt`],
+    ];
+    for (const [label, data, mimetype, name] of cases) {
+      await assert.rejects(
+        async () =>
+          p().create({
+            collection: "publication-files",
+            data: { label: `${LABEL}${label}`, kind: "other", language: "id", accessLevel: "public", status: "ready" },
+            file: { data, mimetype, name, size: data.length },
+            user: editorUser(),
+            overrideAccess: false,
+            depth: 0,
+          }),
+        (error: unknown) => error instanceof Error && error.name === "ValidationError",
+        label,
+      );
+    }
+    const stored = await p().find({ collection: "publication-files", where: { filename: { like: `${PREFIX}bad-` } }, overrideAccess: true, depth: 0 });
+    assert.equal(stored.totalDocs, 0, "no record for a refused file");
+  });
+
+  test("DL3 accessLevel is required and has no default: missing or unknown value refused", async () => {
+    const data = fixturePdf("downloads no level");
+    for (const [label, level] of [["missing", undefined], ["unknown", "staff"]] as const) {
+      await assert.rejects(
+        async () =>
+          p().create({
+            collection: "publication-files",
+            data: { label: `${LABEL}${label}`, kind: "other", language: "id", ...(level ? { accessLevel: level } : {}) } as never,
+            file: { data, mimetype: "application/pdf", name: fileName(`no-level-${label}`), size: data.length },
+            user: editorUser(),
+            overrideAccess: false,
+            depth: 0,
+          }),
+        (error: unknown) => error instanceof Error && error.name === "ValidationError" && JSON.stringify(error).includes("accessLevel"),
+        label,
+      );
+    }
+  });
+
+  // ------------------------------------------------------------ the download route
+  test("DL4 public file on a published + public record: 307 to a 60 s signed URL of the bucket; the URL gives the same PDF", async (t) => {
+    const result = await download(file("a").id);
+    assert.equal(result.status, 307, `HTTP ${result.status}`);
+    assertPrivateHeaders(result, "307");
+    assert.equal(result.bytes.length, 0, "no body with the redirect");
+    const location = result.headers.get("location");
+    assert.deepEqual(signedUrlFacts(location), { storageHost: true, bucketPath: true, ttl60: true }, "signed URL facts");
+    const object = await rawGet(location as string);
+    assert.equal(object.status, 200, `signed URL: HTTP ${object.status}`);
+    assert.equal(object.headers.get("content-type"), "application/pdf");
+    assert.equal(Buffer.compare(object.bytes, bytes.get("a") as Buffer), 0, "same bytes as uploaded");
+    // OBSERVED (DECISIONS §2.14 item 6): the adapter signs Bucket + Key only.
+    t.diagnostic(`OBSERVED storage Content-Disposition: ${object.headers.get("content-disposition") ?? "(none)"}`);
+    t.diagnostic(`OBSERVED storage Cache-Control: ${object.headers.get("cache-control") ?? "(none)"}`);
+  });
+
+  test("DL5 every denial is the same 404: unknown/invalid id, draft-only, never published, registered record, restricted file, unattached, unpublished", async () => {
+    for (const id of [UNKNOWN_ID, "abc", "0", "01", "-1", "1.5", "2147483648", "1e3"]) {
+      assertDenied(await download(id), `id ${id}`);
+    }
+    const denied: [string, string][] = [
+      ["draft", "file only in a pending draft revision"],
+      ["never", "record never published"],
+      ["regpub", "published record with Access Level registered"],
+      ["reg", "registered file on a public record"],
+      ["sub", "subscriber file on a public record"],
+      ["free", "file on no record"],
+    ];
+    for (const [name, label] of denied) {
+      assertDenied(await download(file(name).id), label);
+    }
+    // A staff session gives no bypass on the public route (DEC-009).
+    assertDenied(await download(file("draft").id, { Authorization: `JWT ${token()}` }), "Editor token, draft-only file");
+
+    assert.equal((await download(file("unpub").id)).status, 307, "unpub before unpublish");
+    await p().update({ collection: "publications", id: pub("unpub").id, data: { _status: "draft" }, depth: 0, overrideAccess: true });
+    assertDenied(await download(file("unpub").id), "after unpublish (next request)");
+  });
+
+  test("DL6 REST: anonymous list, by id and /file/<name> are refused; the Editor gets a signed 302 on /file/<name>", async () => {
+    for (const path of [
+      "/api/publication-files",
+      `/api/publication-files/${file("a").id}`,
+      `/api/publication-files/file/${fileName("a")}`,
+      `/api/publication-files/file/${fileName("reg")}`,
+    ]) {
+      const result = await rawGet(`${BASE_URL}${path}`);
+      assert.equal(result.status >= 200 && result.status < 400, false, `anonymous ${path}: HTTP ${result.status}`);
+      assert.equal(result.headers.get("location"), null, `anonymous ${path}: Location`);
+      assert.equal(result.bytes.includes(Buffer.from("%PDF-")), false, `anonymous ${path}: PDF bytes`);
+    }
+    const auth = { Authorization: `JWT ${token()}` };
+    const staff = await rawGet(`${BASE_URL}/api/publication-files/file/${fileName("reg")}`, auth);
+    assert.equal(staff.status, 302, `Editor /file/<reg>: HTTP ${staff.status}`);
+    assert.deepEqual(signedUrlFacts(staff.headers.get("location")), { storageHost: true, bucketPath: true, ttl60: true }, "staff signed URL");
+    const list = await rawGet(`${BASE_URL}/api/publication-files/${file("sub").id}`, auth);
+    assert.equal(list.status, 200, `Editor GET by id (subscriber file): HTTP ${list.status}`);
+  });
+
+  test("DL7 direct storage URLs of a private object are not readable: public object URL, unauthenticated object URL, unsigned S3 URL", async () => {
+    const appUrl = (process.env.APP_SUPABASE_URL ?? "").replace(/\/+$/, "");
+    assert.ok(appUrl, "APP_SUPABASE_URL");
+    const ref = new URL(appUrl).hostname.split(".")[0];
+    const key = encodeURIComponent(fileName("a"));
+    const urls: [string, string][] = [
+      ["public object URL", `${appUrl}/storage/v1/object/public/publication-files/${key}`],
+      ["object URL without auth", `${appUrl}/storage/v1/object/publication-files/${key}`],
+      ["unsigned S3 URL", `https://${ref}.storage.supabase.co/storage/v1/s3/publication-files/${key}`],
+    ];
+    for (const [label, url] of urls) {
+      const result = await rawGet(url);
+      assert.equal(result.status === 200 || result.status === 206, false, `${label}: HTTP ${result.status}`);
+      assert.equal(result.bytes.includes(Buffer.from("%PDF-")), false, `${label}: PDF bytes`);
+    }
+  });
+
+  // ------------------------------------------------------------ decision 8 and one record per file
+  test("DL8 a live file cannot be replaced or deleted; a draft-only one can; an Access Level edit applies on the next request", async () => {
+    const replacement = fixturePdf("downloads replacement");
+    const replaceAs = (name: string, data: Buffer) =>
+      p().update({
+        collection: "publication-files",
+        id: file(name).id,
+        data: {},
+        file: { data, mimetype: "application/pdf", name: fileName(name), size: data.length },
+        user: editorUser(),
+        overrideAccess: false,
+        depth: 0,
+      });
+    const refused = (pattern: RegExp) => (error: unknown) => error instanceof Error && pattern.test(error.message);
+    await assert.rejects(async () => replaceAs("a", replacement), refused(/tidak dapat diganti/), "replace a live file");
+    await assert.rejects(
+      async () => p().delete({ collection: "publication-files", id: file("a").id, user: editorUser(), overrideAccess: false }),
+      refused(/tidak dapat dihapus/),
+      "delete a live file",
+    );
+    const still = await rawGet(await signedLocation("a"));
+    assert.equal(Buffer.compare(still.bytes, bytes.get("a") as Buffer), 0, "live content unchanged");
+
+    // Draft-only (pending revision of `live`, and the never-published record): allowed.
+    const replaced = await replaceAs("draft", replacement);
+    assert.equal(replaced.filesize, replacement.length, "draft-only file replaced");
+    await p().delete({ collection: "publication-files", id: file("never").id, user: editorUser(), overrideAccess: false });
+    files.delete("never");
+
+    // Label and Access Level edits apply at once (no versions).
+    const setLevel = (accessLevel: Level) =>
+      p().update({ collection: "publication-files", id: file("a").id, data: { accessLevel }, user: editorUser(), overrideAccess: false, depth: 0 });
+    await setLevel("registered");
+    try {
+      assertDenied(await download(file("a").id), "accessLevel registered on a live file");
+    } finally {
+      await setLevel("public");
+    }
+    assert.equal((await download(file("a").id)).status, 307, "back to public");
+  });
+
+  test("DL9 a file belongs to one publication record: another record's main row or latest version refuses the save", async () => {
+    const attach = (name: string, fileNames: string[], draft: boolean) =>
+      p().update({
+        collection: "publications",
+        id: pub(name).id,
+        data: { files: fileNames.map((key) => file(key).id) },
+        draft,
+        depth: 0,
+        overrideAccess: true,
+      });
+    const isFilesError = (error: unknown) => error instanceof Error && error.name === "ValidationError" && JSON.stringify(error).includes("files");
+    await assert.rejects(async () => attach("regpub", ["regpub", "a"], true), isFilesError, "`a` is live on `live`");
+    await assert.rejects(async () => attach("regpub", ["regpub", "draft"], true), isFilesError, "`draft` is in the latest version of `live`");
+    await assert.rejects(async () => attach("regpub", ["regpub", "regpub"], true), isFilesError, "the same file twice");
+    await attach("regpub", ["regpub", "free"], true);
+    await assert.rejects(async () => attach("unpub", ["unpub", "free"], true), isFilesError, "`free` is now in the latest version of `regpub`");
+  });
+
+  test("DL10 /api/media/file/* answers 404 + noindex + no-store (was HTTP 500)", async () => {
+    for (const path of ["/api/media/file/x", "/api/media/file/x.png", "/api/media/file/a/b.pdf"]) {
+      const result = await rawGet(`${BASE_URL}${path}`);
+      assert.equal(result.status, 404, `${path}: HTTP ${result.status}`);
+      assertPrivateHeaders(result, path);
+    }
+  });
+
+  test("DL11 the signed URL expires: 200 at once, refused after 61 s", async () => {
+    const location = await signedLocation("a");
+    assert.equal((await rawGet(location)).status, 200, "readable at once");
+    await new Promise((resolve) => setTimeout(resolve, 61_000));
+    const expired = await rawGet(location);
+    assert.equal(expired.status >= 400 && expired.status < 500, true, `after 61 s: HTTP ${expired.status}`);
+    assert.equal(expired.bytes.includes(Buffer.from("%PDF-")), false, "no PDF bytes after expiry");
+  });
+
+  // ------------------------------------------------------------ client uploads (browser → bucket)
+  test("DL12 client upload: presign is staff-only; a PDF PUT + create gives a ready file; non-PDF bytes are refused on create; a text/plain PUT is refused by the bucket", async (t) => {
+    type Signed = { url: string; filename: string; headers: Record<string, string>; clientUploadContext: { prefix?: string; _objectKey?: string; signedReceipt: string } };
+    const presign = async (filename: string, data: Buffer, mimeType: string, auth: boolean) => {
+      const response = await fetch(`${BASE_URL}/api/storage-s3-generate-signed-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(auth ? { Authorization: `JWT ${token()}` } : {}) },
+        body: JSON.stringify({ collectionSlug: "publication-files", filename, filesize: data.length, mimeType }),
+      });
+      return { status: response.status, body: (await response.json().catch(() => ({}))) as Signed };
+    };
+    const put = async (signed: Signed, data: Buffer) =>
+      (await fetch(signed.url, { method: "PUT", headers: signed.headers, body: new Uint8Array(data) })).status;
+    const createFromUpload = async (signed: Signed, mimeType: string, size: number) => {
+      const form = new FormData();
+      form.append("_payload", JSON.stringify({ label: `${LABEL}client ${signed.filename}`, kind: "appendix", language: "en", accessLevel: "public" }));
+      form.append(
+        "file",
+        JSON.stringify({
+          clientUploadContext: { prefix: signed.clientUploadContext.prefix, signedReceipt: signed.clientUploadContext.signedReceipt },
+          collectionSlug: "publication-files",
+          filename: signed.filename,
+          mimeType,
+          size,
+        }),
+      );
+      const response = await fetch(`${BASE_URL}/api/publication-files`, { method: "POST", headers: { Authorization: `JWT ${token()}` }, body: form });
+      return { status: response.status, body: (await response.json().catch(() => ({}))) as { doc?: PublicationFile } };
+    };
+    /** Signed GET of a stored object, through the app's signer (the URL is never printed). */
+    const objectStatus = async (signed: Signed) =>
+      (
+        await rawGet(
+          await signedFileUrl(p(), { id: 0, filename: signed.filename, prefix: signed.clientUploadContext.prefix ?? "", _objectKey: signed.clientUploadContext._objectKey }),
+        )
+      ).status;
+    /** Removes a bucket object that has no record, with the storage plugin's own delete. */
+    const deleteOrphan = async (signed: Signed) => {
+      const config = p().collections["publication-files"].config;
+      const hooks = config.hooks.afterDelete ?? [];
+      const pluginDelete = hooks[hooks.length - 1];
+      assert.ok(pluginDelete, "storage plugin afterDelete hook");
+      const req = (await createLocalReq({}, p())) as PayloadRequest;
+      const doc = { id: 0, filename: signed.filename, prefix: signed.clientUploadContext.prefix ?? "", _objectKey: signed.clientUploadContext._objectKey };
+      await pluginDelete({ collection: config, context: {}, doc, id: 0, req } as never);
+    };
+
+    const pdf = fixturePdf("downloads client upload");
+    assert.equal((await presign(fileName("client"), pdf, "application/pdf", false)).status, 403, "anonymous presign refused");
+
+    const signed = await presign(fileName("client"), pdf, "application/pdf", true);
+    assert.equal(signed.status, 200, `Editor presign: HTTP ${signed.status}`);
+    assert.equal(new URL(signed.body.url).host.endsWith(".storage.supabase.co"), true, "presigned PUT goes to the storage host");
+    assert.equal(signed.body.filename.startsWith(PREFIX), true, "fixture object name");
+    assert.equal(await put(signed.body, pdf), 200, "PUT of the PDF");
+    const created = await createFromUpload(signed.body, "application/pdf", pdf.length);
+    assert.equal(created.status, 201, `create from the client upload: HTTP ${created.status}`);
+    assert.equal(created.body.doc?.status, "ready");
+    const staff = await rawGet(`${BASE_URL}/api/publication-files/file/${encodeURIComponent(signed.body.filename)}`, { Authorization: `JWT ${token()}` });
+    assert.equal(staff.status, 302, `staff file URL: HTTP ${staff.status}`);
+    const object = await rawGet(staff.headers.get("location") as string);
+    assert.equal(Buffer.compare(object.bytes, pdf), 0, "stored object = uploaded PDF");
+
+    // Non-PDF bytes declared as PDF: the bucket takes the PUT, Payload refuses the record (content check).
+    const fake = Buffer.from("[FIXTURE] not a pdf\n".repeat(40));
+    const fakeSigned = await presign(fileName("client-fake"), fake, "application/pdf", true);
+    assert.equal(fakeSigned.status, 200, `presign fake: HTTP ${fakeSigned.status}`);
+    try {
+      t.diagnostic(`OBSERVED PUT of non-PDF bytes as application/pdf: HTTP ${await put(fakeSigned.body, fake)}`);
+      const refused = await createFromUpload(fakeSigned.body, "application/pdf", fake.length);
+      assert.equal(refused.status, 400, `create from non-PDF bytes: HTTP ${refused.status}`);
+      t.diagnostic(`OBSERVED object left in the bucket after the refused create: HTTP ${await objectStatus(fakeSigned.body)} (known limitation, no orphan cleanup in Payload 3.93.0)`);
+    } finally {
+      await deleteOrphan(fakeSigned.body);
+    }
+    assert.equal(await objectStatus(fakeSigned.body), 404, "orphan object removed by the test");
+
+    // text/plain: Payload signs any valid MIME type; the bucket's allowlist refuses the PUT.
+    const text = Buffer.from("[FIXTURE] plain\n");
+    const textSigned = await presign(`${PREFIX}client-text.txt`, text, "text/plain", true);
+    t.diagnostic(`OBSERVED presign text/plain: HTTP ${textSigned.status}`);
+    if (textSigned.status === 200) {
+      const status = await put(textSigned.body, text);
+      t.diagnostic(`OBSERVED PUT text/plain to the bucket: HTTP ${status}`);
+      if (status >= 200 && status < 300) await deleteOrphan(textSigned.body);
+      assert.equal(status >= 400, true, `PUT text/plain to the bucket: HTTP ${status}`);
+    } else {
+      assert.equal(textSigned.status, 400, `presign text/plain: HTTP ${textSigned.status}`);
+    }
+  });
+
+  // ------------------------------------------------------------ the public read path and the staff preview
+  test("DL13 detail read: anonymous gets only the public ready file, with panel fields and no storage keys; staff preview gets the draft list, filtered the same way", async (t) => {
+    const doc = await findPublicPublication(p(), "id", slug("live"));
+    assert.ok(doc, "live record readable anonymously");
+    const raw = (doc.files ?? []) as unknown[];
+    t.diagnostic(`OBSERVED anonymous files relation: ${raw.map((value) => (value === null ? "null" : typeof value === "object" ? "doc" : typeof value)).join(",")}`);
+    const populated = raw.filter((value): value is Record<string, unknown> => value !== null && typeof value === "object");
+    assert.deepEqual(populated.map((value) => value.id), [file("a").id], "only the public ready file is populated");
+    for (const value of populated) {
+      assert.deepEqual(Object.keys(value).sort(), PANEL_FIELDS, "panel fields only");
+      for (const key of STORAGE_KEYS) assert.equal(key in value, false, `${key} in the anonymous read`);
+    }
+    for (const value of raw) {
+      if (typeof value === "number") assert.notEqual(value, file("a").id);
+    }
+    assert.equal(raw.includes(file("draft").id), false, "draft-only file not in the live version");
+    assert.deepEqual(toPublicationDetail(doc, "id").files.map((item) => item.id), [file("a").id], "view model");
+    const view = JSON.stringify(toPublicationDetail(doc, "id"));
+    for (const name of ["a", "reg", "sub", "draft"]) {
+      assert.equal(view.includes(fileName(name)), false, `file name of ${name} in the view model`);
+    }
+
+    const staff = { ...editorUser(), collection: "users" } as unknown as StaffUser;
+    const draft = await findDraftPublication(p(), "id", slug("live"), staff);
+    assert.ok(draft, "staff reads the latest version");
+    const staffFiles = (draft.files ?? []) as unknown[];
+    assert.equal(staffFiles.every((value) => value !== null && typeof value === "object"), true, "staff read populates every file");
+    assert.deepEqual(toPublicationDetail(draft, "id").files.map((item) => item.id), [file("a").id, file("draft").id], "preview: public files of the draft, in order");
+  });
+});

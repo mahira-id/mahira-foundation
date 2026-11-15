@@ -126,7 +126,7 @@ describe("lib/publications/detail-view.ts", () => {
 });
 
 describe("lib/cms/publication-detail-query.ts", () => {
-  test("DTU5 findPublicPublication: anonymous, no draft, no fallback, locale + slug, limit 1, names only, no staff field", async () => {
+  test("DTU5 findPublicPublication: anonymous, no draft, no fallback, locale + slug, limit 1, names only, no staff field, file panel fields only (M3-08)", async () => {
     const found = recordingFind([{ id: 1, slug: "pub" }]);
     assert.deepEqual(await findPublicPublication(found.payload, "en", "pub"), { id: 1, slug: "pub" });
     assert.equal(found.calls.length, 1);
@@ -145,6 +145,7 @@ describe("lib/cms/publication-detail-query.ts", () => {
       "accessLevel",
       "authors",
       "coverImage",
+      "files",
       "locale",
       "publicationType",
       "publishedAt",
@@ -154,10 +155,12 @@ describe("lib/cms/publication-detail-query.ts", () => {
       "topics",
       "translationGroup",
     ]);
+    // M3-08: files with the panel fields only, never url/filename/prefix/_objectKey.
     assert.deepEqual(args.populate, {
       "publication-types": { name: true },
       topics: { name: true },
       authors: { displayName: true },
+      "publication-files": { label: true, kind: true, language: true, accessLevel: true, status: true, filesize: true, mimeType: true },
     });
 
     const none = recordingFind([]);

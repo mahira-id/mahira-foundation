@@ -74,6 +74,7 @@ export interface Config {
     'publication-types': PublicationType;
     'translation-groups': TranslationGroup;
     media: Media;
+    'publication-files': PublicationFile;
     'publication-slugs': PublicationSlug;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -89,6 +90,7 @@ export interface Config {
     'publication-types': PublicationTypesSelect<false> | PublicationTypesSelect<true>;
     'translation-groups': TranslationGroupsSelect<false> | TranslationGroupsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'publication-files': PublicationFilesSelect<false> | PublicationFilesSelect<true>;
     'publication-slugs': PublicationSlugsSelect<false> | PublicationSlugsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -184,6 +186,10 @@ export interface Publication {
    */
   liveOnSite?: ('yes' | 'no') | null;
   coverImage?: (number | null) | Media;
+  /**
+   * File PDF publikasi ini, sesuai urutan tampil. Satu file hanya untuk satu publikasi. Hanya file public yang tampil dan dapat diunduh pengunjung.
+   */
+  files?: (number | PublicationFile)[] | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -265,6 +271,40 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-files".
+ */
+export interface PublicationFile {
+  id: number;
+  /**
+   * Nama file yang tampil di halaman publikasi, mis. "Laporan lengkap".
+   */
+  label: string;
+  kind: 'preview' | 'full_document' | 'appendix' | 'dataset' | 'supplementary' | 'other';
+  language: 'id' | 'en';
+  /**
+   * Akses efektif = level yang lebih ketat antara publikasi dan file. File registered/subscriber belum tampil di situs sampai M5.
+   */
+  accessLevel: 'public' | 'registered' | 'subscriber';
+  /**
+   * Diisi sistem. Hanya file berstatus ready yang dapat diunduh.
+   */
+  status: 'pending' | 'ready' | 'failed' | 'quarantined' | 'archived';
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "publication-slugs".
  */
 export interface PublicationSlug {
@@ -326,6 +366,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'publication-files';
+        value: number | PublicationFile;
       } | null)
     | ({
         relationTo: 'publication-slugs';
@@ -415,6 +459,7 @@ export interface PublicationsSelect<T extends boolean = true> {
   everPublished?: T;
   liveOnSite?: T;
   coverImage?: T;
+  files?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -469,6 +514,30 @@ export interface TranslationGroupsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-files_select".
+ */
+export interface PublicationFilesSelect<T extends boolean = true> {
+  label?: T;
+  kind?: T;
+  language?: T;
+  accessLevel?: T;
+  status?: T;
   prefix?: T;
   _objectKey?: T;
   updatedAt?: T;

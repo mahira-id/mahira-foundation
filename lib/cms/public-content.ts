@@ -5,6 +5,8 @@ import { getPayload } from "payload";
 import { cache } from "react";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
 import { findPublicPublication, findPublicRef, findPublicTitle } from "@/lib/cms/publication-detail-query";
+import { findLivePublicationOfFile, findPublicFile } from "@/lib/cms/publication-file-query";
+import { FileStorageError, signedFileUrl, type StoredFile } from "@/lib/cms/publication-file-storage";
 import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
 import { findSearchRanks } from "@/lib/cms/publication-search-query";
 import { findSlugOwner } from "@/lib/cms/publication-slug-query";
@@ -14,6 +16,7 @@ import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } fr
 import type { Locale } from "@/lib/i18n/locales";
 import { getPublicationAlternates } from "@/lib/publications/alternates";
 import { toPublicationDetail, type PublicationDetail } from "@/lib/publications/detail-view";
+import { isPublicDownload } from "@/lib/publications/file-access";
 import {
   buildFacets,
   inIdOrder,
@@ -57,6 +60,11 @@ export type { SitemapPublication };
  * then the target record as an anonymous visitor, so it only names a URL
  * visitors can open; the sitemap and the Open Graph title read published +
  * public records like the detail page.
+ *
+ * File downloads (M3-08, DECISIONS §2.14): the detail page gets the public
+ * files without any storage location (toPublicationDetail), and the
+ * download route asks getPublicFileDownload, which reads the file and its
+ * publication anonymously and only then signs a 60 s URL.
  *
  * Returns `{ status: "off" }` (detail, redirect, title: `null`; sitemap:
  * `[]`) when the CMS is off (see payload/env.ts).
@@ -132,8 +140,8 @@ export const getPublicationIndex = cache(
 
 /**
  * Thrown by getPublicationDetail, getPublicationRedirect,
- * getSitemapPublications and getPublicPublicationTitle when the CMS read
- * fails. Fixed message and no cause, so nothing of the database error (host,
+ * getSitemapPublications, getPublicPublicationTitle and
+ * getPublicFileDownload when the CMS read fails. Fixed message and no cause, so nothing of the database error (host,
  * user) reaches the page or the logs of Next.js.
  */
 export class PublicationReadError extends Error {
@@ -227,6 +235,42 @@ export const getSitemapPublications = cache(async (): Promise<SitemapPublication
     throw new PublicationReadError();
   }
 });
+
+/**
+ * Signed download URL of a publication file, or null (M3-08, DECISIONS
+ * §2.14 items 2, 3 and 6; route app/api/files/[fileId]/download). Checks on
+ * the server, as an anonymous visitor, on every request:
+ * 1. the file is readable anonymously: ready + public (PUBLIC_FILE_READ);
+ * 2. the live version of a publication record lists it and that record is
+ *    published + public (PUBLIC_PUBLICATION_READ; `draft: false`, so a file
+ *    only in a draft finds nothing and an unpublish applies at once);
+ * 3. the file is a ready PDF and the stricter of both levels is public
+ *    (isPublicDownload);
+ * then signs a GET URL valid for 60 s through the storage adapter. Null for
+ * every denial. A failed read is logged with the error name only and throws
+ * PublicationReadError; a failed signing throws FileStorageError. The URL is
+ * never logged. Not cached: every request runs the checks.
+ */
+export async function getPublicFileDownload(fileId: number): Promise<string | null> {
+  if (!isCmsEnabled()) return null;
+  let checked: { payload: Awaited<ReturnType<typeof getPayload>>; file: StoredFile } | null;
+  try {
+    const payload = await getPayload({ config });
+    const file = await findPublicFile(payload, fileId);
+    const publication = file ? await findLivePublicationOfFile(payload, fileId) : null;
+    checked = file && publication && isPublicDownload(publication.accessLevel, file) ? { payload, file } : null;
+  } catch (error) {
+    console.error("[file-download] CMS read failed:", readErrorLabel(error));
+    throw new PublicationReadError();
+  }
+  if (!checked) return null;
+  try {
+    return await signedFileUrl(checked.payload, checked.file);
+  } catch (error) {
+    console.error("[file-download] signing failed:", readErrorLabel(error));
+    throw new FileStorageError();
+  }
+}
 
 /**
  * Title of the published + public record of this locale with this slug, or

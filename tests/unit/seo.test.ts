@@ -30,6 +30,7 @@ function publication(overrides: Partial<PublicationDetail> = {}): PublicationDet
     dateLabel: null,
     year: null,
     cover: null,
+    files: [],
     ...overrides,
   };
 }
