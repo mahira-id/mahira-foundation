@@ -142,6 +142,20 @@ Perilaku (DECISIONS §2.11; PAGE-SPECIFICATIONS §3–§4): indeks `/{locale}/pu
 
 *Hasil (laporan Owner 2026-11-14):* semua langkah lulus di Preview `dpl_AF4gQ7SSY44TAqfMiPBVBjqnZUfi` (head `7c51bc8`, PR #17), kecuali tanggapan pada butir 6: "Keluar dari pratinjau" pada draf yang belum pernah terbit membuka halaman not-found bawaan Next, yang diubah di M3-05b. Langkah 5 dan 7 dengan hasil yang diharapkan sejak M3-05b lulus uji Owner 2026-11-14 di Preview `dpl_EH3fUxnt8jchEgDXyMyAoGP3N8Ph` (`mahira-foundation-2uum99ifv-mahiraindodev-2070.vercel.app`, head `3c26c56`): `/id/publications/tidak-ada` dan `/en/publications/tidak-ada` menampilkan halaman not-found Mahira sesuai bahasa; keluar dari pratinjau draf yang belum pernah terbit kembali ke halaman edit di `/admin`, dan dari publikasi terbit ke halaman detail publik tanpa banner.
 
+#### SEO (M3-07): langkah Owner di Preview
+
+Perilaku (DEC-021, DECISIONS §2.13; PAGE-SPECIFICATIONS §2–§4, IA-ROUTING-I18N §6, §8): semua canonical, hreflang, `og:url`, dan `og:image` memakai `https://mahira.id`, juga di Preview. Akibatnya gambar Open Graph indeks dan detail yang dirujuk dari Preview (`https://mahira.id/og/...`) menjawab 404 selama CMS mati di Production; gambar dicek langsung di URL Preview (langkah 5). Preview tetap tidak diindeks: header `X-Robots-Tag: noindex` dari Vercel, `robots.txt` `Disallow: /`, dan Vercel Authentication. Tidak ada perubahan `proxy.ts` atau gerbang CMS; Production (CMS mati) hanya punya `/` di sitemap dan `robots.txt` `Allow: /` + `Sitemap: https://mahira.id/sitemap.xml`.
+
+**Langkah Owner (sesudah orchestrator mem-push branch `feat/m3-07-seo` dan deployment Preview-nya Ready; `<URL>` = URL Preview):**
+
+1. Buka `view-source:<URL>/id/publications/<slug publikasi publik>` (atau DevTools → **Elements**, cari `canonical`). Hasil yang diharapkan: `<link rel="canonical" href="https://mahira.id/id/publications/<slug>">`, `og:type` `article`, `og:locale` `id_ID`, `og:title` judul ID, `og:image` = cover atau `https://mahira.id/og/id/publications/<slug>`, `twitter:card` `summary_large_image`. `<link rel="alternate" hreflang="en">` hanya ada bila pasangan EN-nya terbit dan `public`; tanpa pasangan tidak ada `hreflang` di `<link>` (tautan switcher bahasa boleh tetap memakai atribut `hrefLang`).
+2. Buka `view-source:<URL>/id/publications` dan `view-source:<URL>/id/publications?q=ekonomi`. Hasil yang diharapkan: tanpa `q`, canonical `https://mahira.id/id/publications` dan hreflang `id`/`en`; dengan `q`, `<meta name="robots" content="noindex, follow">` tanpa canonical dan tanpa hreflang.
+3. Buka `<URL>/sitemap.xml`. Hasil yang diharapkan: `https://mahira.id/`, `/id/publications`, `/en/publications`, dan detail publikasi published + `public` kedua bahasa (dengan `lastmod`); tidak ada draft, publikasi unpublished, atau `registered`/`subscriber`.
+4. Buka `<URL>/robots.txt` dan, di DevTools → **Network**, header respons halaman mana pun. Hasil yang diharapkan: `User-Agent: *` + `Disallow: /` tanpa baris `Sitemap`; header `x-robots-tag: noindex` (dari Vercel).
+5. Buka `<URL>/og/site`, `<URL>/og/id/publications`, dan `<URL>/og/id/publications/<slug publikasi publik>`. Hasil yang diharapkan: gambar PNG 1200×630 dengan logo Mahira dan judul dalam Hanken Grotesk; slug draft atau `registered` menjawab 404.
+6. Redirect slug lama (M3-07 item 7): di `/admin`, pada publikasi uji (bukan konten nyata), ganti slug lalu **Publish**; buka URL slug lama. Hasil yang diharapkan: browser pindah ke URL slug baru. Kembalikan slug dan **Publish** lagi bila publikasi itu perlu slug lamanya.
+7. Bila ada langkah yang gagal: catat waktu (UTC), URL, dan langkahnya; kirim cuplikan HTML atau header (tanpa `Cookie`) ke orchestrator.
+
 #### Langkah Owner dari jawaban 2026-11-10 (M3-02)
 
 **P7 C — matikan Data API di `mahira-cms`.** Payload tidak memakai Data API; ia tersambung langsung ke Postgres lewat pooler. Project APP `mahira.id` jangan diubah (Storage dipakai Media).

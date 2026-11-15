@@ -25,7 +25,7 @@ Detail lengkap ada di `docs/decisions/DECISIONS.md` §2.1 (DEC-005, DEC-021).
 ## Still open (not decided by this ADR)
 
 - ~~Default locale sebagai setting bernama (homepage `/` tetap berbahasa Indonesia tanpa redirect, tetapi tidak ada keputusan "default locale" untuk fungsi lain).~~ **Dijawab Owner 2026-11-10** (DECISIONS §2.4 P4c): konstanta `DEFAULT_LOCALE = "id"` (`lib/i18n/locales.ts`) hanya untuk `/` dan `localization.defaultLocale` Payload; tanpa redirect dan tanpa fallback konten. Diterapkan di M3-01.
-- Kanonikalisasi query string selain aturan `noindex`.
+- ~~Kanonikalisasi query string selain aturan `noindex`.~~ **Dijawab Owner 2026-11-15** (DECISIONS §2.13 keputusan 2): halaman 1 indeks tanpa `?page`, `?page=n` tanpa filter dapat diindeks dengan canonical ke dirinya sendiri, URL dengan `q` atau filter `noindex, follow` tanpa canonical. Usulan planner (PP10): `?page=1` dan parameter tak dikenal (mis. `?utm_source=`) memakai canonical URL dasar. Domain canonical `https://mahira.id` (keputusan 1). Diterapkan di M3-07.
 - Segmen route lain di bawah ini: topics, learning-hub, about, account, dan mount path admin.
 - Kapan slug lama dianggap retired (aturan "permanent redirect only after content owner confirms") untuk konten produksi. Sejak M3-07 (riwayat slug, DATA-MODEL §4.8) slug lama disimpan dan di-redirect sampai slug itu diterbitkan record lain (URL pindah ke record itu) atau record dihapus; aturan retired yang dikonfirmasi pemilik konten tetap belum diputuskan.
 
@@ -76,6 +76,8 @@ Status validasi (2026-11-10): dijalankan di M2-02 pada branch spike/m2-payload-p
 
 Status validasi (2026-11-15, M3-07, branch `feat/m3-07-seo`): "renamed slug redirect" diuji di `tests/integration/slug-redirect.test.ts` RD1–RD8 (satu hop untuk rantai A → B → C, locale sama saja, tanpa loop, slug yang dipakai ulang, record tujuan tidak tayang atau terbatas) dan `tests/unit/slug-redirect.test.ts` SLU1–SLU7. Aturan "Slug lama di-redirect dengan HTTP 308 dalam satu hop" terpenuhi sebagai 308 sungguhan hanya untuk user agent di daftar `htmlLimitedBots` Next (bawaan Next 16.4.4, misalnya Bingbot). User agent lain menerima HTTP 200 karena static shell route detail sudah terkirim (sama dengan amandemen DECISIONS §2.11 P7 A); redirect permanennya ada di payload RSC dan diikuti router browser, tanpa refresh meta, jadi tanpa JavaScript tidak ada pengalihan (IA-ROUTING-I18N §5 aturan 3; usulan planner PP5, DECISIONS §2.13). Status ADR tidak berubah.
 
+Status validasi (2026-11-15, M3-07, canonical/hreflang/sitemap): "canonical, hreflang pairs, sitemap exclusion of private pages" diuji di `tests/integration/seo.test.ts` SE1–SE8 (canonical `https://mahira.id` ke dirinya sendiri di `/`, indeks, dan detail; hreflang timbal balik hanya untuk pasangan published + `public`, tanpa hreflang bila pasangan draft atau unpublished; URL dengan `q`/filter `noindex, follow` tanpa canonical; sitemap tanpa draft, unpublished, `registered`, `subscriber`), `tests/unit/seo.test.ts` SEU1–SEU11, dan gerbang `tests/build/env-gate-http.test.ts` G9 (sitemap hanya `/` saat CMS mati). Aturan "Canonical self-referencing; `hreflang` hanya jika pasangan terjemahan eligible; halaman search dan filter `noindex`" terpenuhi; tanpa `x-default` (DECISIONS §2.13 keputusan 3). Status ADR tidak berubah.
+
 ## Change history
 
 | Date | Change |
@@ -85,3 +87,4 @@ Status validasi (2026-11-15, M3-07, branch `feat/m3-07-seo`): "renamed slug redi
 | 2026-11-10 | Validation pointer to M2-02 results (SPIKE-001 §7.6, DECISIONS §2.3) added. Status unchanged. |
 | 2026-11-10 | "Still open" default-locale item marked answered by the Owner (DECISIONS §2.4 P4c); implemented in M3-01. Status unchanged. |
 | 2026-11-15 | M3-07: slug-history retention noted under "Still open" (retirement rule still open); validation of the old-slug 308 recorded, including the HTTP status per user agent. Status unchanged. |
+| 2026-11-15 | M3-07: query-string canonicalization item under "Still open" marked answered by the Owner (DECISIONS §2.13 decision 2); validation of canonical, hreflang and sitemap exclusion recorded. Status unchanged. |

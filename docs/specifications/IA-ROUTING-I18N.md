@@ -84,6 +84,12 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 - Do not canonicalize EN to ID merely because one translation is missing.
 - Draft, preview, account, internal, and non-public states must not be included in public sitemap output.
 
+**Implementasi M3-07 (DEC-021, DECISIONS §2.13 keputusan 1–3; `lib/seo/metadata.ts`):**
+- Domain canonical selalu `https://mahira.id` (`metadataBase` di kedua root layout), juga di Vercel Preview; Preview tetap `noindex` lewat header `X-Robots-Tag` Vercel, `Disallow: /`, dan Vercel Authentication (usulan planner PP9: tanpa meta/header tambahan dari aplikasi).
+- Canonical ke dirinya sendiri: `/` → `https://mahira.id`; indeks halaman 1 → `https://mahira.id/{locale}/publications` (tanpa `?page`, juga untuk `?page=1` dan parameter tak dikenal); `?page=n` tanpa filter → URL itu; detail publik → `https://mahira.id/{locale}/publications/{slug}`. URL indeks dengan `q`, filter, atau state `unknown-filter`/`page-not-found`/`error` `noindex, follow` tanpa canonical dan tanpa hreflang. Pratinjau, not-found, redirect slug lama, dan galat detail tanpa canonical.
+- hreflang: `/id/publications` ↔ `/en/publications` hanya di halaman 1; detail hanya bila record locale lain di Translation Group published + `public` (kedua arah, self termasuk). Homepage `/` tanpa hreflang (tidak ada padanan EN). Tanpa `x-default` (keputusan 3; baris `x-default` di atas tidak dipakai).
+- Tidak ada fallback locale: judul, deskripsi, dan gambar Open Graph hanya dari record locale route.
+
 ## 7. Search and taxonomy URL state
 
 Recommended query contract for publication listing:
@@ -111,6 +117,11 @@ Subset yang diterapkan di M3-05 dan M3-06 (DECISIONS §2.11 P1–P4, §2.12 P3, 
 - `robots.ts` must not be treated as an authorization control. Private endpoints and files remain protected server-side.
 - `robots.txt` disallow rules are not a substitute for `noindex` or access control.
 
+**Implementasi M3-07 (DEC-021, DECISIONS §2.13 keputusan 4, 10):**
+- `app/sitemap.ts` (`/sitemap.xml`) membaca lewat lapisan baca publik (`getSitemapPublications`: anonim, published + `public`, `draft: false`, `fallbackLocale: false`). CMS mati (Production saat ini): statis, hanya `https://mahira.id/`. CMS hidup: saat request (`connection()`, tanpa `"use cache"`, jadi tanpa cache tag dan revalidasi; publish/unpublish terlihat pada request berikutnya, usulan planner PP6): `/`, `/id/publications`, `/en/publications`, dan setiap detail published + `public` kedua locale dengan `lastmod` = `updatedAt` versi tayang. Gagal baca melempar `PublicationReadError` (respons galat Next, HTTP 500; belum dites otomatis), log `[sitemap]` hanya nama galat. Tanpa entri halaman indeks `?page=n`, tanpa route jenis/topik (keputusan 10, §2.11 P6 A), dan tanpa `xhtml:link` alternates di sitemap (hreflang ada di HTML halaman; butir "Include alternates" di atas belum diterapkan, usulan untuk ditinjau bila dibutuhkan).
+- `app/robots.ts`: Production (`VERCEL_ENV=production`) → `User-Agent: *`, `Allow: /`, `Sitemap: https://mahira.id/sitemap.xml`; deployment lain (Preview, lokal) → `Disallow: /` tanpa Sitemap. Dirender statis saat build (`VERCEL_ENV` tetap per build Vercel).
+- `proxy.ts` tidak berubah: `/sitemap.xml`, `/robots.txt`, dan `/og/*` tidak ada di matcher-nya, jadi gerbang CMS 404 untuk `/admin`, `/api`, `/{locale}/publications` tetap sama.
+
 ## 9. Acceptance criteria
 
 - Direct request to `/id/...` and `/en/...` renders the requested locale or a defined unavailable state.
@@ -128,6 +139,6 @@ Subset yang diterapkan di M3-05 dan M3-06 (DECISIONS §2.11 P1–P4, §2.12 P3, 
 | IA-01 | Default locale — dijawab Owner 2026-11-10: `id`, hanya untuk `/` dan Payload (DECISIONS §2.4 P4c; §4) | Routing implementation |
 | IA-02 | Linked records vs field localization | Content schema |
 | IA-03 | Locale fallback behavior | UX and CMS implementation |
-| IA-04 | Topic public index strategy (Desk out of scope, DEC-003) — M3-05: hanya filter query `topic` di indeks; route topik dan jenis ditunda (DECISIONS §2.11 P6 A) | Sitemap and taxonomy routes |
+| IA-04 | Topic public index strategy (Desk out of scope, DEC-003) — M3-05: hanya filter query `topic` di indeks; route topik dan jenis ditunda (DECISIONS §2.11 P6 A); M3-07 juga tanpa route jenis/topik sampai taksonomi final (B-04; DECISIONS §2.13 keputusan 10) | Sitemap and taxonomy routes |
 | IA-05 | Search locale scope | Search implementation |
 | IA-06 | Slug uniqueness and redirect retention — keunikan per locale terbukti (DEC-005); redirect slug lama diterapkan di M3-07 (DECISIONS §2.11 P9 A, §5 aturan 3): slug lama disimpan sampai diterbitkan record lain atau record dihapus. Aturan retired untuk konten produksi tetap terbuka (ADR-0005) | Migration and route implementation |

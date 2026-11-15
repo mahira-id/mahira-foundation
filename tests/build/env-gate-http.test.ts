@@ -86,7 +86,7 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     assert.equal(home.body.includes('href="/en/publications"'), false, "no /en/publications link on / (R3.b)");
     // M3-04 (DECISIONS §2.7 P1, P2, P8): no sample publication, author, topic,
     // Learning Hub block or menu item. Case-sensitive: the metadata keyword
-    // "learning hub" (app/(site)/layout.tsx) stays until M3-07.
+    // "learning hub" (app/(site)/layout.tsx) stays; M3-07 left the keywords as they were.
     for (const sample of SAMPLE_TEXTS) {
       assert.equal(home.body.includes(sample), false, `sample text "${sample}" on /`);
     }

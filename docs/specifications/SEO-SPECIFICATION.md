@@ -90,3 +90,13 @@ Define events and dashboards only after analytics/privacy decisions. Possible me
 - Account/admin/preview surfaces are noindex and authenticated.
 - Broken redirects, 404s, duplicate titles, empty descriptions, and invalid JSON-LD are checked.
 - Paywall markup is reviewed against current search guidance at release time.
+
+## 11. Implementasi M3-07 (2026-11-15)
+
+Keputusan Owner M3-07 (DECISIONS §2.13 keputusan 1–6, 10) diterapkan di branch `feat/m3-07-seo`; rincian per halaman di PAGE-SPECIFICATIONS §2–§4, aturan URL di IA-ROUTING-I18N §6 dan §8, uji di TEST-PLAN §12.2 (SEU, SE, G9).
+
+- **§2, §3:** homepage, indeks, dan detail publik dapat diindeks dengan canonical `https://mahira.id/...` ke dirinya sendiri; URL indeks dengan `q`/filter dan state tidak valid `noindex, follow` tanpa canonical; pratinjau `noindex, nofollow`. `<title>` detail = judul + " — Mahira Indonesia Development" (template layout). Open Graph + Twitter per halaman; gambar = cover yang disetujui atau gambar tipografis merek (`/og/...`, aset publik saja: logo, Hanken Grotesk, judul record published + `public`).
+- **§4:** hreflang timbal balik hanya untuk pasangan published + `public`, tanpa x-default; redirect slug lama satu hop (DECISIONS §2.11 P9 A).
+- **§5:** tanpa structured data/JSON-LD di M3-07 (keputusan 6; PUB-OQ-39 tetap terbuka).
+- **§7:** sitemap dari record published + `public` saja, dibaca saat request (publish, unpublish, dan ganti slug terlihat pada request berikutnya); tanpa varian query dan pratinjau. Belum: `xhtml:link` alternates di sitemap (hreflang ada di HTML halaman) dan pemecahan sitemap; ditinjau bila jumlah URL atau kebutuhan crawler menuntut.
+- **Domain dan Preview:** canonical selalu `https://mahira.id` (keputusan 1); Preview `noindex` lewat header Vercel, `robots.txt` `Disallow: /`, dan Vercel Authentication. `robots.txt` Production `Allow: /` + `Sitemap: https://mahira.id/sitemap.xml` (keputusan 4).
