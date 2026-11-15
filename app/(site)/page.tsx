@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
@@ -13,7 +14,11 @@ import { ArrowIcon } from "@/components/ui/icons";
 import { getHomepageData } from "@/lib/cms/public-content";
 import { planHomepage, type HomepagePlan } from "@/lib/home/homepage-view";
 import { principles } from "@/lib/landing-content";
+import { homeMetadata } from "@/lib/seo/metadata";
 import { isCmsEnabled } from "@/payload/env";
+
+/** M3-07 (DEC-021): canonical `/`, Open Graph + Twitter with the generated site image; no hreflang (no EN homepage). */
+export const metadata: Metadata = homeMetadata();
 
 /**
  * Homepage `/` (M3-04, DECISIONS §2.7). Hero, Tentang, principles and the

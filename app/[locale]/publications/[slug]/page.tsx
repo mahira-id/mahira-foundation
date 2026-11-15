@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { connection } from "next/server";
 
 import { PublicationDetail } from "@/components/publication/publication-detail";
 import { PreviewBanner } from "@/components/publication/preview-banner";
 import { PublicationErrorState } from "@/components/publication/publication-error-state";
 import { LocaleHeader } from "@/components/site/locale-header";
-import { getPublicationDetail, PublicationReadError, type PublicationDetailResult } from "@/lib/cms/public-content";
+import {
+  getPublicationDetail,
+  getPublicationRedirect,
+  PublicationReadError,
+  type PublicationDetailResult,
+} from "@/lib/cms/public-content";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 import { isPublicationSlug, switcherFor } from "@/lib/publications/detail-view";
+import { detailMetadata } from "@/lib/seo/metadata";
 import { isCmsEnabled } from "@/payload/env";
 
 /**
@@ -28,6 +34,15 @@ import { isCmsEnabled } from "@/payload/env";
  * session the read gives the latest version (mode "preview"): banner,
  * data-preview="true", robots noindex/nofollow; Draft Mode responses are
  * no-store (Next).
+ * Old slug (M3-07, DECISIONS §2.11 P9 A): when no record has this URL, the
+ * slug history may name the record's current URL (getPublicationRedirect,
+ * public records of this locale only) and the page calls
+ * permanentRedirect() there, without the query string. After the static
+ * shell Next 16.4.4 sends that as HTTP 200 whose RSC payload carries the
+ * 308 redirect, and the browser's router follows it (no refresh meta, so
+ * nothing happens without JavaScript); user agents that get the blocking
+ * render (Next's `htmlLimitedBots` list, e.g. Bingbot) get a real 308 with
+ * `Location`. A failed history read is the error state.
  */
 export const instant = false;
 
@@ -43,18 +58,31 @@ async function readDetail(locale: Locale, slug: string): Promise<PublicationDeta
   }
 }
 
+/** The cached redirect read of a URL without a record (null: not-found), with a failed read as "error". */
+async function readRedirect(locale: Locale, slug: string): Promise<string | null | "error"> {
+  try {
+    return await getPublicationRedirect(locale, slug);
+  } catch (error) {
+    if (error instanceof PublicationReadError) return "error";
+    throw error;
+  }
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   if (!isLocale(locale) || !isPublicationSlug(slug) || !isCmsEnabled()) return {};
   await connection();
   const result = await readDetail(locale, slug);
-  if (result === "error") return { robots: { index: false, follow: true } };
-  // Not found: the page calls notFound(), which adds noindex.
+  const target = result === null ? await readRedirect(locale, slug) : null;
+  if (result === "error" || target === "error") return { robots: { index: false, follow: true } };
+  // Not found or old slug: the page calls notFound() (adds noindex) or permanentRedirect().
   if (!result) return {};
-  const metadata: Metadata = { title: result.publication.title, description: result.publication.description };
-  // Staff draft preview (P11 A): never indexed, links not followed.
-  if (result.mode === "preview") metadata.robots = { index: false, follow: false };
-  return metadata;
+  // Staff draft preview (P11 A): never indexed, links not followed; no canonical, hreflang or Open Graph.
+  if (result.mode === "preview") {
+    return { title: result.publication.title, description: result.publication.description, robots: { index: false, follow: false } };
+  }
+  // M3-07 (DEC-021): canonical, hreflang with a public counterpart only, Open Graph `article` + Twitter.
+  return detailMetadata(result.publication, result.alternates);
 }
 
 export default async function PublicationDetailPage({ params }: Props) {
@@ -63,8 +91,9 @@ export default async function PublicationDetailPage({ params }: Props) {
   // Request-time data: keeps the CMS query out of the build prerender.
   await connection();
   const result = await readDetail(locale, slug);
+  const target = result === null ? await readRedirect(locale, slug) : null;
 
-  if (result === "error") {
+  if (result === "error" || target === "error") {
     return (
       <>
         <LocaleHeader locale={locale} />
@@ -80,7 +109,10 @@ export default async function PublicationDetailPage({ params }: Props) {
       </>
     );
   }
-  if (!result) notFound();
+  if (!result) {
+    if (target) permanentRedirect(target);
+    notFound();
+  }
   const preview = result.mode === "preview";
 
   return (

@@ -23,9 +23,13 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *                 (DT10: second server on TEST_PORT + 1 with an unreachable database) (M3-05)
  *   preview       staff draft preview: /api/preview staff check + Draft Mode, detail in preview,
  *                 index and / never show drafts, /api/preview/exit (M3-05)
+ *   redirect      308 of old publication slugs from the slug history, chains, reuse, ineligible
+ *                 targets, delete, closed REST (M3-07)
+ *   seo           canonical, hreflang, noindex, Open Graph/Twitter, sitemap, robots, generated
+ *                 OG images, non-disclosure of ineligible records (M3-07)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left (always last)
  *
- * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,db-invariants]
+ * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,db-invariants]
  * Never run two at once: the files share one database and one port.
  */
 const FILES = {
@@ -40,6 +44,8 @@ const FILES = {
   search: "tests/integration/publication-search.test.ts",
   detail: "tests/integration/publication-detail.test.ts",
   preview: "tests/integration/preview.test.ts",
+  redirect: "tests/integration/slug-redirect.test.ts",
+  seo: "tests/integration/seo.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;

@@ -56,11 +56,16 @@ export type Dictionary = {
     notice: string;
     exit: string;
   };
-  /** Not-found page of the locale-prefixed pages (app/[locale]/not-found.tsx, M3-05b). */
+  /**
+   * Not-found page of the locale-prefixed pages (app/[locale]/not-found.tsx,
+   * M3-05b); both locales also on the global 404 page (app/global-not-found.tsx, M3-07).
+   */
   notFound: {
     title: string;
     body: string;
     indexLink: string;
+    /** Link to `/` on the global 404 page. */
+    homeLink: string;
   };
 };
 
@@ -120,6 +125,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       title: "Halaman tidak ditemukan",
       body: "Halaman yang Anda cari tidak ada atau tidak lagi tersedia.",
       indexLink: "Lihat seluruh publikasi",
+      homeLink: "Ke beranda",
     },
   },
   en: {
@@ -177,6 +183,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       title: "Page not found",
       body: "The page you are looking for does not exist or is no longer available.",
       indexLink: "View all publications",
+      homeLink: "Go to the homepage",
     },
   },
 };

@@ -155,6 +155,52 @@ export function notFoundPageProblems(html: string, locale: Locale): string[] {
   return problems;
 }
 
+/** Opening tags of the links in `html` with this href, lower-cased (React writes `hrefLang`). */
+function linkTags(html: string, href: string): string[] {
+  return (html.match(/<a\s[^>]*>/g) ?? []).filter((tag) => tag.includes(`href="${href}"`)).map((tag) => tag.toLowerCase());
+}
+
+/**
+ * What is wrong with the global 404 page (app/global-not-found.tsx, M3-07
+ * item 9) in a response; empty when nothing is. Next renders it as a full
+ * HTML document (no RSC error shell): `<html lang="id">`, the title,
+ * `<main data-global-not-found>` with the Indonesian not-found title as H1
+ * and its text, then a `lang="en"` section with the English title as H2 and
+ * its text. Both parts link to `/` (the English one with `hreflang="id"`);
+ * the links to `/id/publications` and `/en/publications` are there only when
+ * `withIndex` (CMS on).
+ */
+export function globalNotFoundProblems(html: string, withIndex: boolean): string[] {
+  const id = dictionaries.id.notFound;
+  const en = dictionaries.en.notFound;
+  const problems: string[] = [];
+  if (!html.includes('<html lang="id"')) problems.push('<html lang="id"> missing');
+  if (!html.includes(`<title>${id.title} — Mahira Indonesia Development</title>`)) problems.push("<title> missing");
+  const main = /<main[^>]*\sdata-global-not-found=""[^>]*>([\s\S]*?)<\/main>/.exec(html);
+  if (!main) return [...problems, "no <main data-global-not-found> element"];
+  const content = main[1] as string;
+  const english = /<section[^>]*\slang="en"[^>]*>([\s\S]*?)<\/section>/.exec(content);
+  if (!english) return [...problems, 'no lang="en" section'];
+  const englishPart = english[1] as string;
+  const indonesianPart = content.slice(0, english.index);
+  const parts: [string, string, "h1" | "h2", typeof id, Locale][] = [
+    ["ID", indonesianPart, "h1", id, "id"],
+    ["EN", englishPart, "h2", en, "en"],
+  ];
+  for (const [name, part, heading, text, locale] of parts) {
+    if (!new RegExp(`<${heading}[^>]*>${text.title}</${heading}>`).test(part)) problems.push(`${name} ${heading} "${text.title}" missing`);
+    if (!part.includes(`>${text.body}</p>`)) problems.push(`${name} text missing`);
+    const home = linkTags(part, "/");
+    if (home.length !== 1 || !part.includes(`>${text.homeLink}</a>`)) problems.push(`${name} link to / missing`);
+    if (locale === "en" && !home.every((tag) => tag.includes('hreflang="id"'))) problems.push('EN link to / without hreflang="id"');
+    const index = linkTags(part, `/${locale}/publications`);
+    if (withIndex && (index.length !== 1 || !part.includes(`>${text.indexLink}</a>`))) problems.push(`${name} link to /${locale}/publications missing`);
+    if (!withIndex && index.length !== 0) problems.push(`${name} link to /${locale}/publications with the CMS off`);
+  }
+  if (!withIndex && /href="\/(id|en)\/publications/.test(html)) problems.push("a publication link with the CMS off");
+  return problems;
+}
+
 /**
  * A publication URL without a public page (M3-05, DECISIONS §2.11 P7 A as
  * amended 2026-11-13): notFound() with robots noindex and no detail. Next

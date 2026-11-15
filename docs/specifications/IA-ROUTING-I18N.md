@@ -60,6 +60,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 - Locale detection: may use user preference or `Accept-Language` only for initial routing. Persisted user preference, if introduced, must not override an explicitly requested URL locale.
 - Explicit URL locale wins over browser preference.
 - Unknown locale: return a controlled not-found or redirect to an approved default; never create an unbounded redirect loop.
+  - Diterapkan (M3-01; halaman 404 sejak M3-07, DECISIONS §2.13 keputusan 9): tanpa redirect. URL yang tidak cocok dengan route mana pun (`/foo`, `/id`, `/en`, `/id/foo`) → HTTP 404 + `noindex` dengan halaman 404 global Mahira dwibahasa (`app/global-not-found.tsx`; PAGE-SPECIFICATIONS §4), karena URL itu tidak membawa locale yang valid. Locale tidak dikenal pada route yang ada (`/xx/publications`) → `notFound()` dari layout `[locale]`: HTTP 404 + `noindex`, tetapi Next 16.4.4 merender halaman 404 bawaannya (teks Inggris) di sana; celah tercatat (usulan planner PP11).
 - Locale switcher: switch to the equivalent translated record only when a valid translation relationship exists. Otherwise, show a clear unavailable state or navigate to the destination locale's index according to approved UX; do not fabricate a slug.
   - Diterapkan di M3-05 (DECISIONS §2.11 P2 A, P8 A): di indeks, switcher ke indeks locale lain tanpa parameter. Di detail, pasangan = record Translation Group yang sama di locale lain yang published + `public` → tautan ke detail pasangan dengan `hrefLang`; tanpa pasangan → `/{locale lain}/publications` dengan `title` "Belum tersedia dalam English" / "Not available in Bahasa Indonesia". Dalam pratinjau draf hanya pasangan yang published dipakai. Logo header di halaman EN → `/` dengan `hrefLang="id"` (`components/site/locale-header.tsx`, `lib/publications/detail-view.ts` `switcherFor`).
 - Fallback content: if field-level fallback is chosen, indicate the source language in UI and metadata wherever fallback could mislead. Recommended default: do not silently publish fallback-language body copy as a localized page.
@@ -69,7 +70,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 
 1. Lowercase, URL-safe slug; normalize whitespace and punctuation deterministically.
 2. Store slug per localized content record if linked translations are selected; uniqueness should be scoped deliberately (e.g. locale + route collection), not assumed.
-3. Slug change requires a redirect record from old path to new path. Redirects must be locale-aware and loop-checked. Redirect 308 slug lama dibuat di M3-07 (DECISIONS §2.11 P9 A); sampai itu slug lama → not-found, dan editor tidak mengganti slug publikasi yang sudah terbit (EDITORIAL-WORKFLOW §9).
+3. Slug change requires a redirect record from old path to new path. Redirects must be locale-aware and loop-checked. Diterapkan di M3-07 (DECISIONS §2.11 P9 A; keputusan Owner 2026-11-15 butir 7): riwayat slug `publication-slugs` (DATA-MODEL §4.8) mencatat setiap slug yang pernah tayang published + `public`. Halaman detail membaca riwayat hanya bila tidak ada record published + `public` dengan URL itu (slug yang tayang selalu menang), lalu `permanentRedirect()` ke `/{locale}/publications/{slug saat ini}` tanpa query string, hanya bila record pemilik kini published + `public` di locale yang sama dan slugnya lain (`lib/publications/slug-redirect.ts` `redirectPath`, jadi tidak ada loop). Rantai A → B → C berakhir di C dalam satu langkah. Record tujuan tidak tayang, `registered`/`subscriber`, locale lain, atau dihapus → halaman not-found tanpa `Location`. Status HTTP (usulan planner PP5, DECISIONS §2.13): user agent di daftar `htmlLimitedBots` (`lib/seo/html-limited-bots.ts`: daftar bawaan Next 16.4.4, misalnya Bingbot, ditambah Googlebot sejak keputusan 8) menerima 308 + `Location`; user agent lain menerima HTTP 200 dengan redirect permanen di payload RSC yang diikuti router browser (tanpa refresh meta, jadi tanpa JavaScript tidak ada pengalihan).
 4. Reserved path segments (`admin`, `account`, `api`, `internal`, `topics`, `publications`, `learning-hub`) must not be accepted as conflicting content slugs in their respective route namespace.
 5. Do not derive a permanent slug from a mutable title at request time.
 6. Use stable IDs for cache tags, relations, and internal links; do not use localized slug as a foreign key.
@@ -83,6 +84,12 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 - `x-default` is optional and should point to a neutral locale selector or approved default page.
 - Do not canonicalize EN to ID merely because one translation is missing.
 - Draft, preview, account, internal, and non-public states must not be included in public sitemap output.
+
+**Implementasi M3-07 (DEC-021, DECISIONS §2.13 keputusan 1–3; `lib/seo/metadata.ts`):**
+- Domain canonical selalu `https://mahira.id` (`metadataBase` di kedua root layout), juga di Vercel Preview; Preview tetap `noindex` lewat header `X-Robots-Tag` Vercel, `Disallow: /`, dan Vercel Authentication (usulan planner PP9: tanpa meta/header tambahan dari aplikasi).
+- Canonical ke dirinya sendiri: `/` → `https://mahira.id`; indeks halaman 1 → `https://mahira.id/{locale}/publications` (tanpa `?page`, juga untuk `?page=1` dan parameter tak dikenal); `?page=n` tanpa filter → URL itu; detail publik → `https://mahira.id/{locale}/publications/{slug}`. URL indeks dengan `q`, filter, atau state `unknown-filter`/`page-not-found`/`error` `noindex, follow` tanpa canonical dan tanpa hreflang. Pratinjau, not-found, redirect slug lama, dan galat detail tanpa canonical.
+- hreflang: `/id/publications` ↔ `/en/publications` hanya di halaman 1; detail hanya bila record locale lain di Translation Group published + `public` (kedua arah, self termasuk). Homepage `/` tanpa hreflang (tidak ada padanan EN). Tanpa `x-default` (keputusan 3; baris `x-default` di atas tidak dipakai).
+- Tidak ada fallback locale: judul, deskripsi, dan gambar Open Graph hanya dari record locale route.
 
 ## 7. Search and taxonomy URL state
 
@@ -111,6 +118,11 @@ Subset yang diterapkan di M3-05 dan M3-06 (DECISIONS §2.11 P1–P4, §2.12 P3, 
 - `robots.ts` must not be treated as an authorization control. Private endpoints and files remain protected server-side.
 - `robots.txt` disallow rules are not a substitute for `noindex` or access control.
 
+**Implementasi M3-07 (DEC-021, DECISIONS §2.13 keputusan 4, 10):**
+- `app/sitemap.ts` (`/sitemap.xml`) membaca lewat lapisan baca publik (`getSitemapPublications`: anonim, published + `public`, `draft: false`, `fallbackLocale: false`). CMS mati (Production saat ini): statis, hanya `https://mahira.id/`. CMS hidup: saat request (`connection()`, tanpa `"use cache"`, jadi tanpa cache tag dan revalidasi; publish/unpublish terlihat pada request berikutnya, usulan planner PP6): `/`, `/id/publications`, `/en/publications`, dan setiap detail published + `public` kedua locale dengan `lastmod` = `updatedAt` versi tayang. Gagal baca melempar `PublicationReadError` (respons galat Next, HTTP 500; belum dites otomatis), log `[sitemap]` hanya nama galat. Tanpa entri halaman indeks `?page=n`, tanpa route jenis/topik (keputusan 10, §2.11 P6 A), dan tanpa `xhtml:link` alternates di sitemap (hreflang ada di HTML halaman; butir "Include alternates" di atas belum diterapkan, usulan untuk ditinjau bila dibutuhkan).
+- `app/robots.ts`: Production (`VERCEL_ENV=production`) → `User-Agent: *`, `Allow: /`, `Sitemap: https://mahira.id/sitemap.xml`; deployment lain (Preview, lokal) → `Disallow: /` tanpa Sitemap. Dirender statis saat build (`VERCEL_ENV` tetap per build Vercel).
+- `proxy.ts` tidak berubah: `/sitemap.xml`, `/robots.txt`, dan `/og/*` tidak ada di matcher-nya, jadi gerbang CMS 404 untuk `/admin`, `/api`, `/{locale}/publications` tetap sama.
+
 ## 9. Acceptance criteria
 
 - Direct request to `/id/...` and `/en/...` renders the requested locale or a defined unavailable state.
@@ -128,6 +140,6 @@ Subset yang diterapkan di M3-05 dan M3-06 (DECISIONS §2.11 P1–P4, §2.12 P3, 
 | IA-01 | Default locale — dijawab Owner 2026-11-10: `id`, hanya untuk `/` dan Payload (DECISIONS §2.4 P4c; §4) | Routing implementation |
 | IA-02 | Linked records vs field localization | Content schema |
 | IA-03 | Locale fallback behavior | UX and CMS implementation |
-| IA-04 | Topic public index strategy (Desk out of scope, DEC-003) — M3-05: hanya filter query `topic` di indeks; route topik dan jenis ditunda (DECISIONS §2.11 P6 A) | Sitemap and taxonomy routes |
+| IA-04 | Topic public index strategy (Desk out of scope, DEC-003) — M3-05: hanya filter query `topic` di indeks; route topik dan jenis ditunda (DECISIONS §2.11 P6 A); M3-07 juga tanpa route jenis/topik sampai taksonomi final (B-04; DECISIONS §2.13 keputusan 10) | Sitemap and taxonomy routes |
 | IA-05 | Search locale scope | Search implementation |
-| IA-06 | Slug uniqueness and redirect retention — keunikan per locale terbukti (DEC-005); redirect slug lama di M3-07 (DECISIONS §2.11 P9 A) | Migration and route implementation |
+| IA-06 | Slug uniqueness and redirect retention — keunikan per locale terbukti (DEC-005); redirect slug lama diterapkan di M3-07 (DECISIONS §2.11 P9 A, §5 aturan 3): slug lama disimpan sampai diterbitkan record lain atau record dihapus. Aturan retired untuk konten produksi tetap terbuka (ADR-0005) | Migration and route implementation |

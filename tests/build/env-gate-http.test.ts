@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { notFoundPageProblems } from "../helpers/publication-pages";
+import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publication-pages";
 
 /**
  * HTTP checks of the CMS env gate against a running `next start` (M3-00,
@@ -21,6 +21,14 @@ import { notFoundPageProblems } from "../helpers/publication-pages";
  *                                             since M3-05b
  * `/` (M3-04, DECISIONS §2.7): never sample content (G1); off/prod show the
  * empty notice (G7); on renders the CMS block (G8).
+ * SEO (M3-07, DEC-021, DECISIONS §2.13), G9: canonical of `/` on
+ * https://mahira.id and `/og/site` in every mode; sitemap only `/` with the
+ * CMS off, `/` + both indexes on; robots `Allow: /` + Sitemap only in prod,
+ * `Disallow: /` in off and on; the index and detail OG images 404 with the
+ * CMS off.
+ * Global 404 (M3-07 item 9), G10: `/foo` and `/id` answer 404 with the
+ * Mahira global 404 page in every mode; links to the publication indexes
+ * only in on.
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
@@ -81,7 +89,7 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     assert.equal(home.body.includes('href="/en/publications"'), false, "no /en/publications link on / (R3.b)");
     // M3-04 (DECISIONS §2.7 P1, P2, P8): no sample publication, author, topic,
     // Learning Hub block or menu item. Case-sensitive: the metadata keyword
-    // "learning hub" (app/(site)/layout.tsx) stays until M3-07.
+    // "learning hub" (app/(site)/layout.tsx) stays; M3-07 left the keywords as they were.
     for (const sample of SAMPLE_TEXTS) {
       assert.equal(home.body.includes(sample), false, `sample text "${sample}" on /`);
     }
@@ -139,6 +147,65 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
         assertClosed(await request("GET", path), `GET ${path}`);
       });
     }
+  }
+
+  // M3-07 (DEC-021, DECISIONS §2.13): sitemap, robots, generated OG images and the homepage canonical per gate mode.
+  test("G9.1 GET / canonical https://mahira.id and og:image /og/site", async () => {
+    const home = await request("GET", "/");
+    assert.match(home.body, /<link rel="canonical" href="https:\/\/mahira\.id\/?"/, "canonical of /");
+    assert.match(home.body, /<meta property="og:image" content="https:\/\/mahira\.id\/og\/site"/, "og:image of /");
+  });
+
+  test("G9.2 GET /og/site: 200 image/png", async () => {
+    const image = await request("GET", "/og/site");
+    assert.equal(image.status, 200);
+    assert.equal(image.headers?.get("content-type"), "image/png");
+  });
+
+  test(`G9.3 GET /sitemap.xml: ${MODE === "on" ? "/, both indexes and more" : "only https://mahira.id/"}`, async () => {
+    const sitemap = await request("GET", "/sitemap.xml");
+    assert.equal(sitemap.status, 200);
+    const locs = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+    if (MODE === "on") {
+      for (const url of ["https://mahira.id/", "https://mahira.id/id/publications", "https://mahira.id/en/publications"]) {
+        assert.equal(locs.includes(url), true, `sitemap lists ${url}`);
+      }
+    } else {
+      assert.deepEqual(locs, ["https://mahira.id/"], "sitemap with the CMS off");
+    }
+  });
+
+  test(`G9.4 GET /robots.txt: ${MODE === "prod" ? "Allow: / + Sitemap" : "Disallow: /, no Sitemap"}`, async () => {
+    const robots = await request("GET", "/robots.txt");
+    assert.equal(robots.status, 200);
+    if (MODE === "prod") {
+      assert.match(robots.body, /User-Agent: \*\s+Allow: \/\s/, "Allow: / on Production");
+      assert.equal(/^Disallow:/m.test(robots.body), false, "a Disallow line on Production");
+      assert.match(robots.body, /^Sitemap: https:\/\/mahira\.id\/sitemap\.xml$/m, "Sitemap line on Production");
+    } else {
+      assert.match(robots.body, /User-Agent: \*\s+Disallow: \/\s/, "Disallow: / outside Production");
+      assert.equal(/Sitemap:/i.test(robots.body), false, "a Sitemap line outside Production");
+    }
+  });
+
+  if (MODE === "off" || MODE === "prod") {
+    for (const [index, path] of ["/og/id/publications", "/og/en/publications/gate-check"].entries()) {
+      test(`G9.${index + 5} GET ${path} with the CMS off: 404`, async () => {
+        assert.equal((await request("GET", path)).status, 404);
+      });
+    }
+  }
+
+  // M3-07 item 9 (DECISIONS §2.13): URLs that match no route get the Mahira
+  // global 404 page; it links the publication indexes only while the CMS is
+  // on, because proxy.ts answers 404 for them when it is off.
+  for (const [index, path] of ["/foo", "/id"].entries()) {
+    test(`G10.${index + 1} GET ${path}: 404 + Mahira global 404 page ${MODE === "on" ? "with" : "without"} index links`, async () => {
+      const result = await request("GET", path);
+      assert.equal(result.status, 404, `GET ${path}`);
+      assert.equal(/<meta name="robots" content="noindex[^"]*"/.test(result.body), true, `robots noindex on ${path}`);
+      assert.deepEqual(globalNotFoundProblems(result.body, MODE === "on"), [], `global 404 page on ${path}`);
+    });
   }
 
   if (MODE === "on") {

@@ -7,6 +7,7 @@ import { DEFAULT_LOCALE } from "../lib/i18n/locales";
 import { Authors } from "./collections/Authors";
 import { Media } from "./collections/Media";
 import { Publications } from "./collections/Publications";
+import { PublicationSlugs } from "./collections/PublicationSlugs";
 import { PublicationTypes } from "./collections/PublicationTypes";
 import { Topics } from "./collections/Topics";
 import { TranslationGroups } from "./collections/TranslationGroups";
@@ -62,7 +63,10 @@ export default buildConfig({
       importMapFile: path.resolve(repoRoot, "app", "(payload)", "admin", "importMap.js"),
     },
   },
-  collections: [Users, Publications, Authors, Topics, PublicationTypes, TranslationGroups, Media],
+  // PublicationSlugs last: Payload names compound indexes by column, so the
+  // second (locale, slug) index gets a suffix; publications keeps
+  // `locale_slug_idx` only while it is built first.
+  collections: [Users, Publications, Authors, Topics, PublicationTypes, TranslationGroups, Media, PublicationSlugs],
   plugins: [
     s3Storage({
       enabled: cms !== null,
