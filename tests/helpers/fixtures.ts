@@ -30,6 +30,7 @@ export type Area =
   | "locale"
   | "preview"
   | "race"
+  | "redirect"
   | "search"
   | "workflow";
 
@@ -54,7 +55,7 @@ export function isTestEmail(email: string, prefix: string = ROOT_PREFIX): boolea
   return email.startsWith(prefix) && email.endsWith(EMAIL_DOMAIN);
 }
 
-type SlugCollection = "publications" | "topics" | "publication-types" | "authors";
+type SlugCollection = "publications" | "topics" | "publication-types" | "authors" | "publication-slugs";
 
 async function slugIds(payload: Payload, collection: SlugCollection, prefix: string): Promise<number[]> {
   // `like` is a case-insensitive "contains" in the Postgres adapter, so the
@@ -95,6 +96,8 @@ async function userIds(payload: Payload, prefix: string): Promise<number[]> {
 
 export type FixtureCounts = {
   publications: number;
+  /** Slug history rows (M3-07); the Publication beforeDelete hook removes a record's rows. */
+  publicationSlugs: number;
   translationGroups: number;
   topics: number;
   publicationTypes: number;
@@ -123,13 +126,28 @@ export function formatCounts(counts: FixtureCounts): string {
 }
 
 /**
- * Deletes this area's fixtures, publications first (a used Translation Group
- * cannot be deleted), then the area's authors (only the `search` area
- * creates authors, M3-06; the others reuse an existing one).
+ * Deletes this area's fixtures: slug history rows with the area prefix first
+ * (M3-07; normally the Publication beforeDelete hook already removes them,
+ * this keeps cleanup working while that hook is deliberately broken), then
+ * publications (a used Translation Group cannot be deleted), then the area's
+ * authors (only the `search` area creates authors, M3-06; the others reuse an
+ * existing one).
  */
 export async function cleanupArea(payload: Payload, area: Area): Promise<FixtureCounts> {
   const prefix = areaPrefix(area);
-  const counts: FixtureCounts = { publications: 0, translationGroups: 0, topics: 0, publicationTypes: 0, authors: 0, users: 0 };
+  const counts: FixtureCounts = {
+    publications: 0,
+    publicationSlugs: 0,
+    translationGroups: 0,
+    topics: 0,
+    publicationTypes: 0,
+    authors: 0,
+    users: 0,
+  };
+  for (const id of await slugIds(payload, "publication-slugs", prefix)) {
+    await payload.delete({ collection: "publication-slugs", id, overrideAccess: true });
+    counts.publicationSlugs++;
+  }
   for (const id of await slugIds(payload, "publications", prefix)) {
     await payload.delete({ collection: "publications", id, overrideAccess: true });
     counts.publications++;
@@ -163,6 +181,7 @@ export async function countLeftovers(payload: Payload, area?: Area): Promise<Fix
   const label = area ? areaLabel(area) : LABEL_ROOT;
   return {
     publications: (await slugIds(payload, "publications", prefix)).length,
+    publicationSlugs: (await slugIds(payload, "publication-slugs", prefix)).length,
     translationGroups: (await groupIds(payload, label)).length,
     topics: (await slugIds(payload, "topics", prefix)).length,
     publicationTypes: (await slugIds(payload, "publication-types", prefix)).length,

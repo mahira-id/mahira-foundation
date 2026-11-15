@@ -5,6 +5,7 @@ import { validateSlug } from "../fields/slug";
 import { enforceSharedFields } from "../hooks/enforce-shared-fields";
 import { readLiveOnSite } from "../hooks/live-on-site";
 import { setPublicationLifecycleFields } from "../hooks/publication-lifecycle";
+import { deletePublicationSlugs, recordPublicSlug } from "../hooks/publication-slugs";
 import { markStatusNotSent, refuseImplicitStatusOverPendingDraft } from "../hooks/refuse-implicit-status-over-pending-draft";
 import { previewUrl } from "../../lib/publications/preview";
 
@@ -59,6 +60,10 @@ export const Publications: CollectionConfig = {
     // Group lock; then lifecycle fields (P3 B, DEC-016); then DEC-004:
     // shared fields stay equal across the Translation Group.
     beforeChange: [refuseImplicitStatusOverPendingDraft, setPublicationLifecycleFields, enforceSharedFields],
+    // M3-07 (DECISIONS §2.11 P9 A): slug history for the 308 of old URLs
+    // (collection publication-slugs), in the save's or delete's transaction.
+    afterChange: [recordPublicSlug],
+    beforeDelete: [deletePublicationSlugs],
   },
   indexes: [
     { fields: ["locale", "slug"], unique: true },

@@ -74,6 +74,7 @@ export interface Config {
     'publication-types': PublicationType;
     'translation-groups': TranslationGroup;
     media: Media;
+    'publication-slugs': PublicationSlug;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     'publication-types': PublicationTypesSelect<false> | PublicationTypesSelect<true>;
     'translation-groups': TranslationGroupsSelect<false> | TranslationGroupsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'publication-slugs': PublicationSlugsSelect<false> | PublicationSlugsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -263,6 +265,18 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-slugs".
+ */
+export interface PublicationSlug {
+  id: number;
+  publication: number | Publication;
+  locale: 'id' | 'en';
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -312,6 +326,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'publication-slugs';
+        value: number | PublicationSlug;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -464,6 +482,17 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publication-slugs_select".
+ */
+export interface PublicationSlugsSelect<T extends boolean = true> {
+  publication?: T;
+  locale?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

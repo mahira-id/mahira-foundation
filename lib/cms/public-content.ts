@@ -4,9 +4,11 @@ import { draftMode, headers } from "next/headers";
 import { getPayload } from "payload";
 import { cache } from "react";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
-import { findPublicPublication } from "@/lib/cms/publication-detail-query";
+import { findPublicPublication, findPublicRef, findPublicTitle } from "@/lib/cms/publication-detail-query";
 import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
 import { findSearchRanks } from "@/lib/cms/publication-search-query";
+import { findSlugOwner } from "@/lib/cms/publication-slug-query";
+import { findSitemapPublications, type SitemapPublication } from "@/lib/cms/sitemap-query";
 import { findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import type { Locale } from "@/lib/i18n/locales";
@@ -24,7 +26,10 @@ import {
   type IndexPlan,
 } from "@/lib/publications/index-view";
 import { toTsqueryText } from "@/lib/publications/search-terms";
+import { redirectPath } from "@/lib/publications/slug-redirect";
 import { isCmsEnabled } from "@/payload/env";
+
+export type { SitemapPublication };
 
 /**
  * Server-only. Public read layer for locale-prefixed pages (DEC-005, DEC-021).
@@ -47,7 +52,14 @@ import { isCmsEnabled } from "@/payload/env";
  * anonymous scan (findIndexRefs) returned; (4) the rows of the page come
  * from the anonymous findIndexPage.
  *
- * Returns `{ status: "off" }` (detail: `null`) when the CMS is off (see payload/env.ts).
+ * SEO reads (M3-07, DEC-021): the 308 of an old slug reads the slug history
+ * `publication-slugs` (rows only say which record last published a URL) and
+ * then the target record as an anonymous visitor, so it only names a URL
+ * visitors can open; the sitemap and the Open Graph title read published +
+ * public records like the detail page.
+ *
+ * Returns `{ status: "off" }` (detail, redirect, title: `null`; sitemap:
+ * `[]`) when the CMS is off (see payload/env.ts).
  */
 
 /**
@@ -119,9 +131,10 @@ export const getPublicationIndex = cache(
 );
 
 /**
- * Thrown by getPublicationDetail when the CMS read fails. Fixed message and
- * no cause, so nothing of the database error (host, user) reaches the page
- * or the logs of Next.js.
+ * Thrown by getPublicationDetail, getPublicationRedirect,
+ * getSitemapPublications and getPublicPublicationTitle when the CMS read
+ * fails. Fixed message and no cause, so nothing of the database error (host,
+ * user) reaches the page or the logs of Next.js.
  */
 export class PublicationReadError extends Error {
   constructor() {
@@ -172,3 +185,61 @@ export const getPublicationDetail = cache(
     }
   },
 );
+
+/**
+ * Where an old publication URL goes (M3-07, DECISIONS §2.11 P9 A): the
+ * current detail path of the record that last published `slug` as public in
+ * this locale, when visitors can see that record now (published + public,
+ * same locale, read anonymously); else null (the page calls notFound()).
+ * The page asks only after getPublicationDetail found nothing, so a live
+ * slug always wins over the history. Rows point to the record, so a chain
+ * A → B → C gives C in one step. Deduplicated per request by React `cache`
+ * (generateMetadata and the page). A failed read is logged with the error
+ * name only and throws PublicationReadError (the page's error state).
+ */
+export const getPublicationRedirect = cache(async (locale: Locale, slug: string): Promise<string | null> => {
+  if (!isCmsEnabled()) return null;
+  try {
+    const payload = await getPayload({ config });
+    const owner = await findSlugOwner(payload, locale, slug);
+    if (owner === null) return null;
+    return redirectPath(locale, slug, await findPublicRef(payload, owner));
+  } catch (error) {
+    console.error("[publication-redirect] CMS read failed:", readErrorLabel(error));
+    throw new PublicationReadError();
+  }
+});
+
+/**
+ * The detail pages of the sitemap (M3-07, DEC-021): every published + public
+ * record of both locales with its `updatedAt`, read at request time (no
+ * `"use cache"`, so no cache tag to revalidate; a publish or unpublish shows
+ * on the next request). A failed read is logged with the error name only and
+ * throws PublicationReadError.
+ */
+export const getSitemapPublications = cache(async (): Promise<SitemapPublication[]> => {
+  if (!isCmsEnabled()) return [];
+  try {
+    const payload = await getPayload({ config });
+    return await findSitemapPublications(payload);
+  } catch (error) {
+    console.error("[sitemap] CMS read failed:", readErrorLabel(error));
+    throw new PublicationReadError();
+  }
+});
+
+/**
+ * Title of the published + public record of this locale with this slug, or
+ * null (M3-07, generated Open Graph image of a detail page). A failed read is
+ * logged with the error name only and throws PublicationReadError.
+ */
+export const getPublicPublicationTitle = cache(async (locale: Locale, slug: string): Promise<string | null> => {
+  if (!isCmsEnabled()) return null;
+  try {
+    const payload = await getPayload({ config });
+    return await findPublicTitle(payload, locale, slug);
+  } catch (error) {
+    console.error("[og-image] CMS read failed:", readErrorLabel(error));
+    throw new PublicationReadError();
+  }
+});

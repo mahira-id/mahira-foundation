@@ -56,6 +56,28 @@ export async function findPublicRef(payload: FindPort, id: number) {
   return result.docs[0] ?? null;
 }
 
+/**
+ * Title of the published + public record of this locale with this slug, or
+ * null (M3-07, generated Open Graph image). Same anonymous read as the
+ * detail page; the title only.
+ */
+export async function findPublicTitle(payload: FindPort, locale: Locale, slug: string): Promise<string | null> {
+  const result = await payload.find({
+    collection: "publications",
+    where: { and: [{ locale: { equals: locale } }, { slug: { equals: slug } }] },
+    limit: 1,
+    pagination: false,
+    depth: 0,
+    select: { title: true },
+    locale,
+    fallbackLocale: false,
+    draft: false,
+    overrideAccess: false,
+  });
+  const title = result.docs[0]?.title;
+  return typeof title === "string" && title !== "" ? title : null;
+}
+
 /** The published + public record of this locale with this slug, or null. */
 export async function findPublicPublication(payload: FindPort, locale: Locale, slug: string) {
   const result = await payload.find({
