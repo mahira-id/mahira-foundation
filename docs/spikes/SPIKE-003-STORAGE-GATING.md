@@ -92,11 +92,11 @@ Media → Create New → pilih `fixture-m2-cover.png`, alt `[FIXTURE] admin uplo
 
 ## 8. Failure modes and constraints
 - **S3 access key Supabase melewati Storage RLS** dan memberi baca/tulis/hapus penuh pada semua bucket project `mahira.id`. Key wajib server-only (tidak pernah `NEXT_PUBLIC_*`), dirotasi, dan dipisah per environment (DEC-012, M5).
-- **Upload lewat server:** ukuran file dibatasi batas body request Vercel; tidak diuji. Alternatif `clientUploads` butuh CORS PUT di bucket; tidak diuji.
-- **`/api/media/file/<name>` → 500** saat `disablePayloadAccessControl: true`. Tidak boleh ada kode yang menautkan ke route itu; blokir atau terima 500.
+- **Upload lewat server:** ukuran file dibatasi batas body request Vercel; tidak diuji. Alternatif `clientUploads` butuh CORS PUT di bucket; tidak diuji. M3-08 memakai `clientUploads` untuk `publication-files` (§11).
+- **`/api/media/file/<name>` → 500** saat `disablePayloadAccessControl: true`. Tidak boleh ada kode yang menautkan ke route itu; blokir atau terima 500. Sejak M3-08 diblokir: route statis menjawab 404 (§11).
 - **CDN menyajikan objek lama** di URL lama sesaat setelah replace/delete. Untuk file publik efeknya terbatas (replace mengganti nama file). Untuk file terbatas (M5) ini alasan memakai signed URL di bucket privat, bukan URL publik.
 - **Objek hilang menjawab 400**, bukan 404.
-- **Key internal adapter** (`prefix`, `_objectKey`) terlihat di respons anonim.
+- **Key internal adapter** (`prefix`, `_objectKey`) terlihat di respons anonim. Untuk `publication-files` (M3-08) bacaan halaman publik hanya memilih field panel, tanpa `url`, `filename`, `prefix`, `_objectKey` (DL13), dan REST anonim ditolak.
 - **`down()` migrasi `media`** hasil generate gagal dengan pola yang sama seperti SPIKE-001 §8; sudah dijaga `IF EXISTS` dan diuji `migrate:down` → `migrate` (commit `119a131`, SPIKE-001 §7.2).
 - **Region:** bucket di `eu-central-1`; region produksi terbuka (DEC-017/DEC-020).
 - **Bucket `spike-m2-public` dibiarkan** di project `mahira.id` untuk Owner; menghapusnya adalah pilihan Owner.
@@ -109,11 +109,29 @@ Rekomendasi saja; status tidak diubah. Lihat `decisions/DECISIONS.md` §2.3.
 - **Tetap terbuka untuk M5-04:** DEC-011 (akses level publikasi vs aset), bagian privat DEC-012 (signed URL, TTL, revocation), DEC-010 (evaluator entitlement), upload langsung vs lewat server, retensi dan backup objek.
 
 ## 10. Follow-up
-| Tindak lanjut | Owner | Milestone |
-|---|---|---|
-| Putuskan apakah bagian publik DEC-012 dicatat tervalidasi; hapus atau pertahankan bucket `spike-m2-public` | Haidar (PO) | M2-05 |
-| Nama bucket/prefix produksi, region, pemisahan key S3 per environment | Engineering + PO | M3-08 (DEC-017, DEC-020) |
-| Putuskan `clientUploads` + CORS vs upload lewat server; uji ukuran file nyata | Engineering | M3-08 |
-| Blokir atau dokumentasikan `/api/media/file/*` | Engineering | M3-08 |
-| Jalankan bagian privat: private bucket, signed URL + TTL, matriks akses, audit, file besar | Engineering | M5-04 |
-| Ulangi spike bila adapter, `@aws-sdk/client-s3`, atau provider berubah | Engineering | — |
+| Tindak lanjut | Owner | Milestone | Status 2026-11-16 (M3-08, DECISIONS §2.14) |
+|---|---|---|---|
+| Putuskan apakah bagian publik DEC-012 dicatat tervalidasi; hapus atau pertahankan bucket `spike-m2-public` | Haidar (PO) | M2-05 | Bucket `spike-m2-public` + prefix `spike-m2` tetap untuk `media` sampai M4 (butir 5). |
+| Nama bucket/prefix produksi, region, pemisahan key S3 per environment | Engineering + PO | M3-08 (DEC-017, DEC-020) | Sebagian: bucket privat `publication-files` (dibuat Owner) dipakai bersama Preview, lokal, dan tes; key S3 per environment dan region produksi pindah ke M4 (butir 5). |
+| Putuskan `clientUploads` + CORS vs upload lewat server; uji ukuran file nyata | Engineering | M3-08 | Diputuskan `clientUploads` (butir 4). CORS (diukur saat perencanaan M3-08): preflight `OPTIONS` ke endpoint S3 bucket ini dengan origin `vercel.app`, method PUT, header `content-type,if-none-match` menjawab 200 dengan `Access-Control-Allow-Origin: *`; tidak ada tindakan Owner yang diperlukan. PUT bertanda tangan + pembuatan record diuji lewat HTTP (DL12); PUT dari browser nyata dan file 10 MB di Vercel diukur Owner (ENVIRONMENTS §3.1 "Unduhan file (M3-08)"). |
+| Blokir atau dokumentasikan `/api/media/file/*` | Engineering | M3-08 | Selesai: route statis menjawab 404 + `noindex` + `no-store` (butir 10; DL10, G3.9, G4.5). |
+| Jalankan bagian privat: private bucket, signed URL + TTL, matriks akses, audit, file besar | Engineering | M5-04 | Sebagian maju ke M3-08 (deviasi tercatat butir 2): private bucket, signed URL 60 detik, cek akses server untuk file `public`, tanpa login (§11). Tetap M5-04: sesi pengguna, file `registered`, audit, matriks akses lengkap. |
+| Ulangi spike bila adapter, `@aws-sdk/client-s3`, atau provider berubah | Engineering | — | Tetap; ditambah: route unduhan memakai `staticHandler` adapter 3.93.0 (butir upgrade DEC-006, `lib/cms/publication-file-storage.ts`). |
+
+## 11. Hasil M3-08 (2026-11-16, lokal, bucket `publication-files`)
+
+Diukur dengan objek `fixture-test-downloads-*` yang dihapus sesudahnya (listing bucket sesudah tes: 0 objek `fixture-test-`, 0 objek lain). Skrip ukur di folder tugas (tidak dilacak git); tes otomatis di `tests/integration/publication-files.test.ts`.
+
+| Pertanyaan | Hasil |
+|---|---|
+| Bucket dari Owner | Dicek read-only saat perencanaan, `GET /storage/v1/bucket/publication-files`: `public: false`, `file_size_limit: 52428800`, `allowed_mime_types: [application/pdf]`. |
+| Signed URL lewat adapter | `signedDownloads: { expiresIn: 60 }`: handler adapter menjawab 302 ke `https://<ref>.storage.supabase.co/storage/v1/s3/publication-files/<key>?…X-Amz-Expires=60`; GET menjawab 200 `application/pdf`, byte sama dengan yang diunggah (DL4). |
+| Header storage | `Content-Disposition` tidak dikirim; `Cache-Control: no-cache`; `Range` didukung (206). |
+| `response-content-disposition` | Dihormati Supabase (presigner langsung, hanya di skrip ukur): header kembali persis. Adapter 3.93.0 tidak dapat mengirimnya (GetObjectCommand hanya Bucket + Key); memakainya butuh dependensi langsung `@aws-sdk/s3-request-presigner`, belum disetujui. Nama simpan di browser = segmen terakhir path = nama file asli yang disanitasi. |
+| TTL | URL baru 200; setelah 61 detik 4xx tanpa byte PDF (DL11). Unduhan 10 MB yang dimulai dalam TTL dan dibaca lambat selesai utuh 818 detik sesudah URL dibuat; request `Range` lanjutan dengan URL kedaluwarsa → 400. |
+| URL langsung objek privat | `/storage/v1/object/public/publication-files/<key>`, `/storage/v1/object/publication-files/<key>` tanpa auth, dan URL S3 tanpa tanda tangan: bukan 200, tanpa byte PDF (DL7). |
+| Client upload | Presign hanya untuk Editor/Admin (anonim 403). PUT PDF ke URL presigned 200, lalu `POST /api/publication-files` dengan referensi upload 201 `ready` (DL12). Payload menandatangani PUT `text/plain` juga, tetapi bucket menolaknya (415). Byte non-PDF yang dinyatakan `application/pdf` diterima bucket (200) lalu record ditolak 400 oleh cek isi Payload; objeknya tertinggal di bucket (tidak ada pembersihan di Payload 3.93.0; tes menghapusnya lewat hook `afterDelete` plugin). |
+| Relasi yang tidak boleh dibaca anonim | Tetap angka (id) di hasil Local API anonim, bukan dokumen (DL13): file `registered`/`subscriber` tidak pernah ter-populate untuk pengunjung. |
+| `/api/media/file/*` | Tanpa route baru (uji rusak-sengaja M3-08): REST anonim 403 dari Payload, karena read `media` menolak REST anonim sejak M3-02; HTTP 500 di §8 diukur di M2-03 sebelum aturan itu; sesi staf tidak diukur. Dengan route baru: 404 + `noindex` + `no-store` untuk semua pemanggil. |
+
+Batasan yang tersisa: objek yatim dari client upload yang record-nya ditolak; unggah 50 MB di Vercel membaca ulang seluruh objek ke `/tmp` untuk cek isi (waktu dan ruang `/tmp` diukur Owner di Preview); key S3 satu set untuk semua environment (M4).

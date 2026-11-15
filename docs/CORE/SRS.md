@@ -27,6 +27,7 @@ Spesifikasi fungsional, nonfungsional, arsitektur target, aktor, integrasi, kont
 | Dokumen terkait | PRD-MID sebagai sumber kebutuhan; PDD-MID sebagai kontrak desain dan UX.                 |
 | Status          | Draft spesifikasi; belum menjadi kontrak implementasi final                              |
 | Perubahan 2026-11-12 | Arahan Owner (DECISIONS §2.8): label fase FR-009–FR-013, FR-018/019, FR-021–FR-025, FR-028; FR-029 baru (Learning Hub panduan dan toolkit); catatan §3, §5.1, §13, §14. |
+| Perubahan 2026-11-16 | Keputusan Owner M3-08 (DECISIONS §2.14): kriteria FR-008 dan §8 (file unduhan publik di private bucket + signed URL 60 detik lewat route server; PDF saja, cek isi, 50 MB). |
 
 # 1. Pendahuluan
 
@@ -71,7 +72,7 @@ Sistem mencakup website publik yang SEO-oriented, katalog dan detail publikasi, 
 | CMS / staff admin       | Payload CMS 3                              | Konten publikasi, penulis, topik, halaman, Learning Hub, media metadata, localization, draft/versions, access control staf. |
 | Database                | Supabase PostgreSQL                        | Data aplikasi; tabel CMS via Payload dan data user/entitlement via Supabase. Ownership dan migrasi harus dipisahkan jelas.  |
 | Public-user auth        | Supabase Auth + @supabase/ssr              | Registrasi, login, session, token, dan identitas pengguna umum.                                                             |
-| File storage            | Supabase Storage                           | Public bucket untuk aset publik; private bucket untuk file terbatas.                                                        |
+| File storage            | Supabase Storage                           | Public bucket untuk cover/image publik; private bucket `publication-files` untuk semua file PDF publikasi, publik maupun terbatas (DECISIONS §2.14). |
 | Search                  | Postgres FTS + pg_trgm                     | Pencarian judul, ringkasan, metadata dan, bila disetujui, hasil ekstraksi PDF.                                              |
 | Localization            | Payload localization + next-intl           | Konten dan UI ID/EN; model relasi terjemahan wajib diputuskan.                                                              |
 | Hosting                 | Vercel Pro + Supabase Pro (proposed)       | Deployment Next.js dan layanan backend managed; domain tetap di Hostinger.                                                  |
@@ -107,7 +108,7 @@ Catatan fase (DECISIONS §2.8, 2026-11-12): label lama "MVP+ (DEC-002)" pada FR-
 | FR-005 | Taxonomy navigation          | P0            | Sistem harus mengelompokkan publikasi berdasarkan tipe dan topik/desk yang disetujui.                                    | Pengguna dapat menelusuri topik; kategori kosong tidak ditampilkan sebagai navigasi aktif.                    |
 | FR-006 | Search                       | P0            | Sistem harus mencari publikasi berdasarkan kata kunci pada field yang ditentukan.                                        | Hasil relevan ditampilkan; query kosong/invalid dan no-results memiliki state yang jelas.                     |
 | FR-007 | SEO metadata                 | P0            | Setiap halaman publikasi harus menyediakan metadata unik dan social preview.                                             | HTML response memiliki title, description, canonical dan Open Graph yang tepat.                               |
-| FR-008 | Public file download         | P0            | Sistem harus mengizinkan unduhan file publik tanpa login.                                                                | File public hanya dapat diakses melalui URL/bucket yang memang diklasifikasikan public.                       |
+| FR-008 | Public file download         | P0            | Sistem harus mengizinkan unduhan file publik tanpa login.                                                                | File public diunduh tanpa login lewat `GET /api/files/{fileId}/download`: server memeriksa publikasi tayang + `public` dan akses efektif file `public`, lalu memberi signed URL 60 detik ke private bucket `publication-files`; tidak ada URL bucket publik untuk file publikasi (amandemen M3-08, DECISIONS §2.14). |
 | FR-009 | Access-level enforcement     | Pra-launch M5 (`registered`); subscriber: Phase 2 M7 | Sistem harus memeriksa access_level dan entitlement pada server sebelum mengeluarkan akses file.                         | Anonim/registered tanpa hak tidak memperoleh signed URL file subscriber.                                      |
 | FR-010 | Public account registration  | Pra-launch M5 (DECISIONS §2.8 Q1 A) | Sistem harus mendukung registrasi pengguna umum melalui Supabase Auth.                                                   | Akun dibuat, validasi/verifikasi sesuai konfigurasi, dan session tersedia setelah flow selesai.               |
 | FR-011 | Public user sign-in/out      | Pra-launch M5 (DECISIONS §2.8 Q1 A) | Sistem harus mendukung login, logout, dan reset password.                                                                | Session dibuat/dihapus dengan aman; route akun memerlukan session valid.                                      |
@@ -248,11 +249,11 @@ Daftar di atas adalah model konseptual, bukan skema final. Field wajib, cardinal
 
 # 8. Persyaratan file dan media
 
-- Cover, image publik, dan file unduhan publik disimpan pada lokasi storage yang memang dapat diakses publik.
+- Cover dan image publik disimpan pada lokasi storage yang memang dapat diakses publik. File unduhan publikasi (PDF), termasuk yang ber-Access Level `public`, disimpan pada private bucket `publication-files`; tautan unduhan menuju route aplikasi yang memeriksa akses di server lalu menjawab 307 ke signed URL berumur 60 detik (amandemen M3-08, DECISIONS §2.14 butir 2; API-SPECIFICATION §5).
 
 - PDF eksklusif disimpan pada private bucket; jangan pernah mengandalkan route tersembunyi atau nama file sulit ditebak sebagai kontrol akses.
 
-- Upload memvalidasi MIME type, ekstensi, ukuran, status upload, dan metadata publikasi. Batas ukuran harus dikonfirmasi organisasi dan provider.
+- Upload memvalidasi MIME type, ekstensi, ukuran, status upload, dan metadata publikasi. Batas ukuran harus dikonfirmasi organisasi dan provider. Untuk file publikasi (M3-08): hanya PDF, isi file ikut diperiksa (bukan hanya MIME), batas 50 MB sesuai bucket `publication-files` yang dibuat Owner (DECISIONS §2.14 butir 4).
 
 - Upload menggunakan storage adapter atau integrasi server-side sehingga file tidak ditulis ke filesystem ephemeral aplikasi.
 

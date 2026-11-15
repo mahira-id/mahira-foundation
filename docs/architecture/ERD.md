@@ -33,13 +33,17 @@ erDiagram
     string slug
   }
   PUBLICATION_ASSET {
-    string id PK
-    string publication_id FK
+    int id PK
+    string label
     string kind
-    string locale
-    string storage_object_key
-    string processing_status
-    string access_override
+    string language
+    string access_level
+    string status
+    string filename
+    string prefix
+    string _objectKey
+    string mime_type
+    numeric filesize
   }
   AUTHOR {
     string id PK
@@ -65,6 +69,8 @@ erDiagram
     string status
   }
 ```
+
+`PUBLICATION_ASSET` is the Payload upload collection `publication-files` as built in M3-08 (DECISIONS §2.14, DATA-MODEL §4.2.1): a Publication lists its files in order through `publications_rels.publication_files_id` (field `files`, upload `hasMany`; drafts in `_publications_v_rels`), with no back-relation column on the file. A file belongs to exactly one publication record, enforced by a Publication `beforeChange` hook, not by a database constraint. The object lives in the private bucket `publication-files`; `filename`, `prefix` and `_objectKey` locate it and stay server-only.
 
 The diagram uses direct many-to-many labels for readability. Actual Payload implementation may generate join tables, arrays, or relation collections depending on the selected adapter and relationship configuration. If author order or contribution role is needed, use an explicit relation collection rather than an unqualified many-to-many relation.
 
@@ -126,11 +132,11 @@ erDiagram
 
 ## 3. Ownership overlay
 
-- Payload-owned: Publication, PublicationSlug (riwayat slug publik, unik per `locale` + `slug`; M3-07, DATA-MODEL §4.8), PublicationAsset (pending decision), Author, Topic, PublicationType, LearningResource, Page, StaffUser.
+- Payload-owned: Publication, PublicationSlug (riwayat slug publik, unik per `locale` + `slug`; M3-07, DATA-MODEL §4.8), PublicationAsset (koleksi `publication-files`, M3-08, DECISIONS §2.14 butir 1, DATA-MODEL §4.2.1), Author, Topic, PublicationType, LearningResource, Page, StaffUser.
 - Supabase Auth-owned: Auth user identity.
 - App schema-owned: PublicUserProfile, Entitlement, audit/event tables, future payment tables.
 - Object storage-owned: binary object; database holds metadata and opaque object key.
 
 ## 4. Decisions that can change this ERD
 
-DEC-003 taxonomy/cardinality; DEC-004 translation model; DEC-007 schema ownership; DEC-009 staff access; DEC-011 asset-level access; DEC-012 asset metadata/storage adapter. Update this diagram when an ADR is Accepted.
+DEC-003 taxonomy/cardinality; DEC-004 translation model; DEC-007 schema ownership; DEC-009 staff access; DEC-011 asset-level access (Accepted 2026-11-16, DECISIONS §2.14 butir 3: `access_level` per file wajib, akses efektif = yang lebih ketat); DEC-012 asset metadata/storage adapter (tetap Proposed; M3-08 membuktikan private bucket + signed URL 60 detik untuk file publik). Update this diagram when an ADR is Accepted.

@@ -52,7 +52,7 @@ Semua path berikut adalah kandidat. Sesuaikan dengan Next.js Route Handler conve
 |---|---|---|---|
 | GET | `/api/publications` | Public | Search/list; bounded filters and pagination. |
 | GET | `/api/publications/{id-or-safe-key}` | Public | Optional data endpoint; public pages may fetch server-side directly. |
-| POST | `/api/files/{assetId}/download` | Conditional | Authorize access and issue short-lived signed URL or stream/proxy. |
+| GET | `/api/files/{fileId}/download` | Conditional (M3-08: tanpa sesi, file `public` saja) | Authorize access and issue short-lived signed URL. Dibangun di M3-08 sebagai GET, bukan POST (§5.1). |
 | GET/PATCH | `/api/account/profile` | Supabase user | Read/update own profile only. |
 | GET | `/api/account/entitlements` | Supabase user | Read own effective entitlement summary. |
 | GET | `/api/account/downloads` | Supabase user | Optional own history, if approved. |
@@ -63,9 +63,36 @@ Payload admin APIs remain governed by Payload auth and access control. Do not ex
 
 ## 5. Download contract
 
-### Request
+### 5.1 Implementasi M3-08: `GET /api/files/{fileId}/download` (file `public`)
 
-`POST /api/files/{assetId}/download`
+Keputusan Owner 2026-11-16 (DECISIONS §2.14 butir 2, 3, 6, 9). Kontrak ini berlaku untuk file ber-akses efektif `public`; file `registered`/`subscriber` mengikuti §5.2 di M5/M7.
+
+- **Method dan path.** `GET /api/files/{fileId}/download` (route `app/api/files/[fileId]/download/route.ts`). Deviasi tercatat dari `POST` di §5.2: GET dipilih agar tautan "Unduh PDF" / "Download PDF" bekerja tanpa JavaScript. Tidak ada body dan tidak ada parameter lain; `fileId` adalah id record `publication-files` (bilangan bulat positif tanpa nol di depan, ≤ 2147483647).
+- **Pemeriksaan di server, setiap request** (`lib/cms/public-content.ts` `getPublicFileDownload`, semuanya sebagai pengunjung anonim lewat Local API dengan `overrideAccess: false`):
+  1. file terbaca anonim: `status = ready` dan `accessLevel = public` (`PUBLIC_FILE_READ`);
+  2. versi tayang (tabel utama, `draft: false`) sebuah record publikasi mencantumkan file itu, dan record itu `published` + `public` (`PUBLIC_PUBLICATION_READ`); file yang hanya ada di draf, record yang belum pernah terbit, dan record yang di-unpublish tidak lolos;
+  3. file PDF siap dan level yang lebih ketat antara publikasi dan file adalah `public` (`isPublicDownload`, DEC-011);
+  4. URL GET ditandatangani lewat adapter `@payloadcms/storage-s3` (`signedDownloads.expiresIn = 60`).
+- **Tanpa sesi.** Route tidak membaca sesi; sesi staf tidak memberi bypass (DEC-009). Staf membuka file di `/admin` lewat `/api/publication-files/file/<nama>` di bawah access control Payload (302 bertanda tangan).
+
+| Kondisi | Respons |
+|---|---|
+| Semua pemeriksaan lolos | `307`, `Location` = signed URL 60 detik ke private bucket `publication-files`; tanpa body |
+| CMS mati, id tidak valid atau tidak dikenal, file draf/tidak tayang/tidak terpasang, publikasi draf/di-unpublish/bukan `public`, file `registered`/`subscriber`, file belum `ready` | `404` `Not Found` yang sama untuk semua penolakan (tidak membocorkan keberadaan file) |
+| Galat baca database atau galat penandatanganan | `503` |
+
+- **Header setiap respons:** `Cache-Control: no-store` (signed URL adalah bearer credential) dan `X-Robots-Tag: noindex` (PDF tidak diindeks; halaman detail tetap yang diindeks, DEC-021).
+- **Log:** hanya nama galat (`PublicationReadError`, `FileStorageError`), tidak pernah URL atau signed URL.
+- **Nama file unduhan:** objek disimpan dengan nama asli yang sudah disanitasi Payload, jadi browser memakai segmen terakhir path signed URL. Supabase menghormati `response-content-disposition` (diukur 2026-11-16 dengan presigner langsung), tetapi adapter 3.93.0 hanya menandatangani Bucket + Key dan memakai parameter itu butuh dependensi langsung `@aws-sdk/s3-request-presigner` (belum disetujui). Tanpa parameter itu storage tidak mengirim `Content-Disposition`.
+- **TTL dan pencabutan:** URL baru ditolak setelah 60 detik (DL11). Unduhan yang sudah berjalan tidak diputus saat TTL lewat (diukur lokal: 10 MB yang dibaca lambat selesai 818 detik sesudah URL dibuat); request `Range` baru dengan URL kedaluwarsa dijawab 400, jadi lanjutan unduhan butuh klik ulang. Unpublish atau perubahan Access Level berlaku untuk request berikutnya; URL yang sudah diberikan tetap berlaku sampai 60 detik.
+- **Tanpa audit, hitungan unduhan, atau rate limit** untuk unduhan publik di M3-08 (butir 9). FR-026 untuk file terbatas (M5); rate limit dicatat sebagai butir M4.
+- **`/api/media/file/*`** selalu `404` dengan kedua header di atas (butir 10; sebelumnya HTTP 500 dari fallback disk Payload, SPIKE-003 §8). File media tetap URL bucket publik.
+
+### 5.2 Kontrak umum (file terbatas, M5/M7)
+
+#### Request
+
+`POST /api/files/{assetId}/download` (kandidat awal; M3-08 membangun `GET /api/files/{fileId}/download`, §5.1. Bentuk untuk file terbatas diputuskan di M5.)
 
 The authenticated/anonymous caller identifies only the asset requested. The server loads publication/asset access metadata from trusted sources.
 
@@ -77,7 +104,7 @@ Optional request body may contain a client correlation hint only:
 
 Do not accept client-supplied user ID or access level.
 
-### Decision flow
+#### Decision flow
 
 1. Resolve asset by immutable ID and confirm it is deliverable/published.
 2. Resolve publication and effective asset access policy.
@@ -88,7 +115,7 @@ Do not accept client-supplied user ID or access level.
 7. Record the authorization outcome using a privacy-reviewed audit schema.
 8. Return only the minimum data required for the client to initiate download.
 
-### Response semantics
+#### Response semantics
 
 | Condition | Candidate response | Notes |
 |---|---|---|
@@ -102,9 +129,9 @@ Do not accept client-supplied user ID or access level.
 
 Whether inaccessible assets return `403` or `404` must be decided from the threat model and UX requirements. Never return a signed URL on deny.
 
-### URL expiry
+#### URL expiry
 
-TTL is **TBD**. Choose the shortest practical period after testing download size, user experience, and provider constraints. Signed URLs are bearer credentials: anyone who obtains one may use it until expiry. Revoking an entitlement does not necessarily invalidate an already issued URL. If immediate revocation is required, use a proxy/stream or another revocation-capable design.
+File `public` (M3-08): 60 detik (DECISIONS §2.14 butir 2; pengukuran di §5.1). File terbatas: TTL is **TBD**. Choose the shortest practical period after testing download size, user experience, and provider constraints. Signed URLs are bearer credentials: anyone who obtains one may use it until expiry. Revoking an entitlement does not necessarily invalidate an already issued URL. If immediate revocation is required, use a proxy/stream or another revocation-capable design.
 
 ## 6. Search/list contract
 
