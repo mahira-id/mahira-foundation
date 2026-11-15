@@ -27,7 +27,7 @@ Detail lengkap ada di `docs/decisions/DECISIONS.md` §2.1 (DEC-005, DEC-021).
 - ~~Default locale sebagai setting bernama (homepage `/` tetap berbahasa Indonesia tanpa redirect, tetapi tidak ada keputusan "default locale" untuk fungsi lain).~~ **Dijawab Owner 2026-11-10** (DECISIONS §2.4 P4c): konstanta `DEFAULT_LOCALE = "id"` (`lib/i18n/locales.ts`) hanya untuk `/` dan `localization.defaultLocale` Payload; tanpa redirect dan tanpa fallback konten. Diterapkan di M3-01.
 - Kanonikalisasi query string selain aturan `noindex`.
 - Segmen route lain di bawah ini: topics, learning-hub, about, account, dan mount path admin.
-- Kapan slug lama dianggap retired (aturan "permanent redirect only after content owner confirms") untuk konten produksi.
+- Kapan slug lama dianggap retired (aturan "permanent redirect only after content owner confirms") untuk konten produksi. Sejak M3-07 (riwayat slug, DATA-MODEL §4.8) slug lama disimpan dan di-redirect sampai slug itu diterbitkan record lain (URL pindah ke record itu) atau record dihapus; aturan retired yang dikonfirmasi pemilik konten tetap belum diputuskan.
 
 ## Proposed route baseline (historical, before acceptance)
 
@@ -74,6 +74,8 @@ Status validasi (2026-11-08): belum dijalankan. Prototipe Spike A (spec 03 desig
 
 Status validasi (2026-11-10): dijalankan di M2-02 pada branch spike/m2-payload-postgres; hasil di SPIKE-001 §7.6; rekomendasi di DECISIONS §2.3. Status ADR tidak berubah.
 
+Status validasi (2026-11-15, M3-07, branch `feat/m3-07-seo`): "renamed slug redirect" diuji di `tests/integration/slug-redirect.test.ts` RD1–RD8 (satu hop untuk rantai A → B → C, locale sama saja, tanpa loop, slug yang dipakai ulang, record tujuan tidak tayang atau terbatas) dan `tests/unit/slug-redirect.test.ts` SLU1–SLU7. Aturan "Slug lama di-redirect dengan HTTP 308 dalam satu hop" terpenuhi sebagai 308 sungguhan hanya untuk user agent di daftar `htmlLimitedBots` Next (bawaan Next 16.4.4, misalnya Bingbot). User agent lain menerima HTTP 200 karena static shell route detail sudah terkirim (sama dengan amandemen DECISIONS §2.11 P7 A); redirect permanennya ada di payload RSC dan diikuti router browser, tanpa refresh meta, jadi tanpa JavaScript tidak ada pengalihan (IA-ROUTING-I18N §5 aturan 3; usulan planner PP5, DECISIONS §2.13). Status ADR tidak berubah.
+
 ## Change history
 
 | Date | Change |
@@ -82,3 +84,4 @@ Status validasi (2026-11-10): dijalankan di M2-02 pada branch spike/m2-payload-p
 | 2026-11-08 | Status Accepted for the rules in "Decision", approver Haidar (Product Owner). "Still open" section added. Earlier lists kept and labelled historical. |
 | 2026-11-10 | Validation pointer to M2-02 results (SPIKE-001 §7.6, DECISIONS §2.3) added. Status unchanged. |
 | 2026-11-10 | "Still open" default-locale item marked answered by the Owner (DECISIONS §2.4 P4c); implemented in M3-01. Status unchanged. |
+| 2026-11-15 | M3-07: slug-history retention noted under "Still open" (retirement rule still open); validation of the old-slug 308 recorded, including the HTTP status per user agent. Status unchanged. |

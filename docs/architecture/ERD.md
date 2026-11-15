@@ -12,6 +12,7 @@ erDiagram
   PUBLICATION }o--o{ TOPIC : classified_as
   PUBLICATION }o--|| PUBLICATION_TYPE : has_type
   PUBLICATION }o--o{ PUBLICATION : translation_group
+  PUBLICATION ||--o{ PUBLICATION_SLUG : public_url_history
   LEARNING_RESOURCE }o--o{ TOPIC : relates_to
   LEARNING_RESOURCE }o--o{ PUBLICATION : references
 
@@ -24,6 +25,12 @@ erDiagram
     string access_level
     string status
     datetime published_at
+  }
+  PUBLICATION_SLUG {
+    int id PK
+    int publication_id FK
+    string locale
+    string slug
   }
   PUBLICATION_ASSET {
     string id PK
@@ -119,7 +126,7 @@ erDiagram
 
 ## 3. Ownership overlay
 
-- Payload-owned: Publication, PublicationAsset (pending decision), Author, Topic, PublicationType, LearningResource, Page, StaffUser.
+- Payload-owned: Publication, PublicationSlug (riwayat slug publik, unik per `locale` + `slug`; M3-07, DATA-MODEL §4.8), PublicationAsset (pending decision), Author, Topic, PublicationType, LearningResource, Page, StaffUser.
 - Supabase Auth-owned: Auth user identity.
 - App schema-owned: PublicUserProfile, Entitlement, audit/event tables, future payment tables.
 - Object storage-owned: binary object; database holds metadata and opaque object key.

@@ -46,7 +46,7 @@
 - Primary key: use the ID strategy generated/required by the selected ORM/CMS; do not assume UUID if Payload adapter defaults differ. Application-owned tables may use UUID.
 - `created_at`, `updated_at`: server/database-generated; never trusted from public client.
 - `created_by`, `updated_by`: staff relation or verified user ID where applicable; maintain actor type where sources differ.
-- Slugs: normalized lowercase kebab-case; unique scope TBD (global vs per locale vs collection). Slug changes create redirect records.
+- Slugs: normalized lowercase kebab-case; unique scope TBD (global vs per locale vs collection). Slug changes create redirect records. Publikasi: slug unik per locale (DEC-005, indeks `locale_slug_idx`); sejak M3-07 setiap slug yang pernah tayang published + `public` dicatat di riwayat slug `publication-slugs` (§4.8) untuk redirect 308 slug lama (DECISIONS §2.11 P9 A).
 - Locale: ISO-style supported locale code (`id`, `en` initially). Validate against allowlist.
 - Status: controlled enum; publication status is not access level.
 - IDs in public URLs: use slugs, not sequential internal IDs.
@@ -135,6 +135,26 @@ Proposed fields: `id`, localized title/slug/body blocks, status, locale/translat
 
 Fields: email, name, role(s), active/disabled state, MFA policy/state as available, timestamps, last activity if policy permits. Do not expose staff records publicly. Fine-grained collection/global permissions remain in Payload access configuration.
 
+### 4.8 PublicationSlug (riwayat slug, M3-07, diterapkan)
+
+Koleksi Payload `publication-slugs` (`payload/collections/PublicationSlugs.ts`, tabel `publication_slugs`, migrasi `20261115_054138_m3_07_publication_slugs`). Dasar: keputusan Owner 2026-11-15 butir 7 (redirect 308 slug lama dengan riwayat slug per locale, migrasi disetujui) dan DECISIONS §2.11 P9 A. Bentuk penyimpanan, slug mana yang dicatat, rantai, dan konflik adalah usulan planner M3-07 (DECISIONS §2.13, PP1–PP4), bukan keputusan Owner.
+
+| Field | Tipe | Wajib | Aturan |
+|---|---|---:|---|
+| `id` | serial | Ya | Kunci primer. |
+| `publication` | relationship → `publications` | Ya | Record yang terakhir menerbitkan URL ini sebagai published + `public`. FK `ON DELETE set null` pada kolom `NOT NULL`: hook `beforeDelete` Publication menghapus baris record lebih dulu. |
+| `locale` | select `id`/`en` | Ya | Locale URL. |
+| `slug` | text | Ya | `validateSlug` (huruf kecil, angka, tanda hubung tunggal). |
+| `createdAt`, `updatedAt` | timestamp | Ya | Diisi sistem. |
+
+- **Keunikan:** satu pemilik per URL, indeks unik (`locale`, `slug`) = `locale_slug_1_idx` (Payload menamai indeks gabungan menurut kolom; `publications` tetap `locale_slug_idx` karena koleksi itu dibangun lebih dulu).
+- **Yang dicatat:** hook `afterChange` Publication (`payload/hooks/publication-slugs.ts` `recordPublicSlug`) membaca ulang record di tabel utama dengan `PUBLIC_PUBLICATION_READ` di transaksi simpan yang sama. Bila record kini published + `public`, URL-nya dicatat (slug saat ini juga); baris yang milik record lain dipindah ke record ini. Simpan draft, unpublish, dan Access Level `registered`/`subscriber` tidak mencatat apa pun.
+- **Rantai:** baris menunjuk record, bukan slug berikutnya, jadi A → B → C selalu berakhir di slug C saat ini dalam satu langkah.
+- **Retensi:** baris disimpan sampai slug itu diterbitkan record lain (baris pindah) atau record dihapus (baris dihapus). Kapan slug lama dianggap retired untuk konten produksi tetap terbuka (ADR-0005 "Still open").
+- **Akses:** read hanya staf atau Local API anonim server-side (REST anonim ditolak, P1 A); create/update/delete ditolak untuk semua pemanggil API, hanya hook dengan `overrideAccess: true` yang menulis. Tanpa versi; `admin.hidden`. RLS aktif (migrasi `up()` memanggil `enableRlsOnPayloadTables`).
+- **Backfill migrasi:** record published + `public` yang tayang, lalu versi published + `public` di `_publications_v` (terbaru per `locale` + `slug`, versi record yang sudah dihapus dilewati); `ON CONFLICT DO NOTHING`. `down()` menghapus tabel, enum, dan kolom `payload_locked_documents_rels.publication_slugs_id` (riwayat hilang; `up()` ulang membangunnya lagi dari record dan versi yang masih ada, maksimal 25 versi per record).
+- **Pemakaian:** halaman detail membaca riwayat hanya bila tidak ada record published + `public` dengan URL itu (`lib/cms/public-content.ts` `getPublicationRedirect`), lalu membaca record tujuan sebagai pengunjung anonim; redirect hanya ke locale yang sama (IA-ROUTING-I18N §5).
+
 ## 5. Application entities (Supabase/application-owned proposal)
 
 ### 5.1 PublicUserProfile
@@ -219,7 +239,7 @@ Maintain a schema ownership ledger. Each migration must declare subsystem, purpo
 3. Asset metadata owner and adapter strategy.
 4. Whether assets can override publication access level.
 5. Whether author is required or institutional attribution is allowed.
-6. Slug uniqueness scope and redirect retention.
+6. Slug uniqueness scope and redirect retention. Keunikan per locale terbukti (DEC-005); riwayat slug dan retensinya diterapkan di M3-07 (§4.8). Aturan retired untuk konten produksi tetap terbuka (ADR-0005).
 7. Exact editorial status workflow.
 8. Data retention for download events and deleted accounts.
 9. Need for user avatar/profile fields.
