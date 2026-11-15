@@ -23,7 +23,7 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 | Page | Route candidate | Notes |
 |---|---|---|
 | Home | `/` (Indonesia; DEC-005, DECISIONS §2.7 P6 A) | Editorial landing page; only `locale: id` publications. Bare `/id` and `/en` stay 404 (DEC-005). English homepage: **OPEN**. |
-| Publication index | `/{locale}/publications` | Search, filters, pagination. Filter `type`/`topic`/`year` dan pagination diterapkan di M3-05 (§7; DECISIONS §2.11 P1–P3); search di M3-06. |
+| Publication index | `/{locale}/publications` | Search, filters, pagination. Filter `type`/`topic`/`year` dan pagination diterapkan di M3-05 (§7; DECISIONS §2.11 P1–P3); search `q` diterapkan di M3-06 (§7; DECISIONS §2.12, ADR-0007). |
 | Publication detail | `/{locale}/publications/{slug}` | One localized publication representation. Diterapkan di M3-05: hanya published + `public` di locale itu; selain itu not-found (HTTP 200 + `noindex`, DECISIONS §2.11 amandemen P7 A); PAGE-SPECIFICATIONS §4. |
 | Publication type index | `/{locale}/publications/type/{typeSlug}` | Only if taxonomy deserves an indexable landing page. Tidak dibuat di M3-05; diputuskan saat nilai taksonomi final (B-04, M4-05) atau di M3-07 (DECISIONS §2.11 P6 A). |
 | Topic detail | `/{locale}/topics/{topicSlug}` | Implement only if user-facing taxonomy requires it. Tidak dibuat di M3-05; sama dengan baris di atas (DECISIONS §2.11 P6 A). |
@@ -96,8 +96,8 @@ Recommended query contract for publication listing:
 - Shareable filters are preserved by links; transient input keystrokes need not update URL until committed.
 - Define maximum page size and maximum query length in API specification.
 
-Subset yang diterapkan di M3-05 (DECISIONS §2.11 P1–P4; `lib/publications/index-params.ts`):
-- `?type=<slug>&topic=<slug>&year=<yyyy>&page=<n>`, ditulis dalam urutan itu; slug term sama di ID dan EN. `q` dan `sort` di M3-06.
+Subset yang diterapkan di M3-05 dan M3-06 (DECISIONS §2.11 P1–P4, §2.12 P3, P4, P8; `lib/publications/index-params.ts`):
+- `?q=<teks>&type=<slug>&topic=<slug>&year=<yyyy>&page=<n>`, ditulis dalam urutan itu (`q` sejak M3-06, DECISIONS §2.12 P3); slug term sama di ID dan EN. `q` dinormalisasi (NFKC, spasi dirapikan, maksimal 100 code point) dan dicari hanya di locale route. Tidak ada parameter `sort` (M3-06 P4): urutan = relevansi bila ada `q`, selain itu urutan M3-05; `sort` di URL diabaikan seperti parameter lain.
 - Satu nilai per parameter (nilai pertama bila berulang); nilai kosong = tidak ada; parameter lain diabaikan; `page` dihilangkan untuk halaman 1. `page` harus `^[1-9][0-9]{0,5}$`.
 - Nilai filter tak dikenal → state "filter tidak dikenal"; `page` tidak valid atau lewat halaman terakhir → state "halaman tidak ada". Keduanya HTTP 200 + `noindex, follow`, seperti setiap URL dengan filter berisi (DEC-021).
 - 12 per halaman; urutan stabil: `publishedAt` terbaru, lalu tanpa tanggal menurut `createdAt` terbaru, pemecah seri `id` terbaru.

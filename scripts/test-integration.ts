@@ -18,13 +18,14 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *                 HP8/HP9: page-first and admin-first Payload init (second server on TEST_PORT + 1)
  *   admin         admin login redirect in proxy.ts, staff session on /admin (item 1c)
  *   index         /{locale}/publications: order, filters, pagination, URL state, noindex (M3-05)
+ *   search        /{locale}/publications?q=: relevance, stemming, locale, AND filters, non-disclosure (M3-06)
  *   detail        /{locale}/publications/{slug}: public only, not-found + noindex, switcher, read failure
  *                 (DT10: second server on TEST_PORT + 1 with an unreachable database) (M3-05)
  *   preview       staff draft preview: /api/preview staff check + Draft Mode, detail in preview,
  *                 index and / never show drafts, /api/preview/exit (M3-05)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left (always last)
  *
- * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,detail,preview,db-invariants]
+ * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,db-invariants]
  * Never run two at once: the files share one database and one port.
  */
 const FILES = {
@@ -36,6 +37,7 @@ const FILES = {
   homepage: "tests/integration/homepage.test.ts",
   admin: "tests/integration/admin.test.ts",
   index: "tests/integration/publication-index.test.ts",
+  search: "tests/integration/publication-search.test.ts",
   detail: "tests/integration/publication-detail.test.ts",
   preview: "tests/integration/preview.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",

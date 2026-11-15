@@ -17,7 +17,8 @@ import {
  * lib/cms/public-content.ts reads the CMS (anonymous, so only published +
  * public records of the page locale) and runs these functions; the page
  * renders the plan. Filter values from the URL are only compared with known
- * options and never echoed.
+ * options and never echoed. The search text `q` (M3-06, DECISIONS §2.12)
+ * reaches the database only as a bound parameter of the search query.
  */
 
 /** One visible publication of the locale, as the scan query returns it (ids only). */
@@ -106,15 +107,28 @@ export function termIds(refs: IndexRef[]): { types: number[]; topics: number[] }
  * P4 A: dated refs first, newest publishedAt first; then undated refs,
  * newest createdAt first; ties by the higher id, so pages are stable.
  */
+export function compareRefs(a: IndexRef, b: IndexRef): number {
+  if (a.publishedAt && !b.publishedAt) return -1;
+  if (!a.publishedAt && b.publishedAt) return 1;
+  const timeA = Date.parse(a.publishedAt ?? a.createdAt);
+  const timeB = Date.parse(b.publishedAt ?? b.createdAt);
+  if (timeA !== timeB) return timeB - timeA;
+  return b.id - a.id;
+}
+
 export function orderRefs(refs: IndexRef[]): IndexRef[] {
-  return [...refs].sort((a, b) => {
-    if (a.publishedAt && !b.publishedAt) return -1;
-    if (!a.publishedAt && b.publishedAt) return 1;
-    const timeA = Date.parse(a.publishedAt ?? a.createdAt);
-    const timeB = Date.parse(b.publishedAt ?? b.createdAt);
-    if (timeA !== timeB) return timeB - timeA;
-    return b.id - a.id;
-  });
+  return [...refs].sort(compareRefs);
+}
+
+/**
+ * Search order (M3-05 order without `q`, DECISIONS §2.12 P4): only refs
+ * whose id has a rank, highest rank first, equal ranks in the M3-05 order.
+ * Ids that are not visible refs are dropped; no ranks means no match.
+ */
+function rankRefs(refs: IndexRef[], ranks: ReadonlyMap<number, number> | undefined): IndexRef[] {
+  if (!ranks) return [];
+  const rank = (ref: IndexRef) => ranks.get(ref.id) ?? 0;
+  return refs.filter((ref) => ranks.has(ref.id)).sort((a, b) => rank(b) - rank(a) || compareRefs(a, b));
 }
 
 function termOptions(terms: IndexTermDoc[], used: Set<number>, collator: Intl.Collator): { options: IndexOption[]; ids: Map<string, number> } {
@@ -187,16 +201,30 @@ function matches(ref: IndexRef, filters: ResolvedFilters): boolean {
 
 function queryFilters(query: IndexQuery): IndexFilters {
   const filters: IndexFilters = {};
+  if (query.q) filters.q = query.q;
   for (const key of INDEX_FILTER_KEYS) if (query[key]) filters[key] = query[key];
   return filters;
 }
 
 /**
  * State and rows of one index URL. Precedence: unknown filter value >
- * invalid or out-of-range page > empty (no filter) > no results (filter) >
- * list. Filters combine with AND; `year` excludes undated publications.
+ * invalid or out-of-range page > empty (no filter) > no results (filter or
+ * search) > list. Filters and the search combine with AND; `year` excludes
+ * undated publications. With `q`, `ranks` (publication id → rank, from
+ * lib/cms/publication-search-query.ts) selects and orders the refs; without
+ * `q` it is ignored.
  */
-export function planIndex({ query, refs, facets }: { query: IndexQuery; refs: IndexRef[]; facets: IndexFacets }): IndexPlan {
+export function planIndex({
+  query,
+  refs,
+  facets,
+  ranks,
+}: {
+  query: IndexQuery;
+  refs: IndexRef[];
+  facets: IndexFacets;
+  ranks?: ReadonlyMap<number, number>;
+}): IndexPlan {
   const filters = queryFilters(query);
   const requested = parsePage(query.page);
   const page = requested ?? 1;
@@ -204,7 +232,8 @@ export function planIndex({ query, refs, facets }: { query: IndexQuery; refs: In
   if (unknown.length > 0) {
     return { state: "unknown-filter", total: 0, page, pageCount: 1, pageIds: [], unknown, filters };
   }
-  const ordered = orderRefs(refs.filter((ref) => matches(ref, resolved)));
+  const filtered = refs.filter((ref) => matches(ref, resolved));
+  const ordered = query.q ? rankRefs(filtered, ranks) : orderRefs(filtered);
   const total = ordered.length;
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const base = { total, page, pageCount, unknown, filters };
@@ -246,7 +275,7 @@ export function toIndexItem(doc: HomePublicationDoc, locale: Locale): IndexItem 
 
 const NOINDEX_STATES: ReadonlySet<IndexState | "error"> = new Set(["unknown-filter", "page-not-found", "error"]);
 
-/** P3 A, DEC-021: `noindex, follow` for any non-empty filter and for the invalid and failed states. */
+/** P3 A, DEC-021: `noindex, follow` for any non-empty filter or search text and for the invalid and failed states. */
 export function indexNoindex(query: IndexQuery, state: IndexState | "error"): boolean {
   return hasFilter(query) || NOINDEX_STATES.has(state);
 }

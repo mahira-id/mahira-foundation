@@ -20,7 +20,7 @@ ADR menjelaskan keputusan arsitektural dengan konsekuensi lintas domain. Gunakan
 | ADR-0004 | Content localization model | Proposed |
 | ADR-0005 | Locale-prefixed routing and slug policy | Proposed |
 | ADR-0006 | Publication assets, access control and private delivery | Proposed |
-| ADR-0007 | PostgreSQL search baseline | Proposed |
+| ADR-0007 | PostgreSQL search baseline | Accepted (2026-11-15) |
 | ADR-0008 | Hosting and deployment topology | Proposed |
 | ADR-0009 | Package manager and runtime policy | Proposed |
 

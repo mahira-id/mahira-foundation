@@ -305,7 +305,7 @@ describe("publication index (M3-05 filters, pagination, URL state, noindex)", ()
     for (const name of ["en-1", "en-2"]) {
       assert.equal(html.includes(`href="/en/publications/${slug(name)}"`), true, `link to /en/publications/${slug(name)}`);
     }
-    for (const text of ['<html lang="en"', "Publications published in English.", "2 publications", "Filter publications", "Apply", "Public access", "02 Feb 2090", `${LABEL}Jenis A EN<`]) {
+    for (const text of ['<html lang="en"', "Publications published in English.", "2 publications", "Search and filter publications", "Apply", "Public access", "02 Feb 2090", `${LABEL}Jenis A EN<`]) {
       assert.equal(html.includes(text), true, `"${text}" on /en/publications`);
     }
     const all = await fetchAllIndexPages("en");

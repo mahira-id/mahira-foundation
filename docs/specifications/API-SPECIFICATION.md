@@ -111,7 +111,7 @@ TTL is **TBD**. Choose the shortest practical period after testing download size
 Suggested query parameters: `q`, `locale`, `type`, `topic`, `year`, `sort`, `page`, `pageSize`.
 
 - `locale` must match supported values; preferably derive from route context and reject conflicting query value.
-- Bound `q` length and normalize whitespace.
+- Bound `q` length and normalize whitespace. Diterapkan di M3-06 (DECISIONS §2.12 P8): maksimal 100 code point, NFKC dan whitespace dirapikan; `q` lebih panjang dipotong (usulan planner, bukan galat). Parameter `sort` tidak ada di M3-06 (P4): urutan relevansi bila ada `q`, selain itu urutan M3-05; `sort` diabaikan. Pencarian publik halaman indeks memakai `?q=` di route `/{locale}/publications` (DEC-005 addendum), bukan endpoint terpisah.
 - Allowlist sort keys and sort direction.
 - Enforce server maximum page size; proposed default 12–20 and maximum 50 pending UX/performance test.
 - Return only published and indexable records for public callers.

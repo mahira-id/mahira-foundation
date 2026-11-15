@@ -20,7 +20,18 @@ export const ROOT_PREFIX = "fixture-test-";
 export const LABEL_ROOT = "[FIXTURE] test ";
 export const EMAIL_DOMAIN = "@example.invalid";
 
-export type Area = "access" | "admin" | "detail" | "guard" | "home" | "index" | "locale" | "preview" | "race" | "workflow";
+export type Area =
+  | "access"
+  | "admin"
+  | "detail"
+  | "guard"
+  | "home"
+  | "index"
+  | "locale"
+  | "preview"
+  | "race"
+  | "search"
+  | "workflow";
 
 export function areaPrefix(area: Area): string {
   return `${ROOT_PREFIX}${area}-`;
@@ -113,8 +124,8 @@ export function formatCounts(counts: FixtureCounts): string {
 
 /**
  * Deletes this area's fixtures, publications first (a used Translation Group
- * cannot be deleted). Authors are never created by the tests, so they are
- * only counted (countLeftovers), not deleted.
+ * cannot be deleted), then the area's authors (only the `search` area
+ * creates authors, M3-06; the others reuse an existing one).
  */
 export async function cleanupArea(payload: Payload, area: Area): Promise<FixtureCounts> {
   const prefix = areaPrefix(area);
@@ -122,6 +133,10 @@ export async function cleanupArea(payload: Payload, area: Area): Promise<Fixture
   for (const id of await slugIds(payload, "publications", prefix)) {
     await payload.delete({ collection: "publications", id, overrideAccess: true });
     counts.publications++;
+  }
+  for (const id of await slugIds(payload, "authors", prefix)) {
+    await payload.delete({ collection: "authors", id, overrideAccess: true });
+    counts.authors++;
   }
   for (const id of await groupIds(payload, areaLabel(area))) {
     await payload.delete({ collection: "translation-groups", id, overrideAccess: true });

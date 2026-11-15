@@ -12,6 +12,8 @@ export type Dictionary = {
     loading: string;
     empty: string;
     filtersLabel: string;
+    searchLabel: string;
+    clearSearch: string;
     type: string;
     topic: string;
     year: string;
@@ -20,6 +22,8 @@ export type Dictionary = {
     clear: string;
     count: (total: number) => string;
     noResults: string;
+    /** Search (q) set: never quotes the search term. */
+    noResultsSearch: string;
     /** `labels`: the names of the unknown filters, joined (never the values). */
     unknownFilter: (labels: string) => string;
     pageNotFound: string;
@@ -71,7 +75,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       intro: "Publikasi yang terbit dalam Bahasa Indonesia.",
       loading: "Memuat publikasi…",
       empty: "Belum ada publikasi yang terbit dalam Bahasa Indonesia.",
-      filtersLabel: "Saring publikasi",
+      filtersLabel: "Cari dan saring publikasi",
+      searchLabel: "Cari publikasi",
+      clearSearch: "Hapus pencarian dan filter",
       type: "Jenis",
       topic: "Bidang kerja",
       year: "Tahun",
@@ -80,6 +86,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       clear: "Hapus filter",
       count: (total) => `${total} publikasi`,
       noResults: "Tidak ada publikasi yang cocok dengan filter ini.",
+      noResultsSearch: "Tidak ada publikasi yang cocok dengan pencarian ini.",
       unknownFilter: (labels) => `Filter tidak dikenal: ${labels}.`,
       pageNotFound: "Halaman ini tidak ada.",
       firstPage: "Kembali ke halaman 1",
@@ -125,7 +132,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       intro: "Publications published in English.",
       loading: "Loading publications…",
       empty: "No publications have been published in English yet.",
-      filtersLabel: "Filter publications",
+      filtersLabel: "Search and filter publications",
+      searchLabel: "Search publications",
+      clearSearch: "Clear search and filters",
       type: "Type",
       topic: "Topic",
       year: "Year",
@@ -134,6 +143,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       clear: "Clear filters",
       count: (total) => (total === 1 ? "1 publication" : `${total} publications`),
       noResults: "No publications match these filters.",
+      noResultsSearch: "No publications match this search.",
       unknownFilter: (labels) => `Unknown filter: ${labels}.`,
       pageNotFound: "This page does not exist.",
       firstPage: "Back to page 1",
