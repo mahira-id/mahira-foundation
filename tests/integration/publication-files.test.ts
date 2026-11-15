@@ -626,6 +626,7 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     for (const text of [`${LABEL}a`, "Dokumen lengkap", "Bahasa Indonesia", fileFormatLabel(bytes.get("a")?.length ?? 0, "id")]) {
       assert.ok(row.includes(text), `row has "${text}"`);
     }
+    assert.ok(row.includes('<span lang="id">Bahasa Indonesia</span>'), "document language name carries lang=id");
     assert.ok(html.includes('id="publication-files-heading"') && html.includes(">Dokumen</h2>"), "heading");
     assert.equal(linkText(html, file("a").id), `Unduh PDF: ${LABEL}a`, "link name has the action and the label");
     assert.equal(html.includes("data-files-preview-note"), false, "no preview note on the public page");
@@ -637,6 +638,7 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     for (const text of [`${LABEL}enfile`, "Appendix", "Bahasa Indonesia", fileFormatLabel(bytes.get("enfile")?.length ?? 0, "en")]) {
       assert.ok(enRow.includes(text), `EN row has "${text}"`);
     }
+    assert.ok(enRow.includes('<span lang="id">Bahasa Indonesia</span>'), "EN page: Indonesian name carries lang=id");
     assert.ok(en.includes(">Documents</h2>"), "EN heading");
     assert.equal(linkText(en, file("enfile").id), `Download PDF: ${LABEL}enfile`, "EN link name");
     assert.equal(en.includes("Unduh PDF"), false, "no Indonesian copy on the EN page");

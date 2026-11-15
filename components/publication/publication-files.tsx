@@ -47,7 +47,7 @@ export function PublicationFiles({
                 <span aria-hidden="true">·</span>
                 <span>
                   <span className="sr-only">{`${labels.documentLanguage}: `}</span>
-                  {fileLanguageLabel(file.language, locale)}
+                  <span lang={file.language}>{fileLanguageLabel(file.language, locale)}</span>
                 </span>
                 <span aria-hidden="true">·</span>
                 <span>{fileFormatLabel(file.sizeBytes, locale)}</span>
