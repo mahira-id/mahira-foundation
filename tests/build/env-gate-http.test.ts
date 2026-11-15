@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { notFoundPageProblems } from "../helpers/publication-pages";
+import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publication-pages";
 
 /**
  * HTTP checks of the CMS env gate against a running `next start` (M3-00,
@@ -26,6 +26,9 @@ import { notFoundPageProblems } from "../helpers/publication-pages";
  * CMS off, `/` + both indexes on; robots `Allow: /` + Sitemap only in prod,
  * `Disallow: /` in off and on; the index and detail OG images 404 with the
  * CMS off.
+ * Global 404 (M3-07 item 9), G10: `/foo` and `/id` answer 404 with the
+ * Mahira global 404 page in every mode; links to the publication indexes
+ * only in on.
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
@@ -191,6 +194,18 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
         assert.equal((await request("GET", path)).status, 404);
       });
     }
+  }
+
+  // M3-07 item 9 (DECISIONS §2.13): URLs that match no route get the Mahira
+  // global 404 page; it links the publication indexes only while the CMS is
+  // on, because proxy.ts answers 404 for them when it is off.
+  for (const [index, path] of ["/foo", "/id"].entries()) {
+    test(`G10.${index + 1} GET ${path}: 404 + Mahira global 404 page ${MODE === "on" ? "with" : "without"} index links`, async () => {
+      const result = await request("GET", path);
+      assert.equal(result.status, 404, `GET ${path}`);
+      assert.equal(/<meta name="robots" content="noindex[^"]*"/.test(result.body), true, `robots noindex on ${path}`);
+      assert.deepEqual(globalNotFoundProblems(result.body, MODE === "on"), [], `global 404 page on ${path}`);
+    });
   }
 
   if (MODE === "on") {

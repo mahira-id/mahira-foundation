@@ -31,8 +31,9 @@ import { assertNotFoundPage, flightData } from "../helpers/publication-pages";
  * plain user agent gets HTTP 200 and the RSC payload with the redirect
  * digest `NEXT_REDIRECT;replace;<target>;308;` (the browser's router
  * redirects; Next 16.4.4 writes no refresh meta here, measured 2026-11-15);
- * a user agent of Next's default `htmlLimitedBots` list (Bingbot) gets the
- * blocking render and a real 308 with `Location`.
+ * a user agent of the `htmlLimitedBots` list (Next's default list, e.g.
+ * Bingbot, plus Googlebot since M3-07 item 8, lib/seo/html-limited-bots.ts)
+ * gets the blocking render and a real 308 with `Location` (RD9: Googlebot).
  *
  * Fixtures (slugs fixture-test-redirect-*, titles and labels "[FIXTURE] test
  * redirect *"), one Translation Group each, reusing an existing author,
@@ -48,6 +49,8 @@ const PREFIX = areaPrefix(AREA);
 const LABEL = areaLabel(AREA);
 const PUBLISHED_AT = "2004-01-05T03:00:00.000Z";
 const BINGBOT = "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)";
+const GOOGLEBOT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+const CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 
 const slug = (name: string) => `${PREFIX}${name}`;
 const title = (name: string) => `${LABEL}${name}`;
@@ -122,13 +125,14 @@ describe("slug redirect (M3-07 308 of old publication slugs)", () => {
     return getPage(path, { "User-Agent": BINGBOT });
   }
 
-  /** Bingbot gets a real 308 to `target` (path only, no query string). */
-  async function assert308(path: string, target: string): Promise<void> {
-    const result = await bot(path);
-    assert.equal(result.status, 308, `Bingbot GET ${path}: ${pageFact(result)}`);
+  /** A crawler (Bingbot unless `agent` says otherwise) gets a real 308 to `target` (path only, no query string). */
+  async function assert308(path: string, target: string, agent: [string, string] = ["Bingbot", BINGBOT]): Promise<void> {
+    const [name, ua] = agent;
+    const result = await getPage(path, { "User-Agent": ua });
+    assert.equal(result.status, 308, `${name} GET ${path}: ${pageFact(result)}`);
     const location = new URL(result.location, BASE_URL);
-    assert.equal(location.pathname, target, `Bingbot GET ${path}: Location ${result.location}`);
-    assert.equal(location.search, "", `Bingbot GET ${path}: Location keeps no query string`);
+    assert.equal(location.pathname, target, `${name} GET ${path}: Location ${result.location}`);
+    assert.equal(location.search, "", `${name} GET ${path}: Location keeps no query string`);
   }
 
   /** The live detail page of `name` for both user agents. */
@@ -295,5 +299,18 @@ describe("slug redirect (M3-07 308 of old publication slugs)", () => {
       assert.equal("docs" in result.body || "doc" in result.body, false, `${method} ${path}: data in the body`);
     }
     assert.deepEqual(await rows({ slug: slug("rest") }), [], "no row written over REST");
+  });
+
+  test("RD9 Googlebot (htmlLimitedBots, M3-07 item 8) gets the real 308 too; a browser user agent keeps HTTP 200 + the client redirect", async () => {
+    const record = await createPub("g1");
+    await publish(record, { slug: slug("g2") });
+    await assert308(`${detailPath("id", "g1")}?utm_source=x`, detailPath("id", "g2"), ["Googlebot", GOOGLEBOT]);
+    const browser = await getPage(detailPath("id", "g1"), { "User-Agent": CHROME });
+    assert.equal(browser.status, 200, `Chrome GET old slug: ${pageFact(browser)} (a 308 means htmlLimitedBots matches browsers)`);
+    assert.equal(
+      flightData(browser.body).includes(`"digest":"NEXT_REDIRECT;replace;${detailPath("id", "g2")};308;"`),
+      true,
+      "Chrome: 308 redirect digest to g2 in the RSC payload",
+    );
   });
 });

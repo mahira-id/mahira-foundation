@@ -17,7 +17,7 @@ import {
 } from "../helpers/fixtures";
 import { assertServerUp, getPage, pageFact, type PageResult } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
-import { assertNotFoundPage, fetchAllIndexPages } from "../helpers/publication-pages";
+import { assertNotFoundPage, fetchAllIndexPages, globalNotFoundProblems, robotsContent } from "../helpers/publication-pages";
 
 /**
  * Locale checks (M3-01; port of the archived m3-01-locale-checks, M3-10):
@@ -184,6 +184,28 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
       assert.equal(result.status, 404, `GET ${path} ${pageFact(result)}`);
     });
   }
+
+  // M3-07 item 9 (DECISIONS §2.13, PP11): URLs that match no route get the
+  // Mahira global 404 page (app/global-not-found.tsx, experimental.globalNotFound):
+  // HTTP 404, noindex, Indonesian + English, links to `/` and (CMS on) both
+  // indexes. `/xx/publications` matches [locale]/publications; its layout
+  // calls notFound() and Next 16.4.4 renders its built-in 404 page there
+  // instead (recorded gap, PP11), so GNF1.5 checks the status only.
+  for (const [index, path] of ["/foo", "/id", "/en", "/id/foo"].entries()) {
+    test(`GNF1.${index + 1} GET ${path}: 404, noindex, Mahira global 404 page (ID + EN, index links)`, async () => {
+      const result = await getPage(path);
+      assert.equal(result.status, 404, `GET ${path} ${pageFact(result)}`);
+      assert.equal((robotsContent(result.body) ?? "").includes("noindex"), true, `GET ${path}: robots ${robotsContent(result.body)}`);
+      assert.deepEqual(globalNotFoundProblems(result.body, true), [], `GET ${path}: global 404 page`);
+    });
+  }
+
+  test("GNF1.5 GET /xx/publications: 404 + noindex (notFound() of the [locale] layout; Next's built-in page, PP11 gap)", async (t) => {
+    const result = await getPage("/xx/publications");
+    assert.equal(result.status, 404, `GET /xx/publications ${pageFact(result)}`);
+    assert.equal((robotsContent(result.body) ?? "").includes("noindex"), true, `robots ${robotsContent(result.body)}`);
+    t.diagnostic(`OBSERVED GET /xx/publications: Mahira global 404 page=${globalNotFoundProblems(result.body, true).length === 0}`);
+  });
 
   // Since M3-05 /{locale}/publications/{slug} is the detail route. An unknown
   // slug gets notFound(): robots noindex and the not-found page, HTTP 200

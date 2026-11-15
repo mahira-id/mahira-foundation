@@ -41,6 +41,12 @@ import { assertNotFoundPage, fetchAllIndexPages, indexState, robotsContent } fro
  *
  * DT10 starts a second `next start` on TEST_PORT + 1 (no build) whose
  * database URI points at a closed local port, so every CMS read fails.
+ *
+ * Crawlers (M3-07 item 8, DECISIONS §2.13): user agents of `htmlLimitedBots`
+ * (Next's default list + Googlebot, lib/seo/html-limited-bots.ts) get the
+ * blocking render, so the same not-found cases answer a real HTTP 404
+ * (DT11) and pages keep their content with the metadata in `<head>` (DT13);
+ * a browser user agent keeps the static shell and HTTP 200 (DT12).
  */
 type PubData = RequiredDataFromCollectionSlug<"publications">;
 
@@ -58,9 +64,35 @@ const BROKEN_DB_URI = "postgres://fixture:fixture@127.0.0.1:9/postgres";
 const BROKEN_DB_PARTS = ["127.0.0.1", "fixture:fixture"];
 /** Port of the second server of DT10 (the shared one is BASE_URL). */
 const FAILING_PORT = Number(new URL(BASE_URL).port || "3100") + 1;
+const CRAWLERS: [string, string][] = [
+  ["Googlebot", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"],
+  ["Bingbot", "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"],
+];
+const CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 
 const slug = (name: string) => `${PREFIX}${name}`;
 const title = (name: string) => `${LABEL}${name}`;
+
+/** Detail URLs without a public page, with the title the HTML must not show (DT2, DT11, DT12). */
+function notFoundCases(): [string, string | null][] {
+  return [
+    [`/id/publications/${slug("draft")}`, title("draft")],
+    [`/id/publications/${slug("registered")}`, title("registered")],
+    [`/id/publications/${slug("subscriber")}`, title("subscriber")],
+    [`/en/publications/${slug("solo-en")}`, title("solo-en")],
+    [`/id/publications/${slug("en-only")}`, title("en-only")],
+    [`/en/publications/${slug("pub")}`, null],
+    [`/id/publications/${slug("nope")}`, null],
+    [`/id/publications/${slug("pub").toUpperCase()}`, null],
+    ["/id/publications/a_b", null],
+  ];
+}
+
+/** The part of the HTML before `</head>`. */
+function head(html: string): string {
+  const end = html.indexOf("</head>");
+  return end === -1 ? "" : html.slice(0, end);
+}
 
 /** Text as React writes it into HTML. */
 function htmlText(value: string): string {
@@ -225,19 +257,8 @@ describe("publication detail (M3-05 published + public only, switcher, not-found
   });
 
   test("DT2 Mahira not-found page of the URL's locale with noindex for draft, registered, subscriber, other-locale, missing, upper-case and invalid slugs", async (t) => {
-    const cases: [string, string | null][] = [
-      [`/id/publications/${slug("draft")}`, title("draft")],
-      [`/id/publications/${slug("registered")}`, title("registered")],
-      [`/id/publications/${slug("subscriber")}`, title("subscriber")],
-      [`/en/publications/${slug("solo-en")}`, title("solo-en")],
-      [`/id/publications/${slug("en-only")}`, title("en-only")],
-      [`/en/publications/${slug("pub")}`, null],
-      [`/id/publications/${slug("nope")}`, null],
-      [`/id/publications/${slug("pub").toUpperCase()}`, null],
-      ["/id/publications/a_b", null],
-    ];
     const statuses: string[] = [];
-    for (const [path, hidden] of cases) {
+    for (const [path, hidden] of notFoundCases()) {
       const result = await getPage(path);
       statuses.push(`${path}=${assertNotFoundPage(result, `GET ${path}`, path.startsWith("/en/") ? "en" : "id")}`);
       if (hidden) assert.equal(result.body.includes(hidden), false, `GET ${path}: title "${hidden}" in the HTML`);
@@ -318,6 +339,42 @@ describe("publication detail (M3-05 published + public only, switcher, not-found
       for (const field of STAFF_FIELDS) {
         assert.equal(html.includes(field), false, `"${field}" in the HTML of ${path}`);
       }
+    }
+  });
+
+  test("DT11 Googlebot and Bingbot get HTTP 404 with the Mahira not-found page for every DT2 case (htmlLimitedBots, M3-07 item 8)", async () => {
+    for (const [agent, ua] of CRAWLERS) {
+      for (const [path, hidden] of notFoundCases()) {
+        const result = await getPage(path, { "User-Agent": ua });
+        assert.equal(result.status, 404, `${agent} GET ${path}: ${pageFact(result)}`);
+        assertNotFoundPage(result, `${agent} GET ${path}`, path.startsWith("/en/") ? "en" : "id");
+        if (hidden) assert.equal(result.body.includes(hidden), false, `${agent} GET ${path}: title "${hidden}" in the HTML`);
+      }
+    }
+  });
+
+  test("DT12 a browser user agent keeps the static shell: the same cases stay HTTP 200 with the not-found page", async () => {
+    for (const [path] of notFoundCases()) {
+      const result = await getPage(path, { "User-Agent": CHROME });
+      assert.equal(result.status, 200, `Chrome GET ${path}: ${pageFact(result)} (a 404 means htmlLimitedBots matches browsers)`);
+      assertNotFoundPage(result, `Chrome GET ${path}`, path.startsWith("/en/") ? "en" : "id");
+    }
+  });
+
+  test("DT13 Googlebot: /, the indexes and the detail pages are 200 with their content and the canonical in <head>", async () => {
+    const [, googlebot] = CRAWLERS[0] as [string, string];
+    const cases: [string, string, string][] = [
+      ["/", 'data-home-', "https://mahira.id"],
+      ["/id/publications", "data-index-state=", "https://mahira.id/id/publications"],
+      ["/en/publications", "data-index-state=", "https://mahira.id/en/publications"],
+      [`/id/publications/${slug("pub")}`, `data-publication-detail="${slug("pub")}"`, `https://mahira.id/id/publications/${slug("pub")}`],
+      [`/en/publications/${slug("pub-en")}`, `data-publication-detail="${slug("pub-en")}"`, `https://mahira.id/en/publications/${slug("pub-en")}`],
+    ];
+    for (const [path, marker, canonical] of cases) {
+      const result = await getPage(path, { "User-Agent": googlebot });
+      assert.equal(result.status, 200, `Googlebot GET ${path}: ${pageFact(result)}`);
+      assert.equal(result.body.includes(marker), true, `Googlebot GET ${path}: ${marker} missing`);
+      assert.match(head(result.body), new RegExp(`<link rel="canonical" href="${canonical.replace(/[.]/g, "\\.")}/?"`), `Googlebot GET ${path}: canonical in <head>`);
     }
   });
 
