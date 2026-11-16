@@ -16,6 +16,7 @@ import { TranslationGroups } from "./collections/TranslationGroups";
 import { Users } from "./collections/Users";
 import { SUPABASE_ROOT_CA_2021 } from "./db/supabase-root-ca";
 import { readCmsEnv } from "./env";
+import { FILES_BUCKET, SIGNED_DOWNLOAD_TTL_SECONDS, storageClientConfig } from "./storage";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(dirname, "..");
@@ -26,34 +27,14 @@ const cms = readCmsEnv();
 // Supabase Storage of the APP project (mahira.id), S3-compatible endpoint.
 // The S3 access keys bypass Storage RLS: server-only, never NEXT_PUBLIC_*.
 const appSupabaseUrl = cms ? cms.APP_SUPABASE_URL.replace(/\/+$/, "") : "";
-const appSupabaseRef = cms ? new URL(appSupabaseUrl).hostname.split(".")[0] : "";
 // Public bucket and prefix of `media` (covers), kept until M4 (Owner
 // 2026-11-10, M3-00 U2; 2026-11-16, DECISIONS §2.14 item 5; DEC-017/020).
 const PUBLIC_BUCKET = "spike-m2-public";
 const MEDIA_PREFIX = "spike-m2";
-// Private bucket of `publication-files` (M3-08, DECISIONS §2.14 items 2, 5),
-// created by the Owner: not public, 50 MB limit, application/pdf only.
-// Shared by Preview, local runs and tests (test objects `fixture-test-*`).
-const FILES_BUCKET = "publication-files";
-// TTL of a signed download URL (item 2): an unpublish or an access change
-// takes effect for new downloads at once, and within 60 s for a URL
-// already handed out.
-const SIGNED_DOWNLOAD_TTL_SECONDS = 60;
 
-// One S3 client config for both buckets (the S3 keys of the APP project
-// cover every bucket, SPIKE-003 §8). Empty while the CMS is off.
-const storageConfig = cms
-  ? {
-    endpoint: `https://${appSupabaseRef}.storage.supabase.co/storage/v1/s3`,
-    // DECISIONS §2.2 (mahira.id region); production region open (DEC-017/DEC-020).
-    region: "eu-central-1",
-    forcePathStyle: true,
-    credentials: {
-      accessKeyId: cms.APP_SUPABASE_S3_ACCESS_KEY_ID,
-      secretAccessKey: cms.APP_SUPABASE_S3_SECRET_ACCESS_KEY,
-    },
-  }
-  : {};
+// One S3 client config for both buckets, shared with the public download
+// signer (./storage.ts). Empty while the CMS is off.
+const storageConfig = cms ? storageClientConfig(cms) : {};
 
 /**
  * Keeps the process alive when the database connect of `payload.init` fails
@@ -123,9 +104,9 @@ export default buildConfig({
     }),
     // M3-08 (DECISIONS §2.14): private bucket for publication files.
     // - Payload access control stays on, so the adapter's handler serves
-    //   `/api/publication-files/file/<name>` to staff only (signed 302), and
-    //   the public download route signs through the same handler
-    //   (lib/cms/publication-file-storage.ts).
+    //   `/api/publication-files/file/<name>` to staff only (signed 302). The
+    //   public download route signs its own GET with `attachment`
+    //   (lib/cms/publication-file-storage.ts), not through this handler.
     // - signedDownloads: the handler answers 302 to a GET URL signed for
     //   SIGNED_DOWNLOAD_TTL_SECONDS instead of streaming through the function.
     // - clientUploads: the admin uploads browser → bucket with a presigned

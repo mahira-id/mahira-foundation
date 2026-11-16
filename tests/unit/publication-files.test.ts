@@ -12,11 +12,13 @@ import type {
   PayloadRequest,
 } from "payload";
 
+import { S3Client } from "@aws-sdk/client-s3";
+
 import { findLivePublicationOfFile, findPublicFile } from "../../lib/cms/publication-file-query";
-import { FileStorageError } from "../../lib/cms/publication-file-storage";
+import { FileStorageError, signedFileUrl } from "../../lib/cms/publication-file-storage";
 import { publicFiles, toPublicationDetail, type PublicationDetailDoc } from "../../lib/publications/detail-view";
 import { isPublicDownload, stricterAccess, type AccessLevel } from "../../lib/publications/file-access";
-import { DOWNLOAD_HEADERS, downloadPath, downloadResponse, parseFileId } from "../../lib/publications/file-download";
+import { attachmentDisposition, DOWNLOAD_HEADERS, downloadPath, downloadResponse, parseFileId } from "../../lib/publications/file-download";
 import { PUBLIC_FILE_READ, PUBLIC_PUBLICATION_READ } from "../../payload/access/public-read";
 import { PublicationFiles } from "../../payload/collections/PublicationFiles";
 import { Publications } from "../../payload/collections/Publications";
@@ -29,15 +31,17 @@ import {
   refuseOversizedFile,
   setFileStatus,
 } from "../../payload/hooks/publication-files";
+import { storageClientConfig } from "../../payload/storage";
 import { fakeReq, fakeUser } from "../helpers/fake-req";
 
 /**
  * Publication files and public downloads (M3-08, DECISIONS §2.14). No
  * database, no env: effective access (FU1, FU2), the detail panel filter
  * (FU3), the download queries (FU4), the route's id and answers (FU5, FU6),
- * the collection and field configuration (FU7) and the hooks with a fake
- * `req.payload` (FU8, FU9). The DB and storage behaviour is covered by
- * tests/integration/publication-files.test.ts (DL1–DL13).
+ * the collection and field configuration (FU7), the hooks with a fake
+ * `req.payload` (FU8, FU9), the attachment header (FU10) and the signed GET,
+ * signed offline with fake keys (FU11). The DB and storage behaviour is
+ * covered by tests/integration/publication-files.test.ts (DL1–DL13).
  */
 const LEVELS: AccessLevel[] = ["public", "registered", "subscriber"];
 
@@ -244,6 +248,76 @@ describe("lib/publications/file-download.ts", () => {
     assert.equal(error.name, "FileStorageError");
     assert.equal(error.message, "File URL could not be signed");
     assert.equal(error.cause, undefined);
+  });
+});
+
+describe("attachment downloads (lib/publications/file-download.ts, lib/cms/publication-file-storage.ts)", () => {
+  /** The Owner's Preview file name (2026-11-16): spaces, ASCII only. */
+  const OWNER_NAME = "Dokumen untuk testing upload file publikasi.pdf";
+  const FAKE_SECRET = "test-secret-access-key";
+  /** Fake CMS env: signing runs offline, so no request reaches storage. */
+  const fakeS3 = () =>
+    new S3Client(
+      storageClientConfig({
+        PAYLOAD_SECRET: "test-payload-secret",
+        CMS_SUPABASE_DATABASE_URI: "postgres://test@127.0.0.1:1/test",
+        APP_SUPABASE_URL: "https://abcref.supabase.co/",
+        APP_SUPABASE_S3_ACCESS_KEY_ID: "test-access-key-id",
+        APP_SUPABASE_S3_SECRET_ACCESS_KEY: FAKE_SECRET,
+      }),
+    );
+
+  test("FU10 attachmentDisposition: attachment, ASCII fallback and filename* (RFC 6266); no CR/LF/control characters, quotes only around the fallback", () => {
+    assert.equal(
+      attachmentDisposition(OWNER_NAME),
+      `attachment; filename="${OWNER_NAME}"; filename*=UTF-8''Dokumen%20untuk%20testing%20upload%20file%20publikasi.pdf`,
+    );
+    const hostile = attachmentDisposition('Lap "akhir"\r\nSet-Cookie: a=1\\b 50% é\u0000\u007f.pdf');
+    assert.equal(
+      hostile,
+      `attachment; filename="Lap _akhir_Set-Cookie: a=1_b 50_ _.pdf"; filename*=UTF-8''Lap%20%22akhir%22Set-Cookie%3A%20a%3D1%5Cb%2050%25%20%C3%A9.pdf`,
+    );
+    for (const value of [hostile, attachmentDisposition("\u0085x\u2028.pdf"), attachmentDisposition("a\tb\u001b.pdf")]) {
+      assert.equal(/[\u0000-\u001f\u007f-\u009f]/.test(value), false, `control character in ${JSON.stringify(value)}`);
+      assert.equal(value.split('"').length - 1, 2, "two quotes: the fallback's");
+      assert.match(value, /^attachment; filename="[\u0020-\u007e]*"; filename\*=UTF-8''[A-Za-z0-9!#$&+\-.^_`|~%]+$/);
+    }
+    assert.equal(attachmentDisposition("it's (v2)*.pdf"), `attachment; filename="it's (v2)*.pdf"; filename*=UTF-8''it%27s%20%28v2%29%2A.pdf`);
+    assert.equal(attachmentDisposition("a\uD800.pdf"), `attachment; filename="a_.pdf"; filename*=UTF-8''a%EF%BF%BD.pdf`, "lone surrogate");
+    assert.equal(attachmentDisposition("\r\n"), `attachment; filename="download.pdf"; filename*=UTF-8''download.pdf`, "nothing left");
+  });
+
+  test("FU11 signedFileUrl: GET of the bucket key the adapter stores, 60 s, response-content-disposition = attachment with the stored name; bad names refused", async () => {
+    const s3 = fakeS3();
+    const sign = async (file: { filename?: string | null; prefix?: string | null; _objectKey?: string | null }) =>
+      new URL(await signedFileUrl({ id: 1, ...file }, s3));
+
+    const url = await sign({ filename: OWNER_NAME, prefix: "", _objectKey: "21b8a1b2-c804-44ef-9b91-9948d1db38b8" });
+    assert.equal(url.protocol, "https:");
+    assert.equal(url.host, "abcref.storage.supabase.co");
+    assert.equal(url.pathname, "/storage/v1/s3/publication-files/21b8a1b2-c804-44ef-9b91-9948d1db38b8/Dokumen%20untuk%20testing%20upload%20file%20publikasi.pdf");
+    assert.equal(url.searchParams.get("X-Amz-Expires"), "60");
+    assert.equal(url.searchParams.get("response-content-disposition"), attachmentDisposition(OWNER_NAME));
+    assert.ok(url.searchParams.get("X-Amz-Signature"), "signed");
+    assert.equal(url.href.includes(FAKE_SECRET), false, "no secret key in the URL");
+
+    // Object keys as plugin-cloud-storage 3.93.0 reads them: <prefix>/<_objectKey>/<name>, cleaned.
+    const keys: [string, { filename: string; prefix?: string | null; _objectKey?: string | null }, string][] = [
+      ["server upload (no folder)", { filename: "fixture-test-downloads-a.pdf", prefix: null }, "/fixture-test-downloads-a.pdf"],
+      ["prefix and object key", { filename: "a.pdf", prefix: "p", _objectKey: "k" }, "/p/k/a.pdf"],
+      ["dot segments and slashes", { filename: "a.pdf", prefix: "/../p//q/", _objectKey: "./k" }, "/p/q/k/a.pdf"],
+      ["path in the name", { filename: "x/../b\\a.pdf" }, "/a.pdf"],
+      ["double-encoded prefix dropped", { filename: "a.pdf", prefix: "%252e%252e" }, "/a.pdf"],
+    ];
+    for (const [label, file, key] of keys) {
+      const signed = await sign(file);
+      assert.equal(signed.pathname, `/storage/v1/s3/publication-files${key}`, label);
+      assert.equal(signed.searchParams.get("response-content-disposition"), attachmentDisposition(key.slice(key.lastIndexOf("/") + 1)), `${label}: disposition of the stored name`);
+    }
+
+    for (const filename of ["", null, undefined, "/", "dir/", ".."]) {
+      await assert.rejects(async () => sign({ filename }), FileStorageError, `filename ${JSON.stringify(filename)}`);
+    }
   });
 });
 

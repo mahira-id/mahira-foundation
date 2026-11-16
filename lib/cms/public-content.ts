@@ -246,26 +246,28 @@ export const getSitemapPublications = cache(async (): Promise<SitemapPublication
  *    only in a draft finds nothing and an unpublish applies at once);
  * 3. the file is a ready PDF and the stricter of both levels is public
  *    (isPublicDownload);
- * then signs a GET URL valid for 60 s through the storage adapter. Null for
- * every denial. A failed read is logged with the error name only and throws
- * PublicationReadError; a failed signing throws FileStorageError. The URL is
- * never logged. Not cached: every request runs the checks.
+ * then signs a GET URL valid for 60 s that makes storage answer
+ * `Content-Disposition: attachment` (lib/cms/publication-file-storage.ts).
+ * Null for every denial. A failed read is logged with the error name only
+ * and throws PublicationReadError; a failed signing throws
+ * FileStorageError. The URL is never logged. Not cached: every request runs
+ * the checks.
  */
 export async function getPublicFileDownload(fileId: number): Promise<string | null> {
   if (!isCmsEnabled()) return null;
-  let checked: { payload: Awaited<ReturnType<typeof getPayload>>; file: StoredFile } | null;
+  let checked: StoredFile | null;
   try {
     const payload = await getPayload({ config });
     const file = await findPublicFile(payload, fileId);
     const publication = file ? await findLivePublicationOfFile(payload, fileId) : null;
-    checked = file && publication && isPublicDownload(publication.accessLevel, file) ? { payload, file } : null;
+    checked = file && publication && isPublicDownload(publication.accessLevel, file) ? file : null;
   } catch (error) {
     console.error("[file-download] CMS read failed:", readErrorLabel(error));
     throw new PublicationReadError();
   }
   if (!checked) return null;
   try {
-    return await signedFileUrl(checked.payload, checked.file);
+    return await signedFileUrl(checked);
   } catch (error) {
     console.error("[file-download] signing failed:", readErrorLabel(error));
     throw new FileStorageError();

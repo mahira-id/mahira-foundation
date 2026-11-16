@@ -10,7 +10,9 @@ import { isCmsEnabled } from "@/payload/env";
  * works without JavaScript (recorded deviation from API-SPECIFICATION §5's
  * POST). getPublicFileDownload checks the file and its live publication as
  * an anonymous visitor on every request; then the answer is 307 to a 60 s
- * signed URL of the private bucket. Every denial is the same 404; a database
+ * signed URL of the private bucket, signed so that storage answers
+ * `Content-Disposition: attachment` with the stored file name (the browser
+ * downloads instead of opening inline). Every denial is the same 404; a database
  * or storage failure is 503 (the log carries the error name only, never a
  * URL). `Cache-Control: no-store` and `X-Robots-Tag: noindex` on every
  * answer (lib/publications/file-download.ts). No session is read: a staff

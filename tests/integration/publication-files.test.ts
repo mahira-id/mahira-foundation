@@ -25,6 +25,7 @@ import { BASE_URL, assertServerUp, getPage, login, pageFact } from "../helpers/h
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
 import { fixturePdf } from "../helpers/pdf";
 import { fetchAllIndexPages, inlineSegments } from "../helpers/publication-pages";
+import { attachmentDisposition } from "../../lib/publications/file-download";
 import { fileFormatLabel } from "../../lib/publications/file-labels";
 
 /**
@@ -41,7 +42,9 @@ import { fileFormatLabel } from "../../lib/publications/file-labels";
  * registered and `sub` subscriber on `live`; `draft` public, only in a
  * pending draft revision of `live`; `never` public on the draft-only `never`;
  * `regpub` public on `regpub` (published, Access Level registered); `unpub`
- * public on `unpub` (published, unpublished in DL5); `free` on no record.
+ * public on `unpub` (published, unpublished in DL5); `free` on no record;
+ * `dengan spasi (v2)` public on `spaced` (published; a stored name with
+ * spaces and parentheses, like real file names, for the attachment header).
  * Publications reuse the first existing author, topic and type; ID locale;
  * publishedAt 2004 so they never lead the homepage. The Owner guard runs
  * before any fixture is written and after cleanup.
@@ -60,6 +63,8 @@ const PUBLISHED_AT = "2004-02-05T03:00:00.000Z";
 /** Larger than any id in the database, inside the Postgres integer range. */
 const UNKNOWN_ID = "2147483647";
 const PANEL_FIELDS = ["accessLevel", "filesize", "id", "kind", "label", "language", "mimeType", "status"];
+/** Fixture key of a file whose stored name has spaces and parentheses. */
+const SPACED = "dengan spasi (v2)";
 const STORAGE_KEYS = ["url", "filename", "prefix", "_objectKey", "thumbnailURL"];
 
 const slug = (name: string) => `${PREFIX}${name}`;
@@ -217,6 +222,7 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
       ["unpub", "public"],
       ["free", "public"],
       ["onlyreg", "registered"],
+      [SPACED, "public"],
     ] as const) {
       await upload(name, level);
     }
@@ -237,6 +243,7 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     await createPub("unpub", ["unpub"], "published");
     await createPub("nofiles", [], "published");
     await createPub("restricted", ["onlyreg"], "published");
+    await createPub("spaced", [SPACED], "published");
     await createPub("enlive", ["enfile"], "published", "public", "en");
   });
 
@@ -316,20 +323,26 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
   });
 
   // ------------------------------------------------------------ the download route
-  test("DL4 public file on a published + public record: 307 to a 60 s signed URL of the bucket; the URL gives the same PDF", async (t) => {
-    const result = await download(file("a").id);
-    assert.equal(result.status, 307, `HTTP ${result.status}`);
-    assertPrivateHeaders(result, "307");
-    assert.equal(result.bytes.length, 0, "no body with the redirect");
-    const location = result.headers.get("location");
-    assert.deepEqual(signedUrlFacts(location), { storageHost: true, bucketPath: true, ttl60: true }, "signed URL facts");
-    const object = await rawGet(location as string);
-    assert.equal(object.status, 200, `signed URL: HTTP ${object.status}`);
-    assert.equal(object.headers.get("content-type"), "application/pdf");
-    assert.equal(Buffer.compare(object.bytes, bytes.get("a") as Buffer), 0, "same bytes as uploaded");
-    // OBSERVED (DECISIONS §2.14 item 6): the adapter signs Bucket + Key only.
-    t.diagnostic(`OBSERVED storage Content-Disposition: ${object.headers.get("content-disposition") ?? "(none)"}`);
-    t.diagnostic(`OBSERVED storage Cache-Control: ${object.headers.get("cache-control") ?? "(none)"}`);
+  test("DL4 public file on a published + public record: 307 to a 60 s signed URL of the bucket with response-content-disposition attachment; the URL gives the same PDF with Content-Disposition: attachment and the stored name", async (t) => {
+    for (const name of ["a", SPACED]) {
+      const result = await download(file(name).id);
+      assert.equal(result.status, 307, `${name}: HTTP ${result.status}`);
+      assertPrivateHeaders(result, `${name}: 307`);
+      assert.equal(result.bytes.length, 0, `${name}: no body with the redirect`);
+      const location = result.headers.get("location");
+      assert.deepEqual(signedUrlFacts(location), { storageHost: true, bucketPath: true, ttl60: true }, `${name}: signed URL facts`);
+      // Owner 2026-11-16 (DECISIONS §2.14 item 6): the browser downloads instead of opening inline.
+      const stored = file(name).filename as string;
+      const disposition = attachmentDisposition(stored);
+      assert.equal(disposition.startsWith("attachment; "), true, `${name}: attachment`);
+      assert.equal(new URL(location as string).searchParams.get("response-content-disposition"), disposition, `${name}: signed URL asks for attachment`);
+      const object = await rawGet(location as string);
+      assert.equal(object.status, 200, `${name}: signed URL: HTTP ${object.status}`);
+      assert.equal(object.headers.get("content-type"), "application/pdf");
+      assert.equal(object.headers.get("content-disposition"), disposition, `${name}: storage answers Content-Disposition: attachment with the stored name`);
+      assert.equal(Buffer.compare(object.bytes, bytes.get(name) as Buffer), 0, `${name}: same bytes as uploaded`);
+      t.diagnostic(`OBSERVED ${name}: stored name has a space=${stored.includes(" ")}; storage Cache-Control: ${object.headers.get("cache-control") ?? "(none)"}`);
+    }
   });
 
   test("DL5 every denial is the same 404: unknown/invalid id, draft-only, never published, registered record, restricted file, unattached, unpublished", async () => {
@@ -501,7 +514,7 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     const objectStatus = async (signed: Signed) =>
       (
         await rawGet(
-          await signedFileUrl(p(), { id: 0, filename: signed.filename, prefix: signed.clientUploadContext.prefix ?? "", _objectKey: signed.clientUploadContext._objectKey }),
+          await signedFileUrl({ id: 0, filename: signed.filename, prefix: signed.clientUploadContext.prefix ?? "", _objectKey: signed.clientUploadContext._objectKey }),
         )
       ).status;
     /** Removes a bucket object that has no record, with the storage plugin's own delete. */
@@ -530,6 +543,12 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     assert.equal(staff.status, 302, `staff file URL: HTTP ${staff.status}`);
     const object = await rawGet(staff.headers.get("location") as string);
     assert.equal(Buffer.compare(object.bytes, pdf), 0, "stored object = uploaded PDF");
+    // The public download signer builds the same key as the adapter for an admin (client) upload.
+    const record = await p().findByID({ collection: "publication-files", id: created.body.doc?.id as number, depth: 0, overrideAccess: true });
+    t.diagnostic(`OBSERVED client upload folder: prefix=${Boolean(record.prefix)} _objectKey=${Boolean(record._objectKey)}`);
+    const viaSigner = await rawGet(await signedFileUrl(record));
+    assert.equal(viaSigner.status, 200, `download signer, client-uploaded object: HTTP ${viaSigner.status}`);
+    assert.equal(Buffer.compare(viaSigner.bytes, pdf), 0, "download signer reaches the same object");
 
     // Non-PDF bytes declared as PDF: the bucket takes the PUT, Payload refuses the record (content check).
     const fake = Buffer.from("[FIXTURE] not a pdf\n".repeat(40));

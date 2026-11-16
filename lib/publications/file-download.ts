@@ -2,12 +2,14 @@
  * The public download route `GET /api/files/{fileId}/download` (M3-08,
  * DECISIONS §2.14 items 2 and 6). Pure: no I/O, no Payload import.
  *
- * Answers: 307 to a short-lived signed URL when every check passed; 404 for
- * every denial (CMS off, invalid or unknown id, draft, unpublished, not
- * public, file not ready), so a denial says nothing about the file; 503 when
- * the database or the storage failed. Every answer has `Cache-Control:
- * no-store` (a signed URL is a bearer credential and must not be cached)
- * and `X-Robots-Tag: noindex` (PDFs are not indexed; DEC-021).
+ * Answers: 307 to a short-lived signed URL when every check passed (the URL
+ * asks storage for `Content-Disposition: attachment`, see
+ * attachmentDisposition); 404 for every denial (CMS off, invalid or unknown
+ * id, draft, unpublished, not public, file not ready), so a denial says
+ * nothing about the file; 503 when the database or the storage failed.
+ * Every answer has `Cache-Control: no-store` (a signed URL is a bearer
+ * credential and must not be cached) and `X-Robots-Tag: noindex` (PDFs are
+ * not indexed; DEC-021).
  */
 export const DOWNLOAD_HEADERS = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } as const;
 
@@ -24,6 +26,26 @@ export function parseFileId(value: string | null | undefined): number | null {
 /** Path of the download link of a file on the detail page. */
 export function downloadPath(id: number): string {
   return `/api/files/${id}/download`;
+}
+
+/** Name of a download whose stored name has no character left after cleaning. */
+const FALLBACK_FILENAME = "download.pdf";
+
+/**
+ * `Content-Disposition` that storage sends with a signed download (Owner
+ * 2026-11-16, DECISIONS §2.14 item 6): `attachment`, so the browser saves
+ * the PDF instead of opening it inline, with the stored file name in both
+ * forms of RFC 6266: `filename="…"` as an ASCII fallback and
+ * `filename*=UTF-8''…` with the exact name percent-encoded (RFC 8187).
+ * Control characters (CR, LF, …) are dropped from both forms; the fallback
+ * turns non-ASCII characters, `"`, `\` and `%` into `_`. So the value never
+ * ends the header or the quoted string, whatever the stored name holds.
+ */
+export function attachmentDisposition(filename: string): string {
+  const name = filename.toWellFormed().replace(/[\u0000-\u001f\u007f-\u009f]/g, "") || FALLBACK_FILENAME;
+  const ascii = name.replace(/[^\u0020-\u007e]|["\\%]/g, "_");
+  const encoded = encodeURIComponent(name).replace(/['()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`;
 }
 
 export type DownloadOutcome = { kind: "redirect"; url: string } | { kind: "not-found" } | { kind: "unavailable" };
