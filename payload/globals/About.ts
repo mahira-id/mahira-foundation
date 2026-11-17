@@ -1,7 +1,7 @@
-import type { Field, GlobalConfig, TextFieldSingleValidation } from "payload";
+import type { Field, GlobalConfig } from "payload";
 import { PUBLIC_ABOUT_READ } from "../access/public-read";
 import { isAnonymousLocalRead, isStaff, staffRoleOf } from "../access/roles";
-import { SLUG_PATTERN } from "../fields/slug";
+import { PARAGRAPHS, structuredSectionsField, validateAnchor } from "../fields/structured-sections";
 import { denyPublicFallbackForGlobal } from "../hooks/deny-public-fallback";
 import { aboutPreviewUrl } from "../../lib/publications/preview";
 
@@ -14,23 +14,9 @@ import { aboutPreviewUrl } from "../../lib/publications/preview";
  * checked and the required EN fields are filled (lib/about/about-view.ts
  * `isAboutVisible`). Structured plain-text fields, no rich text: paragraphs
  * are separated by a blank line; layout is code. Editor and Admin edit and
- * publish (DEC-016).
+ * publish (DEC-016). The `sections` field is the shared structured section
+ * model (payload/fields/structured-sections.ts, M3-11), unchanged.
  */
-
-/** Section anchors: the slug pattern (lowercase letters, digits, single hyphens). */
-const validateAnchor: TextFieldSingleValidation = (value) => {
-  if (value === undefined || value === null || value === "") return true;
-  return SLUG_PATTERN.test(value) || "Gunakan huruf kecil, angka, dan tanda hubung tunggal (mis. bagian-dua).";
-};
-
-/** A section needs a label or a heading (its H2 is the heading, else the label). */
-const validateHeading: TextFieldSingleValidation = (value, { siblingData }) => {
-  const label: unknown = (siblingData as Record<string, unknown> | undefined)?.label;
-  if ((typeof value === "string" && value.trim() !== "") || (typeof label === "string" && label.trim() !== "")) return true;
-  return "Isi Label atau Heading bagian ini.";
-};
-
-const PARAGRAPHS = "Pisahkan paragraf dengan satu baris kosong.";
 
 /** A call-to-action link; the target is resolved by code from `kind`, never a free URL. */
 function ctaField(description: string): Field {
@@ -106,58 +92,7 @@ export const About: GlobalConfig = {
         ctaField("Paling banyak 2 tautan aksi di bawah judul."),
       ],
     },
-    {
-      name: "sections",
-      type: "array",
-      localized: true,
-      admin: { description: "Bagian halaman sesuai urutan tampil." },
-      fields: [
-        {
-          name: "anchor",
-          type: "text",
-          validate: validateAnchor,
-          admin: { description: "Opsional: id bagian untuk tautan #anchor (huruf kecil, angka, tanda hubung)." },
-        },
-        { name: "label", type: "text", admin: { description: "Judul bagian." } },
-        {
-          name: "heading",
-          type: "text",
-          admin: { description: "Subjudul bagian. Wajib diisi bila Label kosong." },
-          validate: validateHeading,
-        },
-        { name: "body", type: "textarea", admin: { description: PARAGRAPHS } },
-        { name: "quote", type: "textarea", admin: { description: "Kutipan sorotan (opsional)." } },
-        {
-          name: "lists",
-          type: "array",
-          fields: [
-            { name: "heading", type: "text" },
-            { name: "intro", type: "textarea", admin: { description: PARAGRAPHS } },
-            {
-              name: "style",
-              type: "select",
-              required: true,
-              defaultValue: "bulleted",
-              options: [
-                { label: "Bernomor", value: "numbered" },
-                { label: "Butir", value: "bulleted" },
-              ],
-            },
-            {
-              name: "items",
-              type: "array",
-              fields: [
-                { name: "title", type: "text", admin: { description: "Judul butir atau kata pembuka tebal." } },
-                { name: "subtitle", type: "text", admin: { description: "Sub-label tebal (opsional)." } },
-                { name: "text", type: "textarea" },
-              ],
-            },
-          ],
-        },
-        { name: "outro", type: "textarea", admin: { description: `Paragraf penutup setelah daftar. ${PARAGRAPHS}` } },
-        ctaField("Paling banyak 2 tautan aksi di akhir bagian."),
-      ],
-    },
+    structuredSectionsField({ ctas: ctaField("Paling banyak 2 tautan aksi di akhir bagian.") }),
     {
       name: "seo",
       type: "group",
