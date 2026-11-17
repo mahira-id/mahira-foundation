@@ -11,8 +11,13 @@ import { isCmsEnabled } from "@/payload/env";
  * Production shows no publication pages until M4.
  *
  * This is a gate, not authorization: when the CMS is on, Payload access
- * control still decides every request. `/api/*` is Payload REST only today;
- * revisit the matcher when app API routes arrive (M5).
+ * control and the app route handlers still decide every request. `/api/*`
+ * holds Payload REST and the CMS-backed app routes: the staff preview
+ * (`/api/preview`, M3-05), the public file download
+ * (`/api/files/{id}/download`, M3-08) and the `/api/media/file/*` 404
+ * (M3-08); all of them need the CMS, so the whole prefix stays closed while
+ * it is off. Revisit the matcher when an app API route must work without
+ * the CMS (M5 accounts).
  *
  * Admin login redirect (item 1c, DECISIONS §2.10): when the CMS is on, a GET
  * to a protected admin page without a Payload auth cookie gets an HTTP 307 to

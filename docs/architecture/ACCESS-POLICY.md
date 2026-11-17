@@ -46,6 +46,14 @@ For safe default, effective access is the stricter of Publication `access_level`
 
 Example: publication `registered`, asset `subscriber` → subscriber required. Publication `subscriber`, asset `public` → effective remains subscriber under strict inheritance. If organization wants public cover/excerpt on subscriber publication, classify that asset as a separate public promotional asset or explicitly revise the rule through an approved decision.
 
+### 4.2 Implementasi M3-08 (DEC-011 Accepted, DECISIONS §2.14 butir 1–3)
+
+- **Resource:** record koleksi Payload `publication-files` (file PDF), milik tepat satu record publikasi (satu bahasa); publikasi mencantumkan file-nya berurutan di field `files`.
+- **Level file wajib, tanpa default, tanpa "inherit":** `accessLevel` di setiap file menyimpan `public`/`registered`/`subscriber` sejak awal. Akses efektif = level yang lebih ketat antara publikasi dan file (`lib/publications/file-access.ts` `stricterAccess`); file yang diset lebih longgar tidak berpengaruh. Nilai yang tidak dikenal atau hilang dianggap `subscriber` (fail closed).
+- **Syarat unduhan publik (M3-08):** publikasi tayang (`published`) + `public`, file `ready`, PDF, akses efektif `public` (`isPublicDownload`). Diperiksa ulang di server pada setiap request unduhan (API-SPECIFICATION §5.1).
+- **File `registered`/`subscriber` (sementara sampai M5/M7):** boleh diunggah ke private bucket tetapi tidak tampil di situs publik sama sekali: tidak ada baris di panel, tidak ada URL, dan route unduhan menjawab 404. Ini deviasi tercatat dari DEC-002 ("aset terbatas pada publikasi publik ditampilkan terkunci tanpa URL") dan konsisten dengan §2.11 P7 A. Unduhannya M5 (`registered`) dan M7 (`subscriber`).
+- **Staf:** membuka semua file di `/admin` di bawah access control Payload (`/api/publication-files/file/<nama>`, signed 302). Route publik tidak membaca sesi, jadi sesi staf tidak memberi akses di sana (DEC-009).
+
 ## 5. Entitlement semantics
 
 An entitlement is valid only if:
@@ -78,6 +86,8 @@ Proposed precedence must be approved: explicit asset/publication grant, collecti
 | Entitlement grant/revoke | Deny | Deny | Deny | Explicit permission only | Admin/explicit permission |
 
 The staff column is deliberately deny-by-default for restricted files; DEC-009 must settle operational exception.
+
+M3-08 (DECISIONS §2.14): baris "Public asset" berlaku untuk file `publication-files` dengan akses efektif `public` pada publikasi tayang + `public` (§4.2). "Staff policy" untuk aset publik = staf membuka file di `/admin` di bawah access control Payload; route unduhan publik sama untuk semua pemanggil. Baris Registered/Subscriber asset belum dibangun: file itu disembunyikan dan route menjawab 404 sampai M5/M7.
 
 ## 7. Evaluator interface
 
@@ -135,6 +145,8 @@ Evaluator requirements:
 10. Record access decision/event without storing signed URL or credentials.
 11. Return a minimal response; do not cache personalized response.
 
+Implementasi M3-08 untuk file `public` (API-SPECIFICATION §5.1): langkah 1–3, 5, 7, 9 dan 11 dibangun di `GET /api/files/{fileId}/download`; langkah 4 dan 6 tidak ada (tanpa sesi, tanpa entitlement); langkah 10 tidak ada untuk unduhan publik (butir 9: tanpa audit, hitungan, atau rate limit; log hanya nama galat). Langkah 9 selalu menerbitkan signed URL 60 detik dari private bucket, juga untuk file `public`; tidak ada URL bucket publik. Setiap penolakan menjawab 404 yang sama; galat database atau storage 503.
+
 ## 9. HTTP and UX contract
 
 | Condition | Suggested HTTP behavior | User experience |
@@ -150,12 +162,12 @@ No generic `200` with a secret-bearing URL on denial. Never include object key, 
 
 ## 10. Storage policy
 
-- Public bucket is reserved for assets explicitly classified public and safe for anonymous access.
-- Private bucket is required for registered/subscriber restricted assets.
+- Public bucket is reserved for assets explicitly classified public and safe for anonymous access. Sejak M3-08 ini hanya cover/image `media` (bucket `spike-m2-public`, prefix `spike-m2`, sampai M4; DECISIONS §2.14 butir 5); masalah §2.6 P8 kini hanya berlaku untuk cover.
+- Private bucket is required for registered/subscriber restricted assets. Sejak M3-08 semua file PDF publikasi, termasuk `public`, ada di private bucket `publication-files` (Owner: tidak publik, 50 MB, `application/pdf` saja; dipakai bersama Preview, lokal, dan tes dengan objek tes `fixture-test-*`).
 - Keep bucket separation and object key prefixes as defense in depth, not as sole authorization.
 - Disable public listing for private buckets.
 - Use random opaque keys; sanitize display filename separately.
-- Signed URL TTL: TBD. Choose from file size, mobile reliability, expected download duration, revocation semantics, and threat model; record exact setting in an accepted ADR/config.
+- Signed URL TTL: TBD. Choose from file size, mobile reliability, expected download duration, revocation semantics, and threat model; record exact setting in an accepted ADR/config. File `public` (M3-08): 60 detik (`SIGNED_DOWNLOAD_TTL_SECONDS`, payload/payload.config.ts; DECISIONS §2.14 butir 2). Unduhan yang sudah berjalan tidak diputus saat TTL lewat; request baru dengan URL kedaluwarsa ditolak (API-SPECIFICATION §5.1). TTL file terbatas ditetapkan di M5.
 - Verify that generated URL is not included in application logs, analytics events, referrer headers, or cached rendered HTML.
 - Define deletion lifecycle and backup retention for removed objects.
 
@@ -210,4 +222,4 @@ Each event should contain event ID, timestamp, actor type/ID, action, target typ
 
 ## 15. Open policy decisions
 
-DEC-009 staff asset access; DEC-011 asset override/inheritance; TTL and revocation behavior; user verification requirement; entitlement grant scope; no-account download logging; account deletion and log retention; response concealment policy; MFA enforcement mechanism. Do not implement ambiguous exception by intuition.
+DEC-009 staff asset access; DEC-011 asset override/inheritance (Accepted 2026-11-16: level lebih ketat, file wajib punya level sendiri, §4.2); TTL and revocation behavior (file `public`: 60 detik, §10; file terbatas: M5); user verification requirement; entitlement grant scope; no-account download logging; account deletion and log retention; response concealment policy; MFA enforcement mechanism. Do not implement ambiguous exception by intuition.

@@ -29,7 +29,7 @@
 | Topic | Payload | Payload access control | Payload migration workflow |
 | PublicationType | Payload | Payload access control | Payload migration workflow |
 | Tag | Not in MVP (DEC-003) | Payload access control | Payload migration workflow |
-| PublicationAsset metadata | Payload or application domain — decide in spike | Staff write; server-only sensitive fields | One designated owner only |
+| PublicationAsset metadata | Payload (koleksi upload `publication-files`, M3-08, DECISIONS §2.14 butir 1) | Staff write; read anonim Local API hanya `ready` + `public`; lokasi storage server-only | Payload migration workflow |
 | LearningResource | Payload | Payload access control | Payload migration workflow |
 | Page | Payload | Payload access control | Payload migration workflow |
 | StaffUser | Payload Auth | Payload Auth + collection access | Payload migration workflow |
@@ -39,7 +39,7 @@
 | DownloadEvent | Application schema | Server inserts; restricted staff access; retention | Supabase/application migration |
 | PaymentEvent (Phase 2) | Application schema | Server only; verified provider event | Supabase/application migration |
 
-**Critical ownership issue:** SRS places assets near Payload and storage in Supabase. Decide whether Payload owns the asset metadata collection and uses an adapter, or whether app-owned storage metadata references Payload publications. Do not duplicate one asset record across both owners without a synchronization contract.
+**Critical ownership issue:** SRS places assets near Payload and storage in Supabase. Decide whether Payload owns the asset metadata collection and uses an adapter, or whether app-owned storage metadata references Payload publications. Do not duplicate one asset record across both owners without a synchronization contract. **Diputuskan 2026-11-16 (DECISIONS §2.14 butir 1):** Payload memiliki metadata aset (koleksi `publication-files`) dan menyimpan objeknya lewat adapter `@payloadcms/storage-s3` di Supabase Storage; tidak ada record aset kedua di skema aplikasi (§4.2).
 
 ## 3. Common conventions
 
@@ -72,7 +72,7 @@
 | `publishedAt` | timestamp | Conditional | No | Required when published; time zone policy UTC. |
 | `updatedAtPublic` | timestamp | No | No | Editorially meaningful content update. |
 | `coverAsset` | relationship | No | No | Public image asset only. |
-| `assets` | relationship | No | No | One-to-many or join collection depending on CMS. |
+| `assets` | relationship | No | No | One-to-many or join collection depending on CMS. Diterapkan M3-08 sebagai `files`: upload `hasMany` → `publication-files`, urutan tersimpan, per record (bukan field bersama DEC-004), ikut versi/draf (§4.2). |
 | `translationGroup` | relationship/ID | Conditional | No | Required if linked-record model. |
 | `locale` | enum | Conditional | No | Required if linked-record model. |
 | `seoTitle` | text | No | Yes | Fallback to title if approved. |
@@ -103,6 +103,33 @@
 | `createdAt` | timestamp | Yes | System-generated. |
 
 Decide whether this collection is Payload-owned or application-owned before implementation. Do not store signed URLs here.
+
+#### 4.2.1 Implementasi M3-08: koleksi `publication-files` (diterapkan)
+
+Koleksi upload Payload `publication-files` (`payload/collections/PublicationFiles.ts`, tabel `publication_files`, migrasi `20261115_181459_m3_08_publication_files`), terpisah dari `media`. Dasar: keputusan Owner 2026-11-16 (DECISIONS §2.14 butir 1–4, 8). Objek disimpan di private bucket `publication-files` lewat `@payloadcms/storage-s3` 3.93.0 (`payload/payload.config.ts`).
+
+| Field usulan di atas | Diterapkan sebagai | Aturan |
+|---|---|---|
+| `id` | `id` serial | Kunci primer; id di URL unduhan `/api/files/{id}/download`. |
+| `publication` | tanpa back-relation; `Publications.files` (upload `hasMany`, berurutan) | Satu file untuk tepat satu record publikasi (satu bahasa): hook `beforeChange` Publication menolak file yang sudah dicantumkan baris utama record lain atau versi `latest` record lain, dan file yang sama dua kali (`payload/hooks/one-publication-per-file.ts`). |
+| `label` | `label` text | Wajib; teks panel di halaman detail. |
+| `kind` | `kind` select | Wajib: `preview`, `full_document`, `appendix`, `dataset`, `supplementary`, `other` (tanpa `cover`; cover tetap `media`). |
+| `locale` | `language` select `id`/`en` | Wajib; bahasa dokumen itu sendiri (boleh beda dari record publikasi). |
+| `mimeType` | `mimeType` (Payload) | Hanya `application/pdf`; Payload memeriksa isi file (deteksi tipe + header `%PDF-` + `xref`/`%%EOF` di 1 KB terakhir), juga untuk client upload. |
+| `fileSizeBytes` | `filesize` (Payload) | Maksimal 52428800 byte (50 MB, batas bucket; hook `refuseOversizedFile`). |
+| `storageProvider`, `bucket` | konfigurasi adapter, bukan kolom | Bucket `publication-files` adalah konstanta di config; tidak pernah dari client. |
+| `objectKey` | `filename` + `prefix` + `_objectKey` (plugin) | Nama asli yang disanitasi Payload (unik, indeks `publication_files_filename_idx`); client upload menambah segmen acak `_objectKey`. Server-only: tidak pernah di-select untuk halaman publik. |
+| `checksum` | tidak ada | Belum dibutuhkan. |
+| `accessOverride` | `accessLevel` select | Wajib, tanpa default, `public`/`registered`/`subscriber` (DEC-011 Accepted). Akses efektif = yang lebih ketat dengan publikasi (ACCESS-POLICY §4.2). |
+| `processingStatus` | `status` select | `pending`, `ready`, `failed`, `quarantined`, `archived`; diisi sistem (`ready` saat dibuat; create/update access `false`). |
+| `rightsMetadata`, `uploadedBy` | tidak ada | Di luar cakupan M3-08. |
+| `createdAt` | `createdAt`/`updatedAt` | Diisi sistem. |
+
+- **Kolom tambahan Payload:** `url` (`/api/publication-files/file/<nama>`, hanya untuk admin), `thumbnail_u_r_l`, `width`, `height`, `focal_x`, `focal_y` (kosong untuk PDF).
+- **Tanpa versi:** perubahan label, jenis, bahasa, dan Access Level langsung berlaku. Isi file yang dipakai versi tayang publikasi tidak dapat diganti atau dihapus (butir 8, EDITORIAL-WORKFLOW §9.4).
+- **Akses:** read staf atau Local API anonim dengan `PUBLIC_FILE_READ` (`status = ready` dan `accessLevel = public`); REST anonim ditolak; create/update/delete staf (`isStaff`). RLS aktif di tabel baru (migrasi `up()` memanggil `enableRlsOnPayloadTables`).
+- **Migrasi:** aditif saja: empat enum, tabel `publication_files`, kolom nullable `publication_files_id` (FK `ON DELETE cascade`) di `publications_rels`, `_publications_v_rels`, dan `payload_locked_documents_rels`. `down()` menghapusnya dengan `IF EXISTS` (daftar file publikasi hilang; objek di bucket tetap).
+- **Tidak disimpan:** signed URL, URL bucket publik, data unduhan (tanpa audit atau hitungan di M3-08, butir 9).
 
 ### 4.3 Author
 
@@ -208,7 +235,7 @@ See `ERD.md`. Cardinalities marked `TBD` must be confirmed with editorial sample
 
 - Published publication requires all required locale-specific metadata and a valid publication type.
 - Published asset must point to a ready storage object; quarantined/failed assets cannot be downloaded.
-- Public asset must be located in public storage only after classification approval.
+- Public asset must be located in public storage only after classification approval. Sejak M3-08 file PDF publikasi, juga yang `public`, ada di private bucket dan diunduh lewat signed URL (DECISIONS §2.14 butir 2); public storage hanya untuk cover/image.
 - Private asset must have a private bucket/object key and no public URL persisted in public projection.
 - Slug uniqueness must be enforced by database/CMS constraint at chosen scope, not only application validation.
 - `published_at` must be present when status is published; scheduled publication requires valid scheduled timestamp if workflow uses it.
@@ -236,8 +263,8 @@ Maintain a schema ownership ledger. Each migration must declare subsystem, purpo
 
 1. Linked record vs Payload field localization.
 2. Desk cardinality: closed, Desk not in MVP (DEC-003).
-3. Asset metadata owner and adapter strategy.
-4. Whether assets can override publication access level.
+3. Asset metadata owner and adapter strategy. Dijawab 2026-11-16 (DECISIONS §2.14 butir 1): Payload, koleksi upload `publication-files` dengan `@payloadcms/storage-s3` ke private bucket `publication-files` (§4.2.1).
+4. Whether assets can override publication access level. Dijawab 2026-11-16 (DECISIONS §2.14 butir 3, DEC-011 Accepted): setiap file punya `accessLevel` wajib tanpa default; akses efektif = yang lebih ketat; file yang lebih longgar tidak berpengaruh (ACCESS-POLICY §4.2).
 5. Whether author is required or institutional attribution is allowed.
 6. Slug uniqueness scope and redirect retention. Keunikan per locale terbukti (DEC-005); riwayat slug dan retensinya diterapkan di M3-07 (§4.8). Aturan retired untuk konten produksi tetap terbuka (ADR-0005).
 7. Exact editorial status workflow.

@@ -4,6 +4,7 @@ import { isAnonymousLocalRead, isStaff, isStaffField, staffRoleOf } from "../acc
 import { validateSlug } from "../fields/slug";
 import { enforceSharedFields } from "../hooks/enforce-shared-fields";
 import { readLiveOnSite } from "../hooks/live-on-site";
+import { refuseFileOfAnotherPublication } from "../hooks/one-publication-per-file";
 import { setPublicationLifecycleFields } from "../hooks/publication-lifecycle";
 import { deletePublicationSlugs, recordPublicSlug } from "../hooks/publication-slugs";
 import { markStatusNotSent, refuseImplicitStatusOverPendingDraft } from "../hooks/refuse-implicit-status-over-pending-draft";
@@ -58,8 +59,14 @@ export const Publications: CollectionConfig = {
     beforeOperation: [markStatusNotSent],
     // First the P5 refusal, so a refused save never takes the Translation
     // Group lock; then lifecycle fields (P3 B, DEC-016); then DEC-004:
-    // shared fields stay equal across the Translation Group.
-    beforeChange: [refuseImplicitStatusOverPendingDraft, setPublicationLifecycleFields, enforceSharedFields],
+    // shared fields stay equal across the Translation Group; then M3-08:
+    // a file belongs to one publication record (DECISIONS §2.14 item 1).
+    beforeChange: [
+      refuseImplicitStatusOverPendingDraft,
+      setPublicationLifecycleFields,
+      enforceSharedFields,
+      refuseFileOfAnotherPublication,
+    ],
     // M3-07 (DECISIONS §2.11 P9 A): slug history for the 308 of old URLs
     // (collection publication-slugs), in the save's or delete's transaction.
     afterChange: [recordPublicSlug],
@@ -191,6 +198,20 @@ export const Publications: CollectionConfig = {
       name: "coverImage",
       type: "upload",
       relationTo: "media",
+    },
+    {
+      // M3-08 (DECISIONS §2.14 item 1): the record's files in display order.
+      // Per record (not a DEC-004 shared field), versioned with drafts, so a
+      // file added in a draft is not live until the record is published. A
+      // file belongs to one record only (refuseFileOfAnotherPublication).
+      name: "files",
+      type: "upload",
+      relationTo: "publication-files",
+      hasMany: true,
+      admin: {
+        description:
+          "File PDF publikasi ini, sesuai urutan tampil. Satu file hanya untuk satu publikasi. Hanya file public yang tampil dan dapat diunduh pengunjung.",
+      },
     },
   ],
 };

@@ -1,5 +1,7 @@
-import { languageSwitchHref, otherLocale, type Locale } from "@/lib/i18n/locales";
+import { isLocale, languageSwitchHref, otherLocale, type Locale } from "@/lib/i18n/locales";
 import { formatPublicationDate, publicationYear } from "@/lib/publications/dates";
+import { isPublicDownload } from "@/lib/publications/file-access";
+import { downloadPath } from "@/lib/publications/file-download";
 import type { Publication } from "@/payload/payload-types";
 import { SLUG_PATTERN } from "@/payload/fields/slug";
 
@@ -16,12 +18,27 @@ type AuthorRelation = number | { displayName?: string | null } | null | undefine
 type MediaRelation =
   | number
   | {
-      url?: string | null;
-      alt?: string | null;
-      mimeType?: string | null;
-      width?: number | null;
-      height?: number | null;
-    }
+    url?: string | null;
+    alt?: string | null;
+    mimeType?: string | null;
+    width?: number | null;
+    height?: number | null;
+  }
+  | null
+  | undefined;
+/** A file relation with the panel fields (DETAIL_POPULATE); an id when the read could not populate it. */
+type FileRelation =
+  | number
+  | {
+    id: number;
+    label?: string | null;
+    kind?: string | null;
+    language?: string | null;
+    accessLevel?: string | null;
+    status?: string | null;
+    filesize?: number | null;
+    mimeType?: string | null;
+  }
   | null
   | undefined;
 
@@ -37,9 +54,28 @@ export type PublicationDetailDoc = {
   topics?: NamedRelation[] | null;
   authors?: AuthorRelation[] | null;
   coverImage?: MediaRelation;
+  files?: FileRelation[] | null;
 };
 
 export type PublicationCoverImage = { url: string; alt: string; width: number; height: number };
+
+export type PublicationFileKind = "preview" | "full_document" | "appendix" | "dataset" | "supplementary" | "other";
+
+/**
+ * A downloadable file of the panel (M3-08, DECISIONS §2.14 item 7): only
+ * files visitors may download (isPublicDownload), in stored order. No
+ * storage URL or object key: the link is `downloadPath`, the app route that
+ * checks access again on every request.
+ */
+export type PublicationFileItem = {
+  id: number;
+  label: string;
+  kind: PublicationFileKind;
+  /** Language of the document itself (may differ from the page). */
+  language: Locale;
+  sizeBytes: number;
+  downloadPath: string;
+};
 
 export type PublicationDetail = {
   id: number;
@@ -59,6 +95,8 @@ export type PublicationDetail = {
   year: string | null;
   /** An uploaded image cover, or null for the typographic cover. */
   cover: PublicationCoverImage | null;
+  /** Public PDF files in stored order; empty = no file panel. */
+  files: PublicationFileItem[];
 };
 
 /** Slug of the detail URL: the same rule as the slug field (lowercase, digits, single hyphens). */
@@ -106,6 +144,34 @@ function coverOf(value: MediaRelation): PublicationCoverImage | null {
   return { url, alt: value.alt ?? "", width, height };
 }
 
+const FILE_KINDS: readonly PublicationFileKind[] = ["preview", "full_document", "appendix", "dataset", "supplementary", "other"];
+
+function isFileKind(value: unknown): value is PublicationFileKind {
+  return typeof value === "string" && (FILE_KINDS as readonly string[]).includes(value);
+}
+
+/**
+ * The files visitors may download (M3-08, DECISIONS §2.14 items 3 and 7),
+ * in stored order: populated, ready, PDF, the stricter of the publication's
+ * and the file's level `public` (isPublicDownload), with a label, a known
+ * kind and language and a size. An id (the anonymous read could not
+ * populate it) or anything incomplete is dropped. The staff preview uses
+ * the same filter, so it shows exactly the files visitors will get.
+ */
+export function publicFiles(publicationAccess: unknown, files: FileRelation[] | null | undefined): PublicationFileItem[] {
+  const items: PublicationFileItem[] = [];
+  for (const file of files ?? []) {
+    if (!file || typeof file === "number" || typeof file.id !== "number") continue;
+    if (!isPublicDownload(publicationAccess, file)) continue;
+    const label = nonEmpty(file.label);
+    const { kind, language, filesize } = file;
+    if (!label || !isFileKind(kind) || typeof language !== "string" || !isLocale(language)) continue;
+    if (typeof filesize !== "number" || !Number.isFinite(filesize) || filesize < 0) continue;
+    items.push({ id: file.id, label, kind, language, sizeBytes: filesize, downloadPath: downloadPath(file.id) });
+  }
+  return items;
+}
+
 /**
  * Type and topic labels show even when the term is inactive, if the term has
  * a name in this locale (P5 A). Without publishedAt no date is shown.
@@ -128,6 +194,7 @@ export function toPublicationDetail(doc: PublicationDetailDoc, locale: Locale): 
     dateLabel: publishedAt ? formatPublicationDate(publishedAt, locale) : null,
     year: publishedAt ? publicationYear(publishedAt) : null,
     cover: coverOf(doc.coverImage),
+    files: publicFiles(doc.accessLevel, doc.files),
   };
 }
 

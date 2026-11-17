@@ -7,7 +7,8 @@ import type { Payload } from "payload";
  *
  * Every record a test writes carries a prefix the existing data does not use
  * (`fixture-m2-*`, `fixture-topic-*`, `fixture-type-*`, `fixture-author-*`,
- * `[FIXTURE] ...`): slugs and email local parts start with
+ * `[FIXTURE] ...`): slugs, uploaded file names (M3-08, also the bucket
+ * object names) and email local parts start with
  * `fixture-test-<area>-`, emails end with `@example.invalid`, labels and
  * titles start with `[FIXTURE] test <area> `. Cleanup deletes only records
  * with the prefix of its own area, at the start and at the end of a file.
@@ -24,6 +25,7 @@ export type Area =
   | "access"
   | "admin"
   | "detail"
+  | "downloads"
   | "guard"
   | "home"
   | "index"
@@ -84,6 +86,19 @@ async function groupIds(payload: Payload, label: string): Promise<number[]> {
   return groups.docs.filter((doc) => doc.label.startsWith(label)).map((doc) => doc.id);
 }
 
+/** Publication files (M3-08) whose stored filename starts with the prefix. */
+async function fileIds(payload: Payload, prefix: string): Promise<number[]> {
+  const files = await payload.find({
+    collection: "publication-files",
+    where: { filename: { like: prefix } },
+    depth: 0,
+    pagination: false,
+    overrideAccess: true,
+    select: { filename: true },
+  });
+  return files.docs.filter((doc) => typeof doc.filename === "string" && doc.filename.startsWith(prefix)).map((doc) => doc.id);
+}
+
 async function userIds(payload: Payload, prefix: string): Promise<number[]> {
   const users = await payload.find({
     collection: "users",
@@ -99,6 +114,8 @@ export type FixtureCounts = {
   publications: number;
   /** Slug history rows (M3-07); the Publication beforeDelete hook removes a record's rows. */
   publicationSlugs: number;
+  /** Publication files (M3-08, filename prefix); deleting one also deletes its bucket object. */
+  publicationFiles: number;
   translationGroups: number;
   topics: number;
   publicationTypes: number;
@@ -131,6 +148,9 @@ export function formatCounts(counts: FixtureCounts): string {
  * (M3-07; normally the Publication beforeDelete hook already removes them,
  * this keeps cleanup working while that hook is deliberately broken), then
  * publications (a used Translation Group cannot be deleted), then the area's
+ * publication files (M3-08, only the `downloads` area creates them; after
+ * the publications, because a file on a live publication cannot be deleted;
+ * the storage plugin deletes each file's bucket object), then the area's
  * authors (only the `search` area creates authors, M3-06; the others reuse an
  * existing one).
  */
@@ -139,6 +159,7 @@ export async function cleanupArea(payload: Payload, area: Area): Promise<Fixture
   const counts: FixtureCounts = {
     publications: 0,
     publicationSlugs: 0,
+    publicationFiles: 0,
     translationGroups: 0,
     topics: 0,
     publicationTypes: 0,
@@ -152,6 +173,10 @@ export async function cleanupArea(payload: Payload, area: Area): Promise<Fixture
   for (const id of await slugIds(payload, "publications", prefix)) {
     await payload.delete({ collection: "publications", id, overrideAccess: true });
     counts.publications++;
+  }
+  for (const id of await fileIds(payload, prefix)) {
+    await payload.delete({ collection: "publication-files", id, overrideAccess: true });
+    counts.publicationFiles++;
   }
   for (const id of await slugIds(payload, "authors", prefix)) {
     await payload.delete({ collection: "authors", id, overrideAccess: true });
@@ -183,6 +208,7 @@ export async function countLeftovers(payload: Payload, area?: Area): Promise<Fix
   return {
     publications: (await slugIds(payload, "publications", prefix)).length,
     publicationSlugs: (await slugIds(payload, "publication-slugs", prefix)).length,
+    publicationFiles: (await fileIds(payload, prefix)).length,
     translationGroups: (await groupIds(payload, label)).length,
     topics: (await slugIds(payload, "topics", prefix)).length,
     publicationTypes: (await slugIds(payload, "publication-types", prefix)).length,

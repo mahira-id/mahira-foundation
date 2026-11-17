@@ -5,7 +5,9 @@ import { s3Storage } from "@payloadcms/storage-s3";
 import { buildConfig, type DatabaseAdapterObj } from "payload";
 import { DEFAULT_LOCALE } from "../lib/i18n/locales";
 import { Authors } from "./collections/Authors";
+import { staffRoleOf } from "./access/roles";
 import { Media } from "./collections/Media";
+import { PublicationFiles } from "./collections/PublicationFiles";
 import { Publications } from "./collections/Publications";
 import { PublicationSlugs } from "./collections/PublicationSlugs";
 import { PublicationTypes } from "./collections/PublicationTypes";
@@ -14,6 +16,7 @@ import { TranslationGroups } from "./collections/TranslationGroups";
 import { Users } from "./collections/Users";
 import { SUPABASE_ROOT_CA_2021 } from "./db/supabase-root-ca";
 import { readCmsEnv } from "./env";
+import { FILES_BUCKET, SIGNED_DOWNLOAD_TTL_SECONDS, storageClientConfig } from "./storage";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(dirname, "..");
@@ -24,10 +27,14 @@ const cms = readCmsEnv();
 // Supabase Storage of the APP project (mahira.id), S3-compatible endpoint.
 // The S3 access keys bypass Storage RLS: server-only, never NEXT_PUBLIC_*.
 const appSupabaseUrl = cms ? cms.APP_SUPABASE_URL.replace(/\/+$/, "") : "";
-const appSupabaseRef = cms ? new URL(appSupabaseUrl).hostname.split(".")[0] : "";
-// Spike bucket and prefix are kept until M3-08 (Owner 2026-11-10, M3-00 U2).
+// Public bucket and prefix of `media` (covers), kept until M4 (Owner
+// 2026-11-10, M3-00 U2; 2026-11-16, DECISIONS §2.14 item 5; DEC-017/020).
 const PUBLIC_BUCKET = "spike-m2-public";
 const MEDIA_PREFIX = "spike-m2";
+
+// One S3 client config for both buckets, shared with the public download
+// signer (./storage.ts). Empty while the CMS is off.
+const storageConfig = cms ? storageClientConfig(cms) : {};
 
 /**
  * Keeps the process alive when the database connect of `payload.init` fails
@@ -66,7 +73,17 @@ export default buildConfig({
   // PublicationSlugs last: Payload names compound indexes by column, so the
   // second (locale, slug) index gets a suffix; publications keeps
   // `locale_slug_idx` only while it is built first.
-  collections: [Users, Publications, Authors, Topics, PublicationTypes, TranslationGroups, Media, PublicationSlugs],
+  collections: [
+    Users,
+    Publications,
+    Authors,
+    Topics,
+    PublicationTypes,
+    TranslationGroups,
+    Media,
+    PublicationFiles,
+    PublicationSlugs,
+  ],
   plugins: [
     s3Storage({
       enabled: cms !== null,
@@ -83,18 +100,29 @@ export default buildConfig({
             `${appSupabaseUrl}/storage/v1/object/public/${PUBLIC_BUCKET}/${prefix ? `${prefix}/` : ""}${encodeURIComponent(filename)}`,
         },
       },
-      config: cms
-        ? {
-          endpoint: `https://${appSupabaseRef}.storage.supabase.co/storage/v1/s3`,
-          // DECISIONS §2.2 (mahira.id region); production region open (DEC-017/DEC-020).
-          region: "eu-central-1",
-          forcePathStyle: true,
-          credentials: {
-            accessKeyId: cms.APP_SUPABASE_S3_ACCESS_KEY_ID,
-            secretAccessKey: cms.APP_SUPABASE_S3_SECRET_ACCESS_KEY,
-          },
-        }
-        : {},
+      config: storageConfig,
+    }),
+    // M3-08 (DECISIONS §2.14): private bucket for publication files.
+    // - Payload access control stays on, so the adapter's handler serves
+    //   `/api/publication-files/file/<name>` to staff only (signed 302). The
+    //   public download route signs its own GET with `attachment`
+    //   (lib/cms/publication-file-storage.ts), not through this handler.
+    // - signedDownloads: the handler answers 302 to a GET URL signed for
+    //   SIGNED_DOWNLOAD_TTL_SECONDS instead of streaming through the function.
+    // - clientUploads: the admin uploads browser → bucket with a presigned
+    //   PUT (Vercel Function bodies stop at 4.5 MB); the presign endpoint
+    //   `/api/storage-s3-generate-signed-url` is for Editor/Admin only.
+    s3Storage({
+      enabled: cms !== null,
+      alwaysInsertFields: true,
+      bucket: FILES_BUCKET,
+      clientUploads: { access: ({ req }) => staffRoleOf(req) !== null },
+      collections: {
+        "publication-files": {
+          signedDownloads: { expiresIn: SIGNED_DOWNLOAD_TTL_SECONDS },
+        },
+      },
+      config: storageConfig,
     }),
   ],
   localization: {

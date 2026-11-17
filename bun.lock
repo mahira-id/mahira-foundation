@@ -5,6 +5,8 @@
     "": {
       "name": "mahira-foundation",
       "dependencies": {
+        "@aws-sdk/client-s3": "3.1164.0",
+        "@aws-sdk/s3-request-presigner": "3.1164.0",
         "@payloadcms/db-postgres": "3.93.0",
         "@payloadcms/next": "3.93.0",
         "@payloadcms/storage-s3": "3.93.0",
