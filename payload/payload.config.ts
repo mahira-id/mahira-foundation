@@ -6,6 +6,7 @@ import { buildConfig, type DatabaseAdapterObj } from "payload";
 import { DEFAULT_LOCALE } from "../lib/i18n/locales";
 import { Authors } from "./collections/Authors";
 import { staffRoleOf } from "./access/roles";
+import { LearningResources } from "./collections/LearningResources";
 import { Media } from "./collections/Media";
 import { PublicationFiles } from "./collections/PublicationFiles";
 import { Publications } from "./collections/Publications";
@@ -16,6 +17,7 @@ import { TranslationGroups } from "./collections/TranslationGroups";
 import { Users } from "./collections/Users";
 import { SUPABASE_ROOT_CA_2021 } from "./db/supabase-root-ca";
 import { About } from "./globals/About";
+import { LearningHub } from "./globals/LearningHub";
 import { readCmsEnv } from "./env";
 import { FILES_BUCKET, SIGNED_DOWNLOAD_TTL_SECONDS, storageClientConfig } from "./storage";
 
@@ -84,9 +86,13 @@ export default buildConfig({
     Media,
     PublicationFiles,
     PublicationSlugs,
+    // M3-11 (DECISIONS §2.16): Learning Hub resources, after the existing
+    // collections so their tables and index names stay as they are.
+    LearningResources,
   ],
   // M3-09 (DECISIONS §2.15 decision 1): the About page, one localized global.
-  globals: [About],
+  // M3-12 (DECISIONS §2.16 decision 10A): texts of the Learning Hub catalog.
+  globals: [About, LearningHub],
   plugins: [
     s3Storage({
       enabled: cms !== null,

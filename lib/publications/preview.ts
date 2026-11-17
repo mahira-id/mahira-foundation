@@ -74,19 +74,60 @@ export function aboutPath(locale: Locale): string {
 /** Edit page of the `about` global in /admin (Payload 3.93.0 `admin/globals/<slug>`); the exit without a public About goes there. */
 export const ABOUT_ADMIN_PATH = "/admin/globals/about";
 
-export type PreviewRequest = { kind: "publication"; id: number } | { kind: "about"; locale: Locale };
+/** Public path of the Learning Hub catalog of a locale (M3-12, DECISIONS §2.16 decision 7A). */
+export function learningHubPath(locale: Locale): string {
+  return `/${locale}/learning-hub`;
+}
+
+/** Detail path of a guide (or, from M3-13, a toolkit) in a locale, or null when the slug cannot make one. */
+export function resourcePath(locale: unknown, slug: unknown): string | null {
+  if (typeof locale !== "string" || !isLocale(locale)) return null;
+  if (typeof slug !== "string" || !SLUG_PATTERN.test(slug)) return null;
+  return `${learningHubPath(locale)}/${slug}`;
+}
 
 /**
- * What `/api/preview` was asked for: exactly one of `id` (parsePreviewId) or
- * `about` (an exact locale). Both, neither, or an invalid value: null (the
- * handler's 404). `id` keeps its M3-05 reading (the first value).
+ * Staff draft preview of a Learning Hub guide (M3-11, DECISIONS §2.16
+ * decision 12A): the admin Preview button of a `learning-resources` record
+ * opens `/api/preview?resource=<id>&locale=<locale>` for the locale being
+ * edited; only guides have a detail page (videos and playlists play in the
+ * catalog; toolkit preview comes with M3-13), so other types get no button.
+ */
+export function resourcePreviewUrl(doc: { id?: unknown; type?: unknown }, locale: unknown): string | null {
+  const { id } = doc;
+  if (doc.type !== "guide") return null;
+  if (typeof id !== "number" || !Number.isInteger(id) || id < 1 || id > MAX_ID) return null;
+  if (typeof locale !== "string" || !isLocale(locale)) return null;
+  return `${PREVIEW_PATH}?resource=${id}&locale=${locale}`;
+}
+
+/** Edit page of a Learning Hub resource in /admin; the exit of a guide preview without a public page goes there. */
+export function resourceAdminPath(id: number): string {
+  return `/admin/collections/learning-resources/${id}`;
+}
+
+export type PreviewRequest =
+  | { kind: "publication"; id: number }
+  | { kind: "about"; locale: Locale }
+  | { kind: "resource"; id: number; locale: Locale };
+
+/**
+ * What `/api/preview` was asked for: exactly one of `id` (parsePreviewId),
+ * `about` (an exact locale) or, since M3-11, `resource` (parsePreviewId,
+ * with an exact `locale`). More than one, none, or an invalid value: null
+ * (the handler's 404). `id` keeps its M3-05 reading (the first value).
  */
 export function parsePreviewRequest(params: URLSearchParams): PreviewRequest | null {
-  const hasId = params.has("id");
-  if (hasId === params.has("about")) return null;
-  if (hasId) {
+  const kinds = ["id", "about", "resource"].filter((name) => params.has(name));
+  if (kinds.length !== 1) return null;
+  if (kinds[0] === "id") {
     const id = parsePreviewId(params.get("id"));
     return id === null ? null : { kind: "publication", id };
+  }
+  if (kinds[0] === "resource") {
+    const id = parsePreviewId(params.get("resource"));
+    const locale = params.get("locale");
+    return id !== null && locale !== null && isLocale(locale) ? { kind: "resource", id, locale } : null;
   }
   const locale = params.get("about");
   return locale !== null && isLocale(locale) ? { kind: "about", locale } : null;

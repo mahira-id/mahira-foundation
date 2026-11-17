@@ -5,6 +5,7 @@ import * as migration_20261110_175914_m3_02_roles_access from './20261110_175914
 import * as migration_20261115_054138_m3_07_publication_slugs from './20261115_054138_m3_07_publication_slugs';
 import * as migration_20261115_181459_m3_08_publication_files from './20261115_181459_m3_08_publication_files';
 import * as migration_20261117_055203_m3_09_about from './20261117_055203_m3_09_about';
+import * as migration_20261117_182752_m3_11_learning_hub from './20261117_182752_m3_11_learning_hub';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20261117_055203_m3_09_about.up,
     down: migration_20261117_055203_m3_09_about.down,
-    name: '20261117_055203_m3_09_about'
+    name: '20261117_055203_m3_09_about',
+  },
+  {
+    up: migration_20261117_182752_m3_11_learning_hub.up,
+    down: migration_20261117_182752_m3_11_learning_hub.down,
+    name: '20261117_182752_m3_11_learning_hub'
   },
 ];
