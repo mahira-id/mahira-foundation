@@ -158,6 +158,31 @@ Proposed fields: `id`, localized `title`, `slug`, `description`, `resourceType` 
 
 Proposed fields: `id`, localized title/slug/body blocks, status, locale/translation group, SEO metadata, publishedAt, updatedAt. Use constrained content blocks; do not provide unrestricted HTML unless sanitized and justified.
 
+### 4.6.1 About (global Payload `about`, M3-09, diterapkan)
+
+Keputusan Owner 2026-11-17 (DECISIONS §2.15 keputusan 1–4, 6). Satu dokumen (singleton) `payload/globals/About.ts`, bukan koleksi; tidak berelasi dengan koleksi lain.
+
+| Field | Tipe | Lokalisasi | Catatan |
+|---|---|---|---|
+| `hero.eyebrow`, `hero.lead` | teks, textarea (paragraf dipisah baris kosong) | per locale | Opsional. |
+| `hero.title` | teks | per locale | Wajib; H1 halaman. |
+| `hero.ctas[]` (maks 2) | `label`, `kind` (`anchor`/`publications`/`email`), `anchor` | per locale | Tujuan diselesaikan kode; `anchor` hanya untuk jenis `anchor`. |
+| `sections[]` | array | per locale | Urutan = urutan tampil. |
+| `sections[].anchor` | teks | per locale | Pola slug (huruf kecil, angka, tanda hubung tunggal); target CTA. |
+| `sections[].label`, `.heading`, `.body`, `.quote`, `.outro` | teks/textarea | per locale | Label = eyebrow seksi; judul H2 (label bila judul kosong); `quote` = kutipan sorot; `outro` = paragraf penutup setelah daftar. |
+| `sections[].lists[]` | `heading`, `intro`, `style` (`numbered`/`bulleted`), `items[]` | per locale | Beberapa daftar per seksi, masing-masing dengan subjudul sendiri. |
+| `sections[].lists[].items[]` | `title`, `subtitle`, `text` | per locale | Judul butir (kata pembuka tebal), sub-label tebal opsional, teks. |
+| `sections[].ctas[]` (maks 2) | seperti `hero.ctas` | per locale | Satu-satunya field di luar daftar keputusan 2; dipakai CTA seksi penutup (keputusan 14). |
+| `seo.title`, `seo.description` | teks, textarea | per locale | Wajib; `<title>` dan meta description. |
+| `contactEmail` | email | bersama | Opsional; target CTA `email` (`mailto:`). |
+| `enReady` | checkbox | bersama | Label "Versi EN siap tayang"; default mati; hanya staf; menentukan apakah EN tampil. |
+
+- **Versi:** `versions: { drafts: true, max: 25 }`; satu `_status` untuk kedua locale.
+- **Akses:** staf (Editor/Admin) membaca semuanya (termasuk draf); Local API anonim hanya `_status = published` (filter di akses baca); REST/GraphQL anonim ditolak; `update` dan `readVersions` hanya staf. Hook `denyPublicFallbackForGlobal` menolak pembacaan anonim yang meminta locale fallback. Pembacaan publik hanya lewat `lib/cms/public-content.ts` (`overrideAccess: false`, `fallbackLocale: false`).
+- **Penayangan:** `isAboutVisible(doc, locale)`: published, `hero.title`, `seo.title`, `seo.description` terisi; EN juga `enReady`.
+- **Penyimpanan:** migrasi `20261117_055203_m3_09_about` menambah 14 tabel (`about`, `about_locales`, `about_hero_ctas`, `about_sections`, `about_sections_ctas`, `about_sections_lists`, `about_sections_lists_items`, dan tujuh tabel versi `_about_v*`) serta 9 enum, dengan RLS aktif di `up()` (DEC-007). Diterapkan ke `mahira-cms`.
+- **Isi.** Tidak ada isi organisasi di repo; tes memakai teks `[FIXTURE]` dan memulihkan global ke keadaan semula (TEST-PLAN §12.3).
+
 ### 4.7 StaffUser
 
 Fields: email, name, role(s), active/disabled state, MFA policy/state as available, timestamps, last activity if policy permits. Do not expose staff records publicly. Fine-grained collection/global permissions remain in Payload access configuration.

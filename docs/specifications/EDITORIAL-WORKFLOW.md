@@ -174,3 +174,16 @@ Keputusan Owner 2026-11-16. File PDF diunggah di koleksi **Publication Files** (
   - Mengubah label, jenis, bahasa, dan Access Level file **langsung berlaku** (file tidak punya versi): misalnya Access Level `registered` pada file yang tayang membuat tautannya 404 pada request berikutnya.
 - **Staf** membuka file di `/admin` (pratinjau file Payload) di bawah access control Payload; tautan unduhan publik tidak memberi akses khusus untuk sesi staf.
 - **Belum ada di M3-08:** audit, hitungan unduhan, dan rate limit unduhan publik (butir 9; rate limit butir M4); pembersihan objek yatim bila pembuatan record gagal sesudah client upload (SPIKE-003 §10).
+
+### 9.5 Halaman About (M3-09, DECISIONS §2.15)
+
+Keputusan Owner 2026-11-17. About adalah **global** Payload (`/admin/globals/about`), bukan koleksi: satu dokumen dengan isi ID dan EN. Model field di DATA-MODEL §4.6.1.
+
+- **Siapa:** Editor dan Admin boleh mengubah, menyimpan draf, dan menerbitkan (DEC-016). Anonim tidak punya akses REST/GraphQL ke global ini.
+- **Mengisi.** Isi per bahasa lewat pemilih locale di admin. Teks biasa tanpa editor rich-text: paragraf dipisah baris kosong; cetak miring dan tebal inline tidak ada (butir pembuka tebal menjadi field "judul butir"). Bagian halaman (hero, seksi, daftar, kutipan, CTA) diatur kode; editor hanya mengisi dan mengurutkan. `anchor` seksi memakai huruf kecil, angka, dan tanda hubung tunggal (contoh `cara-kami-bekerja`).
+- **Draf dan terbit.** Satu status publish untuk ID dan EN: **Save Draft** menyimpan tanpa tayang, **Publish** menayangkan. Perubahan tayang tanpa deploy (SRS FR-020). Riwayat versi maksimal 25; Unpublish menyembunyikan halaman pada request berikutnya.
+- **Halaman ID tayang** bila status published dan judul hero, judul SEO, dan deskripsi SEO terisi.
+- **Halaman EN tayang** hanya bila, selain syarat itu, kotak staf **"Versi EN siap tayang"** dicentang. Kotak ini mencegah teks EN setengah jadi ikut tayang saat Publish: selama tidak dicentang, `/en/about` tetap 404 dan tautan "About" EN tidak muncul, walau EN sudah terisi sebagian. Kotak itu tidak tampil kepada publik dan tidak ada di HTML.
+- **Pratinjau draf.** Tombol **Preview** di admin membuka `/api/preview?about=<id|en>`, yang memeriksa sesi Editor/Admin sebelum Draft Mode dihidupkan (tanpa sesi: 404 tanpa cookie), lalu mengalihkan ke `/{locale}/about`. Halaman menampilkan versi terbaru (draf) dengan banner dan tombol "Keluar dari pratinjau"; tanpa sesi staf yang sah halaman memakai hasil publik. Mekanisme dan batas sama dengan pratinjau publikasi (§9; PDD §9).
+- **Sebelum Production.** Daftar periksa pra-publikasi (nama legal, domain dan akun media sosial, kontak aktif, kata "dirancang", filosofi nama) adalah tugas organisasi di MILESTONES M4-05; Production menjaga CMS mati sampai M4.
+- **Verifikasi:** `tests/integration/about.test.ts` (AB1–AB10, ABUI1–ABUI3) dan `tests/unit/about.test.ts` (ABU1–ABU8b); TEST-PLAN §12.2.

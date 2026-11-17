@@ -132,7 +132,7 @@ erDiagram
 
 ## 3. Ownership overlay
 
-- Payload-owned: Publication, PublicationSlug (riwayat slug publik, unik per `locale` + `slug`; M3-07, DATA-MODEL §4.8), PublicationAsset (koleksi `publication-files`, M3-08, DECISIONS §2.14 butir 1, DATA-MODEL §4.2.1), Author, Topic, PublicationType, LearningResource, Page, StaffUser.
+- Payload-owned: About (global singleton `about`, M3-09, DECISIONS §2.15, DATA-MODEL §4.6.1; tanpa relasi ke entitas lain, array bersarang hero CTA → seksi → daftar → butir milik dokumen itu sendiri), Publication, PublicationSlug (riwayat slug publik, unik per `locale` + `slug`; M3-07, DATA-MODEL §4.8), PublicationAsset (koleksi `publication-files`, M3-08, DECISIONS §2.14 butir 1, DATA-MODEL §4.2.1), Author, Topic, PublicationType, LearningResource, Page, StaffUser.
 - Supabase Auth-owned: Auth user identity.
 - App schema-owned: PublicUserProfile, Entitlement, audit/event tables, future payment tables.
 - Object storage-owned: binary object; database holds metadata and opaque object key.

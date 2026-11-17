@@ -100,3 +100,12 @@ Keputusan Owner M3-07 (DECISIONS §2.13 keputusan 1–6, 10) diterapkan di branc
 - **§5:** tanpa structured data/JSON-LD di M3-07 (keputusan 6; PUB-OQ-39 tetap terbuka).
 - **§7:** sitemap dari record published + `public` saja, dibaca saat request (publish, unpublish, dan ganti slug terlihat pada request berikutnya); tanpa varian query dan pratinjau. Belum: `xhtml:link` alternates di sitemap (hreflang ada di HTML halaman) dan pemecahan sitemap; ditinjau bila jumlah URL atau kebutuhan crawler menuntut.
 - **Domain dan Preview:** canonical selalu `https://mahira.id` (keputusan 1); Preview `noindex` lewat header Vercel, `robots.txt` `Disallow: /`, dan Vercel Authentication. `robots.txt` Production `Allow: /` + `Sitemap: https://mahira.id/sitemap.xml` (keputusan 4).
+
+## 12. Implementasi M3-09 (2026-11-17)
+
+Keputusan Owner M3-09 (DECISIONS §2.15 keputusan 8) diterapkan di branch `feat/m3-09-about-tokens`; halaman di PAGE-SPECIFICATIONS §11, aturan URL di IA-ROUTING-I18N §3.1, §6, §8, uji di TEST-PLAN §12.2 (AB2, AB3, AB8, AB9, ABU7, G5.5, G5.6).
+- **§2, §3:** `/{locale}/about` dapat diindeks bila ada (published). `<title>` absolut = judul SEO, deskripsi = deskripsi SEO (keduanya field wajib global `about`, berlokalisasi, tanpa fallback); canonical `https://mahira.id/{locale}/about`; hreflang `id`/`en` hanya bila kedua locale tampil; Open Graph `website` dengan gambar `/og/site` dan `og:locale` `id_ID`/`en_GB`; Twitter card seperti halaman lain. Pratinjau draf: `noindex, nofollow`, tanpa canonical.
+- **§7:** sitemap memuat `/id/about` dan/atau `/en/about` hanya selama About locale itu tampil; dibaca saat request sehingga publish dan unpublish terlihat pada request berikutnya.
+- **CMS mati:** `/id/about` dan `/en/about` 404 + `noindex` (gerbang `proxy.ts`); Production tetap demikian sampai M4.
+- **§5:** tanpa structured data/JSON-LD (keputusan M3-07 6 tetap).
+- Teks HTML tidak memuat `enReady` atau `_status` (AB9).

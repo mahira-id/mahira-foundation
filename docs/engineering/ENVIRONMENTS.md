@@ -179,7 +179,7 @@ Yang diukur lokal (SPIKE-003 §11): signed URL 200 lalu ditolak sesudah 61 detik
 
 **Cek ulang Owner 2026-11-16 (masih Preview `8ae0689`, sebelum perubahan attachment):** (1) C dengan file sintetis 10 MB: panel menampilkan "Dokumen lengkap · Bahasa dokumen: Bahasa Indonesia · PDF · 10 MB"; "Unduh PDF" membuka PDF inline di tab yang sama sesudah sekitar 1–2 detik, di penampil browser berjudul "mahira-fixture-m3-08-10mb.pdf". Unduhan 10 MB bekerja dan namanya benar; buka inline adalah perilaku lama. (2) `/api/media/file/x` menjawab 404 (halaman "Not found" polos). Lulus.
 
-**Tertunda (Preview baru sesudah Owner mem-push commit attachment):** C dengan file 10 MB harus mengunduh sebagai file bernama `mahira-fixture-m3-08-10mb.pdf`, tidak terbuka inline; `/api/media/file/x` diulang sekali (harus tetap 404). Masih belum dicek: unduhan lambat melewati 60 detik dan H langkah 3.
+**Ditutup 2026-11-17 (Preview PR #21 head `e985985`: C mengunduh sebagai `mahira-fixture-m3-08-10mb.pdf`, lulus; DECISIONS §2.15).** Semula tertunda (Preview baru sesudah Owner mem-push commit attachment): C dengan file 10 MB harus mengunduh sebagai file bernama `mahira-fixture-m3-08-10mb.pdf`, tidak terbuka inline; `/api/media/file/x` diulang sekali (harus tetap 404). Masih belum dicek: unduhan lambat melewati 60 detik dan H langkah 3.
 
 **Langkah Owner (bentuk sederhana A–I, dipakai Owner 2026-11-16).** Owner sendiri yang mem-push branch `feat/m3-08-public-downloads` (`git push`; branch sudah melacak `origin`), lalu PR #21 membuat deployment Preview baru.
 
@@ -202,6 +202,30 @@ Persiapan (sekali):
 Opsional (belum pernah dicek di Preview): **unduhan lambat.** Sebelum mengulang C, DevTools → **Network** → throttling **Slow 4G** (atau custom sekitar 1 Mbit/s), supaya unduhan berjalan lebih dari 60 detik. Hasil yang diharapkan (diukur lokal): unduhan tetap selesai utuh. Kembalikan throttling ke **No throttling**.
 
 Bila ada langkah yang gagal: catat waktu (UTC), URL tanpa query string, langkah, dan status dari **Network** (tanpa header `Cookie` dan tanpa signed URL); lalu Vercel → **Logs**, Environment `preview`, rentang waktu yang sama (log aplikasi hanya memuat nama galat, misalnya `[file-download] signing failed: FileStorageError`), dan kirim ke orchestrator.
+
+#### Halaman About (M3-09): langkah Owner di Preview
+
+Perilaku (DECISIONS §2.15; PAGE-SPECIFICATIONS §11, IA-ROUTING-I18N §3.1, SEO-SPECIFICATION §12, EDITORIAL-WORKFLOW §9.5): About adalah global Payload di `mahira-cms`, jadi Preview, lokal, dan tes membaca dokumen yang sama. Production tetap CMS mati: `/id/about` dan `/en/about` 404 di sana sampai M4. Draf About ID dibenihkan oleh langkah terakhir run (laporan akhir run memuat statusnya); tidak published, EN kosong, kotak "Versi EN siap tayang" mati. Owner sendiri yang mem-push dan membuka PR; jangan menempelkan isi halaman ke chat, issue, atau commit (sumber isi: dokumen Owner 2026-11-17, di luar repo).
+
+Persiapan (sekali):
+- **Push dan PR.** `git push -u origin feat/m3-09-about-tokens`, lalu buka PR. Bot Vercel menulis komentar berisi tabel deployment; tunggu status **Ready**, lalu buka tautan **Preview**. `<URL>` di bawah = alamat itu, tanpa `/` di akhir.
+- **Jendela private.** Siapkan satu jendela private/incognito (tanpa login) untuk cek publik, dan satu jendela biasa untuk admin.
+
+Langkah (A–L):
+- **A. Sebelum Publish, halaman belum ada.** Di jendela private buka `<URL>/id/about`. Hasil yang diharapkan: halaman not-found Mahira ("Halaman tidak ditemukan"). Buka `<URL>/id/publications` dan `<URL>/`. Hasil yang diharapkan: header tanpa tautan "Tentang", dan di seksi `#tentang` homepage tanpa tautan "Selengkapnya tentang Mahira".
+- **B. Draf di admin.** Di jendela biasa login `<URL>/admin` → **Globals** → **About**. Hasil yang diharapkan: bahasa Indonesia terisi dari benih (status Draft), bahasa English kosong, dan kotak **Versi EN siap tayang** tidak dicentang.
+- **C. Pratinjau draf.** Tekan **Preview** (atau buka `<URL>/api/preview?about=id` dalam sesi admin yang sama). Hasil yang diharapkan: pindah ke `/id/about` dengan banner pratinjau dan tombol "Keluar dari pratinjau"; seksi tampil sesuai urutan isi. Periksa H1: benih memakai eyebrow + headline §2.1 dokumen Owner, sedangkan bagian SEO dokumen itu menyarankan H1 lain; putuskan mana yang dipakai (ubah **Hero → Title** bila perlu). Periksa tiga CTA hero/seksi: "Kenali Cara Kami Bekerja" menggulir ke seksinya, "Jelajahi Publikasi" ke `/id/publications`, "Hubungi Mahira" membuka `mailto:`.
+- **D. Sunting (opsional).** Ubah teks di admin, **Save Draft**, muat ulang pratinjau. Hasil yang diharapkan: pratinjau menampilkan perubahan; di jendela private `/id/about` masih not-found.
+- **E. Pratinjau hanya staf.** Di jendela private buka `<URL>/api/preview?about=id`. Hasil yang diharapkan: 404 (tidak ada banner dan tidak masuk Draft Mode).
+- **F. Publish.** Di admin, **Publish** (bukan hanya Save Draft). Hasil yang diharapkan: status Published.
+- **G. Cek publik.** Di jendela private: `<URL>/id/about` tampil lengkap tanpa banner. `<URL>/id/publications` dan salah satu halaman detail publikasi: tautan **Tentang** di header menuju `/id/about`. `<URL>/`: di seksi `#tentang` ada tautan "Selengkapnya tentang Mahira" menuju `/id/about`; seksi itu sendiri tidak berubah.
+- **H. English belum ada.** Buka `<URL>/en/about`. Hasil yang diharapkan: halaman not-found Mahira. Buka `<URL>/en/publications`. Hasil yang diharapkan: header tanpa tautan "About".
+- **I. SEO.** Buka `view-source:<URL>/id/about`. Hasil yang diharapkan: `<title>` dan `<meta name="description">` sama dengan field SEO, `<link rel="canonical" href="https://mahira.id/id/about">`, tanpa `hreflang`, `og:image` `https://mahira.id/og/site`. Buka `<URL>/sitemap.xml`: ada `https://mahira.id/id/about`, tidak ada `https://mahira.id/en/about`.
+- **J. Tampilan lain tidak berubah.** Bandingkan homepage `<URL>/`, `<URL>/id/publications`, satu halaman detail publikasi, dan halaman 404 (`<URL>/foo`) dengan tampilan sebelum PR ini (mis. deployment Production atau Preview `master` sebelumnya): warna, huruf, jarak, dan tombol sama; satu-satunya tambahan adalah tautan "Tentang"/"Selengkapnya tentang Mahira" yang tampil sesudah F.
+- **K. Login admin (proxy berubah).** Ulangi langkah 2–5 pada "Login admin dan langkah Owner butir 1c" di atas: buka `<URL>/admin` di jendela private, login tanpa reload, buka `<URL>/admin/collections/topics`, log out dan login lagi. Hasil yang diharapkan: tanpa bolak-balik `/admin` ↔ `/admin/login`.
+- **L. Kembalikan (opsional).** Bila About belum boleh tayang di Preview, tekan **Unpublish** di admin. Hasil yang diharapkan: `/id/about` kembali not-found dan tautan header dan homepage hilang pada request berikutnya. Catatan: daftar periksa pra-publikasi (MILESTONES M4-05) harus selesai sebelum About ID diterbitkan di Production.
+
+Bila ada langkah yang gagal: catat waktu (UTC), URL tanpa query string, langkah, dan status dari **Network** (tanpa header `Cookie`); lalu Vercel → **Logs**, Environment `preview`, rentang waktu yang sama, dan kirim ke orchestrator.
 
 #### Langkah Owner dari jawaban 2026-11-10 (M3-02)
 

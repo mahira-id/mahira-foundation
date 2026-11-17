@@ -1,56 +1,47 @@
 # Design Tokens Specification
 
-**ID:** DESIGN-TOKENS-001 · **Status:** Proposed token contract · **Version:** 0.1.0
+**ID:** DESIGN-TOKENS-001 · **Status:** Accepted token contract (DEC-024, 2026-11-17) · **Version:** 0.1.0
 
 ## 1. Source of truth
 
-PDD establishes visual intent. The recommended runtime canonical source is `app/globals.css` using CSS custom properties, because that file already exists in the repository and PDD explicitly requires one runtime source. This remains a recommendation until the actual stylesheet and Tailwind setup are inspected. This Markdown file documents semantics and usage; it must not become a second runtime source.
+**Accepted 2026-11-17 (DEC-024, DECISIONS §2.15 decision 9).** The single runtime source is `app/globals.css`: the `@theme` block (Tailwind 4) defines every colour, radius and the font family as CSS custom properties, and rules use `var(--…)` only. A hex value may appear only in a token definition there. Code that cannot read CSS (`viewport.themeColor` in the three root layouts and the generated Open Graph image) takes five colours from `lib/design/tokens.ts`; `tests/unit/design-tokens.test.ts` (TKU1–TKU3) fails when those values differ from the CSS tokens, when a colour literal appears outside `@theme` or `tokens.ts`, or when `app/(site)/globals.css` comes back. This Markdown file documents names and meaning; it must not become a second runtime source and does not repeat token values.
 
 If the project later uses generated tokens, document the generator and generated-file policy. Do not manually maintain the same values in CSS, Tailwind config, component constants, and this document.
 
 ## 2. Confirmed brand inputs from PDD
 
-| Token | Baseline | Intended use | Constraint |
+The approved brand values are in PDD §4. This table maps each input to its runtime token and keeps the usage constraint.
+
+| Brand input | Runtime token | Intended use | Constraint |
 |---|---|---|---|
-| Primary Blue | `#1E6FB7` | Brand, primary actions, links | PDD reports indicative contrast 5.23:1 against white; verify actual states. |
-| Orange | `#FF6A00` | Limited accent | PDD reports 2.87:1 against white; do not use for small text on white. |
-| Green | `#1B684C` | Brand accent/positive semantic state | PDD reports 6.71:1 against white; semantic use still needs consistent meaning. |
-| Silver | `#EDEDED` | Secondary surface | Not text color on white. |
-| Dark Silver | `#848484` | Border/secondary icon/disabled | PDD reports 3.74:1; not important small text on white. |
-| Black | `#101010` | Main text | Strong neutral text. |
-| White | `#FFFFFF` | Main canvas/foreground on blue | Default light theme. |
+| Primary Blue | `--color-brand-500` | Brand, primary actions, links | PDD reports indicative contrast 5.23:1 against white; verify actual states. |
+| Orange | `--color-orange` | Limited accent | PDD reports 2.87:1 against white; do not use for small text on white. |
+| Green | `--color-green` | Brand accent/positive semantic state | PDD reports 6.71:1 against white; semantic use still needs consistent meaning. |
+| Silver | `--color-silver` | Secondary surface | Not text color on white. |
+| Dark Silver | `--color-dark-silver` | Border/secondary icon/disabled | PDD reports 3.74:1; not important small text on white. |
+| Black | `--color-ink` | Main text | Strong neutral text. |
+| White | `--color-white` | Main canvas/foreground on blue | Default light theme. |
 
 The contrast figures above are PDD's indicative calculations, not final accessibility certification. Re-test with rendered colors, font sizes, component states, and WCAG 2.2 AA criteria.
 
 ## 3. Token namespaces
 
-Recommended semantic namespaces:
+Tokens in `app/globals.css` (`@theme`), grouped by meaning:
 
-```css
-:root {
-  /* Brand */
-  --color-brand-primary: #1E6FB7;
-  --color-brand-orange: #FF6A00;
-  --color-brand-green: #1B684C;
+| Namespace | Tokens | Meaning |
+|---|---|---|
+| Brand ramp | `--color-brand-50` … `--color-brand-900` | Derived from the primary: 50–100 soft surfaces, 200–300 accent borders and hover, 500 the brand primary, 600–800 hover/active and link on light, 900 limited dark surface. |
+| Brand accents | `--color-orange`, `--color-green` | Limited accent (orange) and positive accent (green). |
+| Neutral | `--color-ink`, `--color-ink-soft`, `--color-muted`, `--color-silver`, `--color-line`, `--color-dark-silver`, `--color-white` | Text (ink, ink-soft, muted), surfaces (silver, white), lines (line, dark-silver). |
+| Translucent | `--color-white-a07`, `-a08`, `-a10`, `-a25`, `-a45`; `--color-ink-a06`, `-a18` | White and ink at fixed opacity; the only place an `rgb()` literal may appear. |
+| Shape | `--radius-xs`, `--radius-sm`, `--radius-md`, `--radius-lg` | Small, utilitarian radii (PDD §6.3). |
+| Type | `--font-sans` | Hanken Grotesk with a neutral system fallback. |
 
-  /* Neutral */
-  --color-neutral-0: #FFFFFF;
-  --color-neutral-950: #101010;
-
-  /* Semantic: final values to be contrast-tested */
-  --color-text-primary: var(--color-neutral-950);
-  --color-surface-primary: var(--color-neutral-0);
-  --color-border-default: /* TBD */;
-  --color-text-muted: /* TBD */;
-  --color-focus-ring: /* TBD */;
-}
-```
-
-This is illustrative only. Do not copy invalid CSS comments into production custom properties. Define final values from the ramp and test matrix.
+Semantic roles (text, surface, border, focus, success, warning, danger, info) are not separate tokens yet; components use the tokens above. Define semantic aliases only when a real need appears, and test their contrast first. Add no token and no hex value outside `app/globals.css` (and the five values in `lib/design/tokens.ts`).
 
 ## 4. Color system still to be specified
 
-Create a primary ramp from 50–900 with explicit hex values. PDD already identifies Primary 500 as `#1E6FB7`; other steps are not approved. Include:
+The primary ramp 50–900 exists in `app/globals.css` as `--color-brand-50` … `--color-brand-900` (500 is the brand primary); its steps are in use but not yet contrast-reviewed per pair. Still to specify:
 - light surfaces and selected states;
 - subtle borders and hover surfaces;
 - default primary action;

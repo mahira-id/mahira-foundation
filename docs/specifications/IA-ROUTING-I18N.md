@@ -29,7 +29,7 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 | Topic detail | `/{locale}/topics/{topicSlug}` | Implement only if user-facing taxonomy requires it. Tidak dibuat di M3-05; sama dengan baris di atas (DECISIONS §2.11 P6 A). |
 | Learning Hub index | `/{locale}/learning-hub` | Catalog per tema; wajib saat launch (DEC-014). Route kandidat; route final OPEN (DEC-005 "Still open"; M3-11). |
 | Learning resource detail | `/{locale}/learning-hub/{slug}` | Detail or outbound/embed page. Route kandidat; route final dan halaman detail vs embed langsung OPEN (DEC-005 "Still open"; M3-11). |
-| About | `/{locale}/about` | Organization-controlled content. |
+| About | `/{locale}/about` | Organization-controlled content. Diterapkan di M3-09 (DECISIONS §2.15 keputusan 1, 4, 5): global Payload `about`; halaman suatu locale ada hanya bila versinya published (EN juga butuh kotak staf "Versi EN siap tayang"); selain itu `notFound()` dan tidak ada di navigasi atau sitemap; CMS mati → 404 dari `proxy.ts`. Bukan `/id/tentang`. PAGE-SPECIFICATIONS §11. |
 | Contact | `/{locale}/contact` | Publish only after contact process is approved. |
 
 ### 3.2 Account surface
@@ -90,6 +90,7 @@ No public account session may grant access to `/admin`. No staff cookie may be i
 - Canonical ke dirinya sendiri: `/` → `https://mahira.id`; indeks halaman 1 → `https://mahira.id/{locale}/publications` (tanpa `?page`, juga untuk `?page=1` dan parameter tak dikenal); `?page=n` tanpa filter → URL itu; detail publik → `https://mahira.id/{locale}/publications/{slug}`. URL indeks dengan `q`, filter, atau state `unknown-filter`/`page-not-found`/`error` `noindex, follow` tanpa canonical dan tanpa hreflang. Pratinjau, not-found, redirect slug lama, dan galat detail tanpa canonical.
 - hreflang: `/id/publications` ↔ `/en/publications` hanya di halaman 1; detail hanya bila record locale lain di Translation Group published + `public` (kedua arah, self termasuk). Homepage `/` tanpa hreflang (tidak ada padanan EN). Tanpa `x-default` (keputusan 3; baris `x-default` di atas tidak dipakai).
 - Tidak ada fallback locale: judul, deskripsi, dan gambar Open Graph hanya dari record locale route.
+- **Implementasi M3-09 (DECISIONS §2.15 keputusan 8):** `/{locale}/about` memakai canonical `https://mahira.id/{locale}/about` ke dirinya sendiri; hreflang `id`/`en` timbal balik hanya bila kedua locale tampil (published, field wajib terisi, EN juga "Versi EN siap tayang"); tanpa fallback locale untuk isi, judul SEO, dan deskripsi; pratinjau `noindex, nofollow` tanpa canonical.
 
 ## 7. Search and taxonomy URL state
 
@@ -122,6 +123,7 @@ Subset yang diterapkan di M3-05 dan M3-06 (DECISIONS §2.11 P1–P4, §2.12 P3, 
 - `app/sitemap.ts` (`/sitemap.xml`) membaca lewat lapisan baca publik (`getSitemapPublications`: anonim, published + `public`, `draft: false`, `fallbackLocale: false`). CMS mati (Production saat ini): statis, hanya `https://mahira.id/`. CMS hidup: saat request (`connection()`, tanpa `"use cache"`, jadi tanpa cache tag dan revalidasi; publish/unpublish terlihat pada request berikutnya, usulan planner PP6): `/`, `/id/publications`, `/en/publications`, dan setiap detail published + `public` kedua locale dengan `lastmod` = `updatedAt` versi tayang. Gagal baca melempar `PublicationReadError` (respons galat Next, HTTP 500; belum dites otomatis), log `[sitemap]` hanya nama galat. Tanpa entri halaman indeks `?page=n`, tanpa route jenis/topik (keputusan 10, §2.11 P6 A), dan tanpa `xhtml:link` alternates di sitemap (hreflang ada di HTML halaman; butir "Include alternates" di atas belum diterapkan, usulan untuk ditinjau bila dibutuhkan).
 - `app/robots.ts`: Production (`VERCEL_ENV=production`) → `User-Agent: *`, `Allow: /`, `Sitemap: https://mahira.id/sitemap.xml`; deployment lain (Preview, lokal) → `Disallow: /` tanpa Sitemap. Dirender statis saat build (`VERCEL_ENV` tetap per build Vercel).
 - `proxy.ts` tidak berubah: `/sitemap.xml`, `/robots.txt`, dan `/og/*` tidak ada di matcher-nya, jadi gerbang CMS 404 untuk `/admin`, `/api`, `/{locale}/publications` tetap sama.
+- **Implementasi M3-09:** `app/sitemap.ts` menambahkan `https://mahira.id/{locale}/about` untuk setiap locale yang About-nya tampil (`getPublicAboutLocales`, dibaca saat request; `lastmod` dari `updatedAt`); tanpa entri bila About belum published, dan `/en/about` tidak pernah masuk tanpa EN siap tayang. `proxy.ts` berubah sejak M3-09: matcher mendapat `/id/about/:path*` dan `/en/about/:path*` (CMS mati → 404 + `noindex` + `no-store`, sama dengan halaman publikasi); `/sitemap.xml`, `/robots.txt`, dan `/og/*` tetap di luar matcher.
 
 ## 9. Acceptance criteria
 
