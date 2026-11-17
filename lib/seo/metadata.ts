@@ -3,6 +3,7 @@ import type { Metadata, MetadataRoute } from "next";
 import { aboutPath, type AboutPage } from "@/lib/about/about-view";
 import type { SitemapPublication } from "@/lib/cms/sitemap-query";
 import { LOCALES, otherLocale, type Locale } from "@/lib/i18n/locales";
+import { learningHubPath, resourcePath, type CatalogPlan, type GuidePage, type LearningHubSitemap } from "@/lib/learning-hub/catalog-view";
 import type { PublicationDetail } from "@/lib/publications/detail-view";
 import { indexHref, parsePage, type IndexQuery } from "@/lib/publications/index-params";
 import { indexNoindex, type IndexState } from "@/lib/publications/index-view";
@@ -151,29 +152,83 @@ export function aboutMetadata(about: AboutPage, alternates: Partial<Record<Local
 }
 
 /**
+ * The Learning Hub catalog (M3-12, DECISIONS §2.16 decision 13A):
+ * `<title>` = the global's SEO title as is, else the H1 with the site-name
+ * template; the meta description (global, else the first intro paragraph);
+ * a self canonical `/{locale}/learning-hub`; hreflang only when both
+ * locales' catalogs exist (`alternates` from getLearningHubCatalog, {}
+ * otherwise); Open Graph `website` with the generated site image `/og/site`.
+ * No JSON-LD (no `VideoObject`, consistent with PUB-OQ-39).
+ */
+export function learningHubMetadata(plan: CatalogPlan, alternates: Partial<Record<Locale, string>>): Metadata {
+  const { locale } = plan;
+  const canonical = learningHubPath(locale);
+  const counterpart = alternates[otherLocale(locale)];
+  const description = plan.seoDescription ?? undefined;
+  const ogTitle = plan.seoTitle ?? `${plan.title} — ${SITE_NAME}`;
+  return {
+    title: plan.seoTitle ? { absolute: plan.seoTitle } : plan.title,
+    description,
+    alternates: counterpart
+      ? { canonical, languages: { [locale]: canonical, [otherLocale(locale)]: counterpart } }
+      : { canonical },
+    ...social({ type: "website", locale, title: ogTitle, description, url: canonical, image: generatedImage("/og/site", SITE_NAME) }),
+  };
+}
+
+/**
+ * A public guide page (M3-12, decision 13A): `<title>` = the guide title
+ * with the site-name template, the summary as description, a self canonical
+ * `/{locale}/learning-hub/{slug}`, hreflang only when visitors can see the
+ * guide in both locales, Open Graph `article` with `/og/site`. No JSON-LD.
+ */
+export function guideMetadata(guide: GuidePage, alternates: Partial<Record<Locale, string>>): Metadata {
+  const { locale, title } = guide;
+  const canonical = resourcePath(locale, guide.slug) ?? learningHubPath(locale);
+  const counterpart = alternates[otherLocale(locale)];
+  const description = guide.description || undefined;
+  return {
+    title,
+    description,
+    alternates: counterpart
+      ? { canonical, languages: { [locale]: canonical, [otherLocale(locale)]: counterpart } }
+      : { canonical },
+    ...social({ type: "article", locale, title, description, url: canonical, image: generatedImage("/og/site", SITE_NAME) }),
+  };
+}
+
+/**
  * Entries of /sitemap.xml. `publications` null = CMS off (Vercel Production
  * today): only `/`. Otherwise `/`, both indexes, the About page of every
- * locale where it exists (M3-09 decision 8, with the global's `updatedAt`)
- * and every published + public detail page with its `updatedAt` (Owner
- * M3-07 decision 4).
+ * locale where it exists (M3-09 decision 8, with the global's `updatedAt`),
+ * every published + public detail page with its `updatedAt` (Owner M3-07
+ * decision 4) and, since M3-12 (DECISIONS §2.16 decision 13A), the Learning
+ * Hub catalog of every locale where it exists and every visible guide.
  */
 export function sitemapEntries(
   publications: SitemapPublication[] | null,
   aboutLocales: { locale: Locale; updatedAt: string | null }[] = [],
+  learningHub: LearningHubSitemap = { catalogs: [], guides: [] },
 ): MetadataRoute.Sitemap {
   const home = { url: `${SITE_URL}/` };
   if (publications === null) return [home];
+  const lastModified = (value: string | null) => (value ? { lastModified: value } : {});
   return [
     home,
     ...LOCALES.map((locale) => ({ url: `${SITE_URL}${indexHref(locale, {}, 1)}` })),
     ...aboutLocales.map(({ locale, updatedAt }) => ({
       url: `${SITE_URL}${aboutPath(locale)}`,
-      ...(updatedAt ? { lastModified: updatedAt } : {}),
+      ...lastModified(updatedAt),
     })),
     ...publications.map((publication) => ({
       url: `${SITE_URL}/${publication.locale}/publications/${publication.slug}`,
       lastModified: publication.updatedAt,
     })),
+    ...learningHub.catalogs.map((catalog) => ({ url: `${SITE_URL}${learningHubPath(catalog.locale)}`, ...lastModified(catalog.lastModified) })),
+    ...learningHub.guides.flatMap((guide) => {
+      const path = resourcePath(guide.locale, guide.slug);
+      return path ? [{ url: `${SITE_URL}${path}`, ...lastModified(guide.lastModified) }] : [];
+    }),
   ];
 }
 

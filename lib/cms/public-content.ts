@@ -12,10 +12,27 @@ import { FileStorageError, signedFileUrl, type StoredFile } from "@/lib/cms/publ
 import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
 import { findSearchRanks } from "@/lib/cms/publication-search-query";
 import { findSlugOwner } from "@/lib/cms/publication-slug-query";
+import { findPublicGuide, findPublicLearningHub, findPublicResource, findPublicResources } from "@/lib/cms/learning-hub-query";
 import { findSitemapPublications, type SitemapPublication } from "@/lib/cms/sitemap-query";
-import { findDraftAbout, findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
+import { findDraftAbout, findDraftGuide, findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import { LOCALES, otherLocale, type Locale } from "@/lib/i18n/locales";
+import {
+  catalogTexts,
+  isResourceVisible,
+  latestTimestamp,
+  learningHubPath,
+  newestCards,
+  planCatalog,
+  resourcePath,
+  toGuidePage,
+  type CatalogPlan,
+  type GuidePage,
+  type LearningCard,
+  type LearningHubDoc,
+  type LearningHubSitemap,
+  type ResourceDoc,
+} from "@/lib/learning-hub/catalog-view";
 import { getPublicationAlternates } from "@/lib/publications/alternates";
 import { toPublicationDetail, type PublicationDetail } from "@/lib/publications/detail-view";
 import { isPublicDownload } from "@/lib/publications/file-access";
@@ -33,8 +50,9 @@ import {
 import { toTsqueryText } from "@/lib/publications/search-terms";
 import { redirectPath } from "@/lib/publications/slug-redirect";
 import { isCmsEnabled } from "@/payload/env";
+import { SLUG_PATTERN } from "@/payload/fields/slug";
 
-export type { SitemapPublication };
+export type { LearningHubSitemap, SitemapPublication };
 
 /**
  * Server-only. Public read layer for locale-prefixed pages (DEC-005, DEC-021).
@@ -73,6 +91,14 @@ export type { SitemapPublication };
  * page exists only when isAboutVisible (required fields, EN checkbox).
  * getAboutPage, getAboutHref and getPublicAboutLocales share one cached
  * read per locale and request.
+ *
+ * Learning Hub (M3-11/12, DECISIONS §2.16): `learning-resources` and the
+ * `learning-hub` global are read anonymously too (published only, public
+ * types only: never a toolkit before M3-13, this locale only); a resource
+ * shows in a locale only when isResourceVisible, and a locale's catalog,
+ * menu item, homepage block and sitemap entries exist only with at least
+ * one visible resource. The catalog, the link, the homepage block and the
+ * sitemap share one cached read per locale and request.
  *
  * Returns `{ status: "off" }` (detail, redirect, title: `null`; sitemap:
  * `[]`) when the CMS is off (see payload/env.ts).
@@ -383,6 +409,195 @@ export const getAboutHref = cache(async (locale: Locale): Promise<string | null>
   } catch (error) {
     console.error("[about-link] CMS read failed:", readErrorLabel(error));
     return null;
+  }
+});
+
+/**
+ * Thrown by getLearningHubCatalog, getLearningResource and
+ * getLearningHubSitemap when the CMS read fails (M3-11/12). Fixed message
+ * and no cause, as PublicationReadError.
+ */
+export class LearningHubReadError extends Error {
+  constructor() {
+    super("Learning Hub could not be loaded");
+    this.name = "LearningHubReadError";
+  }
+}
+
+/**
+ * Every published resource of a public type in this locale, read
+ * anonymously (lib/cms/learning-hub-query.ts); callers keep the visible ones
+ * (isResourceVisible). One read per locale and request (React `cache`),
+ * shared by the catalog, the menu link, the homepage block and the sitemap;
+ * errors propagate to the caller, which logs the error name only.
+ */
+const readPublicResources = cache(async (locale: Locale): Promise<ResourceDoc[]> => {
+  const payload = await getPayload({ config });
+  return (await findPublicResources(payload, locale)) as ResourceDoc[];
+});
+
+/** The published `learning-hub` global in this locale, or null; one read per locale and request. */
+const readLearningHubTexts = cache(async (locale: Locale): Promise<LearningHubDoc | null> => {
+  const payload = await getPayload({ config });
+  return (await findPublicLearningHub(payload, locale)) as LearningHubDoc | null;
+});
+
+function hasVisibleResource(docs: ResourceDoc[], locale: Locale): boolean {
+  return docs.some((doc) => isResourceVisible(doc, locale));
+}
+
+export type LearningHubCatalogResult = {
+  plan: CatalogPlan;
+  /** Both catalog paths when both locales have a catalog; else {} (no hreflang). */
+  alternates: Partial<Record<Locale, string>>;
+};
+
+/**
+ * The Learning Hub catalog `/{locale}/learning-hub` (M3-12, DECISIONS §2.16
+ * decisions 10A, 11A, 13A): the plan of this locale's visible resources and
+ * the published catalog texts, or null when no resource is visible in this
+ * locale (the page calls notFound()) or the CMS is off. Read at request
+ * time, so a publish or unpublish shows on the next request. Deduplicated
+ * per request by React `cache` (generateMetadata and the page). A failed
+ * read is logged with the error name only and throws LearningHubReadError
+ * (the page's error state, HTTP 200 + noindex). No staff preview: videos and
+ * playlists are checked after publishing (decision 12A).
+ */
+export const getLearningHubCatalog = cache(async (locale: Locale): Promise<LearningHubCatalogResult | null> => {
+  if (!isCmsEnabled()) return null;
+  try {
+    const plan = planCatalog(await readPublicResources(locale), locale, await readLearningHubTexts(locale));
+    if (!plan) return null;
+    const other = otherLocale(locale);
+    const both = hasVisibleResource(await readPublicResources(other), other);
+    return { plan, alternates: both ? { [locale]: learningHubPath(locale), [other]: learningHubPath(other) } : {} };
+  } catch (error) {
+    console.error("[learning-hub] CMS read failed:", readErrorLabel(error));
+    throw new LearningHubReadError();
+  }
+});
+
+export type LearningResourceResult = {
+  mode: "public" | "preview";
+  guide: GuidePage;
+  /** Paths of this guide in both locales when visitors can see both; else {} (no hreflang). Always {} in preview. */
+  alternates: Partial<Record<Locale, string>>;
+};
+
+/**
+ * A guide's detail page `/{locale}/learning-hub/{slug}` (M3-12, decisions
+ * 6A, 7A, 13A): the published guide of this locale with this slug when it
+ * is visible, or null (the page calls notFound()). Videos and playlists
+ * have no detail page; toolkits are never public before M3-13. Deduplicated
+ * per request by React `cache`. A failed read is logged with the error name
+ * only and throws LearningHubReadError.
+ *
+ * Staff preview (decision 12A): only in Draft Mode, and only when the
+ * request's Payload session is an Editor or Admin (checked on every
+ * request), the latest version of the guide with this slug in this locale
+ * is read through lib/cms/staff-preview.ts and `mode` is "preview" (also
+ * without the EN checkbox; null without a title). A Draft Mode cookie
+ * without a staff session gets exactly the public result.
+ */
+export const getLearningResource = cache(async (locale: Locale, slug: string): Promise<LearningResourceResult | null> => {
+  if (!isCmsEnabled() || !SLUG_PATTERN.test(slug)) return null;
+  // Request APIs outside the try: Next's own errors must pass through.
+  const { isEnabled } = await draftMode();
+  const requestHeaders = isEnabled ? await headers() : null;
+  try {
+    const payload = await getPayload({ config });
+    const staff = requestHeaders ? await staffFromHeaders(payload, requestHeaders) : null;
+    if (staff) {
+      const draft = (await findDraftGuide(payload, locale, slug, staff)) as ResourceDoc | null;
+      const guide = draft ? toGuidePage(draft, locale) : null;
+      return guide ? { mode: "preview", guide, alternates: {} } : null;
+    }
+    const doc = (await findPublicGuide(payload, locale, slug)) as ResourceDoc | null;
+    const guide = doc && isResourceVisible(doc, locale) ? toGuidePage(doc, locale) : null;
+    if (!doc || !guide) return null;
+    const other = otherLocale(locale);
+    const counterpart = (await findPublicResource(payload, doc.id, other)) as ResourceDoc | null;
+    const otherPath = counterpart && isResourceVisible(counterpart, other) ? resourcePath(other, counterpart.slug) : null;
+    const alternates = otherPath ? { [locale]: resourcePath(locale, guide.slug) ?? "", [other]: otherPath } : {};
+    return { mode: "public", guide, alternates };
+  } catch (error) {
+    console.error("[learning-resource] CMS read failed:", readErrorLabel(error));
+    throw new LearningHubReadError();
+  }
+});
+
+/**
+ * Path of this locale's Learning Hub catalog when it exists (at least one
+ * visible resource), else null (decision 11A: the header and footer menu
+ * item shows only then). Never throws: with the CMS off null; a failed read
+ * is logged with the error name only and gives null.
+ */
+export const getLearningHubHref = cache(async (locale: Locale): Promise<string | null> => {
+  if (!isCmsEnabled()) return null;
+  try {
+    return hasVisibleResource(await readPublicResources(locale), locale) ? learningHubPath(locale) : null;
+  } catch (error) {
+    console.error("[learning-hub-link] CMS read failed:", readErrorLabel(error));
+    return null;
+  }
+});
+
+export type HomeLearningHub = {
+  /** `/id/learning-hub`. */
+  href: string;
+  /** The published ID catalog H1, else "Learning Hub". */
+  title: string;
+  /** The published ID catalog intro paragraphs ([] without). */
+  intro: string[];
+  /** Up to 3 newest visible ID resources, newest first. */
+  cards: LearningCard[];
+};
+
+/**
+ * The Learning Hub block of the homepage `/` (Indonesian, decision 11A): up
+ * to three newest visible ID resources and the link to `/id/learning-hub`,
+ * or null when the ID catalog does not exist (no block). Never throws: with
+ * the CMS off null; a failed read is logged with the error name only and
+ * gives null, so the homepage never breaks.
+ */
+export const getHomepageLearningHub = cache(async (): Promise<HomeLearningHub | null> => {
+  if (!isCmsEnabled()) return null;
+  try {
+    const cards = newestCards(await readPublicResources("id"), "id");
+    if (cards.length === 0) return null;
+    const texts = catalogTexts(await readLearningHubTexts("id"));
+    return { href: learningHubPath("id"), title: texts.title, intro: texts.intro, cards };
+  } catch (error) {
+    console.error("[home-learning-hub] CMS read failed:", readErrorLabel(error));
+    return null;
+  }
+});
+
+/**
+ * The Learning Hub entries of the sitemap (decision 13A): the catalog of
+ * each locale that exists, with the latest `updatedAt` of its visible
+ * resources and published texts, and every visible guide with its
+ * `updatedAt`. With the CMS off empty. A failed read is logged with the
+ * error name only and throws LearningHubReadError.
+ */
+export const getLearningHubSitemap = cache(async (): Promise<LearningHubSitemap> => {
+  const sitemap: LearningHubSitemap = { catalogs: [], guides: [] };
+  if (!isCmsEnabled()) return sitemap;
+  try {
+    for (const locale of LOCALES) {
+      const visible = (await readPublicResources(locale)).filter((doc) => isResourceVisible(doc, locale));
+      if (visible.length === 0) continue;
+      const texts = await readLearningHubTexts(locale);
+      sitemap.catalogs.push({ locale, lastModified: latestTimestamp([...visible.map((doc) => doc.updatedAt), texts?.updatedAt]) });
+      for (const doc of visible) {
+        if (doc.type !== "guide" || typeof doc.slug !== "string") continue;
+        sitemap.guides.push({ locale, slug: doc.slug, lastModified: typeof doc.updatedAt === "string" ? doc.updatedAt : null });
+      }
+    }
+    return sitemap;
+  } catch (error) {
+    console.error("[sitemap] CMS read failed:", readErrorLabel(error));
+    throw new LearningHubReadError();
   }
 });
 

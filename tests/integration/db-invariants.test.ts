@@ -17,9 +17,12 @@ import { closeTestPayload, getTestPayload } from "../helpers/payload";
  *      migration `up()` enables RLS on new tables)
  *   I3 every migration of payload/migrations/index.ts ran (local stand-in for
  *      `payload migrate:status`, DEC-007; CI has no database)
- *   I4 no `fixture-test-` record is left in any collection
+ *   I4 no `fixture-test-` record is left in any collection (since M3-11 also
+ *      Learning Hub resources, by slug prefix or `[FIXTURE] test ` title)
  *   I5 the `about` global (M3-09), published document and latest version in
  *      all locales, holds no `[FIXTURE]` text (the about tests restore it)
+ *   I6 the same for the `learning-hub` global (M3-12; the learning-hub tests
+ *      restore it)
  * Prints counts, booleans and table/migration names only.
  */
 type Row = Record<string, unknown>;
@@ -87,5 +90,14 @@ describe("db-invariants (mahira-cms, read only)", () => {
     const latest = JSON.stringify(await read(true)).includes(FIXTURE_TEXT);
     t.diagnostic(`[FIXTURE] in about: published=${published} latest=${latest}`);
     assert.equal(published || latest, false, `[FIXTURE] text left in the about global: published=${published} latest=${latest}`);
+  });
+
+  test("I6 no [FIXTURE] text in the learning-hub global (published document and latest version, all locales)", async (t) => {
+    const read = (draft: boolean) =>
+      (payload as Payload).findGlobal({ slug: "learning-hub", locale: "all", fallbackLocale: false, draft, overrideAccess: true, depth: 0 });
+    const published = JSON.stringify(await read(false)).includes(FIXTURE_TEXT);
+    const latest = JSON.stringify(await read(true)).includes(FIXTURE_TEXT);
+    t.diagnostic(`[FIXTURE] in learning-hub: published=${published} latest=${latest}`);
+    assert.equal(published || latest, false, `[FIXTURE] text left in the learning-hub global: published=${published} latest=${latest}`);
   });
 });

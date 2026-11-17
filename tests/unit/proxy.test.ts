@@ -72,7 +72,17 @@ describe("proxy.ts — CMS gate", () => {
   });
 
   test("CMS off: 404 before the login check, with or without an auth cookie", () => {
-    for (const path of ["/admin", "/admin/collections/topics", "/admin/login", "/api/users/me", "/id/publications", "/id/about", "/en/about"]) {
+    for (const path of [
+      "/admin",
+      "/admin/collections/topics",
+      "/admin/login",
+      "/api/users/me",
+      "/id/publications",
+      "/id/about",
+      "/en/about",
+      "/id/learning-hub",
+      "/en/learning-hub/fixture-guide",
+    ]) {
       assertGateClosed(proxy(request(path)));
     }
     assertGateClosed(proxy(request("/admin", { cookie: `${PAYLOAD_TOKEN_COOKIE}=abc` })));
@@ -86,7 +96,7 @@ describe("proxy.ts — CMS gate", () => {
     assert.notEqual(response.status, 404);
   });
 
-  test("matcher covers exactly /admin, /api, both publication indexes and both About pages (M3-09)", () => {
+  test("matcher covers exactly /admin, /api, both publication indexes, both About pages (M3-09) and both Learning Hubs (M3-12)", () => {
     assert.deepEqual(config.matcher, [
       "/admin/:path*",
       "/api/:path*",
@@ -94,6 +104,8 @@ describe("proxy.ts — CMS gate", () => {
       "/en/publications/:path*",
       "/id/about/:path*",
       "/en/about/:path*",
+      "/id/learning-hub/:path*",
+      "/en/learning-hub/:path*",
     ]);
   });
 });
@@ -153,7 +165,17 @@ describe("proxy.ts — admin login redirect (CMS on, item 1c)", () => {
 
   test("PX6 non-GET admin requests (Server Functions) and other matched paths pass without a cookie", () => {
     for (const method of ["POST", "HEAD", "PUT"]) assertPassedOn(proxy(request("/admin", { method })), `${method} /admin`);
-    for (const path of ["/api/users/me", "/api/users/login", "/api/publications", "/id/publications", "/en/publications", "/id/about", "/en/about"]) {
+    for (const path of [
+      "/api/users/me",
+      "/api/users/login",
+      "/api/publications",
+      "/id/publications",
+      "/en/publications",
+      "/id/about",
+      "/en/about",
+      "/id/learning-hub",
+      "/en/learning-hub/fixture-guide",
+    ]) {
       assertPassedOn(proxy(request(path)), `GET ${path}`);
     }
   });

@@ -10,8 +10,9 @@ import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publica
  *
  * GATE_MODE: off  = CMS env absent         -> /admin, /api/* (preview handlers included),
  *                                             /{id,en}/publications,
- *                                             /{id,en}/publications/{slug} and
- *                                             /{id,en}/about (M3-09) 404
+ *                                             /{id,en}/publications/{slug},
+ *                                             /{id,en}/about (M3-09) and
+ *                                             /{id,en}/learning-hub[/{slug}] (M3-12) 404
  *            prod = VERCEL_ENV=production  -> same as off
  *            on   = full .env.local        -> /admin reachable, anonymous /api/* 403,
  *                                             anonymous /api/preview 404 without the
@@ -142,6 +143,8 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
       // M3-08 (DECISIONS §2.14 items 6, 10): the file download and the media file path.
       ["GET", "/api/files/1/download"],
       ["GET", "/api/media/file/x"],
+      // M3-11 (DECISIONS §2.16 decision 12A): the guide preview entry.
+      ["GET", "/api/preview?resource=1&locale=id"],
     ];
     for (const [index, [method, path]] of rows.entries()) {
       test(`G3.${index + 1} ${method} ${path}: 404, noindex, no-store`, async () => {
@@ -150,6 +153,7 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     }
     // G5.3/G5.4 (M3-05, DECISIONS §2.11 P14 A): detail URLs are closed too.
     // G5.5/G5.6 (M3-09, DECISIONS §2.15 decision 1): the About pages are CMS-backed and closed as well.
+    // G5.7–G5.10 (M3-12, DECISIONS §2.16 decision 7A): the Learning Hub catalog and detail pages too.
     const closedPages = [
       "/id/publications",
       "/en/publications",
@@ -157,6 +161,10 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
       "/en/publications/gate-check",
       "/id/about",
       "/en/about",
+      "/id/learning-hub",
+      "/en/learning-hub",
+      "/id/learning-hub/gate-check",
+      "/en/learning-hub/gate-check",
     ];
     for (const [index, path] of closedPages.entries()) {
       test(`G5.${index + 1} GET ${path}: 404, noindex, no-store`, async () => {
@@ -260,13 +268,30 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     }
     // M3-05 (DECISIONS §2.11 P11 A): without a staff session the preview
     // handler answers 404 and never sets the Draft Mode cookie.
-    test("G4.4 GET /api/preview?id=1 anonymous: 404, noindex, no-store, no __prerender_bypass", async () => {
-      const result = await request("GET", "/api/preview?id=1");
-      assert.equal(result.status, 404, "GET /api/preview?id=1 anonymous");
-      assert.equal(result.headers?.get("x-robots-tag"), "noindex", "X-Robots-Tag");
-      assert.equal(result.headers?.get("cache-control"), "no-store", "Cache-Control");
-      const cookies = result.headers?.getSetCookie() ?? [];
-      assert.equal(cookies.some((cookie) => cookie.startsWith("__prerender_bypass=")), false, "__prerender_bypass set");
+    // G4.7 (M3-11, DECISIONS §2.16 decision 12A): the guide preview entry, same contract.
+    for (const [index, path] of [
+      [4, "/api/preview?id=1"],
+      [7, "/api/preview?resource=1&locale=id"],
+    ] as const) {
+      test(`G4.${index} GET ${path} anonymous: 404, noindex, no-store, no __prerender_bypass`, async () => {
+        const result = await request("GET", path);
+        assert.equal(result.status, 404, `GET ${path} anonymous`);
+        assert.equal(result.headers?.get("x-robots-tag"), "noindex", "X-Robots-Tag");
+        assert.equal(result.headers?.get("cache-control"), "no-store", "Cache-Control");
+        const cookies = result.headers?.getSetCookie() ?? [];
+        assert.equal(cookies.some((cookie) => cookie.startsWith("__prerender_bypass=")), false, "__prerender_bypass set");
+      });
+    }
+    // G6.5 (M3-12): an unknown guide slug gets the Mahira not-found page with noindex (data-independent).
+    test("G6.5 GET /id/learning-hub/gate-no-such-slug: Mahira not-found page with noindex", async (t) => {
+      const path = "/id/learning-hub/gate-no-such-slug";
+      const result = await request("GET", path);
+      t.diagnostic(`GET ${path}: HTTP ${result.status}`);
+      assert.equal(result.status === 200 || result.status === 404, true, `GET ${path} answered ${result.status}`);
+      assert.equal(/<meta name="robots" content="noindex[^"]*"/.test(result.body), true, `robots noindex on ${path}`);
+      assert.equal(result.body.includes(NOT_FOUND_DIGEST), true, `notFound() digest on ${path}`);
+      assert.equal(result.body.includes('data-lh-page="guide"'), false, `guide page on ${path}`);
+      assert.deepEqual(notFoundPageProblems(result.body, "id"), [], `Mahira not-found page on ${path}`);
     });
     // M3-08 (DECISIONS §2.14 items 6, 10): an invalid file id and the media
     // file path answer 404 + noindex + no-store with the CMS on as well.

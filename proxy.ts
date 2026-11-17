@@ -10,8 +10,10 @@ import { isCmsEnabled } from "@/payload/env";
  * `/id/publications` and `/en/publications` (M3-01) answer 404 as well, so
  * Production shows no publication pages until M4. The About page
  * `/id/about` and `/en/about` (M3-09, DECISIONS §2.15 decision 1) is
- * CMS-backed too and answers the same 404. Upgrade review item: the matcher
- * entries (DEC-006, ENVIRONMENTS §3.1).
+ * CMS-backed too and answers the same 404, and so do the Learning Hub
+ * catalog and detail pages `/{id,en}/learning-hub/...` (M3-12, DECISIONS
+ * §2.16 decision 7A). Upgrade review item: the matcher entries (DEC-006,
+ * ENVIRONMENTS §3.1).
  *
  * This is a gate, not authorization: when the CMS is on, Payload access
  * control and the app route handlers still decide every request. `/api/*`
@@ -112,5 +114,7 @@ export const config = {
     "/en/publications/:path*",
     "/id/about/:path*",
     "/en/about/:path*",
+    "/id/learning-hub/:path*",
+    "/en/learning-hub/:path*",
   ],
 };
