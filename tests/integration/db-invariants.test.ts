@@ -18,9 +18,14 @@ import { closeTestPayload, getTestPayload } from "../helpers/payload";
  *   I3 every migration of payload/migrations/index.ts ran (local stand-in for
  *      `payload migrate:status`, DEC-007; CI has no database)
  *   I4 no `fixture-test-` record is left in any collection
+ *   I5 the `about` global (M3-09), published document and latest version in
+ *      all locales, holds no `[FIXTURE]` text (the about tests restore it)
  * Prints counts, booleans and table/migration names only.
  */
 type Row = Record<string, unknown>;
+
+/** Start of every fixture label and title (tests/helpers/fixtures.ts LABEL_ROOT). */
+const FIXTURE_TEXT = "[FIXTURE]";
 
 describe("db-invariants (mahira-cms, read only)", () => {
   let payload: Payload | undefined;
@@ -73,5 +78,14 @@ describe("db-invariants (mahira-cms, read only)", () => {
     const leftovers = await countLeftovers(payload as Payload);
     t.diagnostic(`fixture-test- records: ${formatCounts(leftovers)}`);
     assert.equal(totalOf(leftovers), 0, `fixture-test- records left: ${formatCounts(leftovers)}`);
+  });
+
+  test("I5 no [FIXTURE] text in the about global (published document and latest version, all locales)", async (t) => {
+    const read = (draft: boolean) =>
+      (payload as Payload).findGlobal({ slug: "about", locale: "all", fallbackLocale: false, draft, overrideAccess: true, depth: 0 });
+    const published = JSON.stringify(await read(false)).includes(FIXTURE_TEXT);
+    const latest = JSON.stringify(await read(true)).includes(FIXTURE_TEXT);
+    t.diagnostic(`[FIXTURE] in about: published=${published} latest=${latest}`);
+    assert.equal(published || latest, false, `[FIXTURE] text left in the about global: published=${published} latest=${latest}`);
   });
 });

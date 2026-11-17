@@ -53,7 +53,11 @@ function exitPayload(user: unknown, live: unknown[], latest: unknown[]) {
     calls.push(args);
     return { docs: "user" in args ? latest : live };
   };
-  const payload = { auth: auth.payload.auth, find } as unknown as Pick<Payload, "auth" | "find">;
+  // The About exit (M3-09) is the only reader of the global; a publication exit never calls it.
+  const findGlobal = async () => {
+    throw new Error("findGlobal in a publication exit");
+  };
+  const payload = { auth: auth.payload.auth, find, findGlobal } as unknown as Pick<Payload, "auth" | "find" | "findGlobal">;
   return { payload, authCalls: auth.calls, calls };
 }
 

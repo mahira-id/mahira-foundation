@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { connection } from "next/server";
 
-import { getSitemapPublications } from "@/lib/cms/public-content";
+import { getPublicAboutLocales, getSitemapPublications } from "@/lib/cms/public-content";
 import { sitemapEntries } from "@/lib/seo/metadata";
 import { isCmsEnabled } from "@/payload/env";
 
@@ -10,12 +10,13 @@ import { isCmsEnabled } from "@/payload/env";
  * (Vercel Production today) it is static and lists only `/`. With the CMS on
  * it is read at request time through the public read layer (no
  * `"use cache"`, so no cache tag to revalidate; a publish or unpublish shows
- * on the next request): `/`, both indexes and every published + public
- * detail page with its `updatedAt`. A failed read throws (HTTP 500; the read
- * layer logs the error name only).
+ * on the next request): `/`, both indexes, the About page of each locale
+ * where it exists (M3-09, DECISIONS §2.15 decision 8) and every published +
+ * public detail page with its `updatedAt`. A failed read throws (HTTP 500;
+ * the read layer logs the error name only).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!isCmsEnabled()) return sitemapEntries(null);
   await connection();
-  return sitemapEntries(await getSitemapPublications());
+  return sitemapEntries(await getSitemapPublications(), await getPublicAboutLocales());
 }

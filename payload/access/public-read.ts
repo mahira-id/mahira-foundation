@@ -24,3 +24,13 @@ export const PUBLIC_PUBLICATION_READ: Where = {
 export const PUBLIC_FILE_READ: Where = {
   and: [{ status: { equals: "ready" } }, { accessLevel: { equals: "public" } }],
 };
+
+/**
+ * What an anonymous Local API read of the `about` global may see (M3-09,
+ * DECISIONS §2.15 decision 1): the published version only. Payload 3.93.0
+ * applies this filter to the global's main row, which a draft save never
+ * changes, so a pending draft stays invisible. Whether a locale has a page
+ * also needs its required fields, and for EN the "Versi EN siap tayang"
+ * checkbox (lib/about/about-view.ts `isAboutVisible`).
+ */
+export const PUBLIC_ABOUT_READ: Where = { _status: { equals: "published" } };

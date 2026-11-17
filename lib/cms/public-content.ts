@@ -3,6 +3,8 @@ import type { PostgresAdapter } from "@payloadcms/db-postgres";
 import { draftMode, headers } from "next/headers";
 import { getPayload } from "payload";
 import { cache } from "react";
+import { aboutPath, isAboutVisible, toAboutPage, type AboutPage } from "@/lib/about/about-view";
+import { findPublicAbout } from "@/lib/cms/about-query";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
 import { findPublicPublication, findPublicRef, findPublicTitle } from "@/lib/cms/publication-detail-query";
 import { findLivePublicationOfFile, findPublicFile } from "@/lib/cms/publication-file-query";
@@ -11,9 +13,9 @@ import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publicat
 import { findSearchRanks } from "@/lib/cms/publication-search-query";
 import { findSlugOwner } from "@/lib/cms/publication-slug-query";
 import { findSitemapPublications, type SitemapPublication } from "@/lib/cms/sitemap-query";
-import { findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
+import { findDraftAbout, findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
-import type { Locale } from "@/lib/i18n/locales";
+import { LOCALES, otherLocale, type Locale } from "@/lib/i18n/locales";
 import { getPublicationAlternates } from "@/lib/publications/alternates";
 import { toPublicationDetail, type PublicationDetail } from "@/lib/publications/detail-view";
 import { isPublicDownload } from "@/lib/publications/file-access";
@@ -40,9 +42,9 @@ export type { SitemapPublication };
  * Every read here runs as an anonymous visitor through the Local API, so
  * Payload access control limits publications to published + public
  * (M3-02, P1 A). Rules for public code:
- * - never pass `overrideAccess: true`, `draft: true` or a `user` (the one
- *   exception, the staff preview of getPublicationDetail, goes through
- *   lib/cms/staff-preview.ts);
+ * - never pass `overrideAccess: true`, `draft: true` or a `user` (the
+ *   exceptions, the staff previews of getPublicationDetail and getAboutPage,
+ *   go through lib/cms/staff-preview.ts);
  * - always pass `fallbackLocale: false` (no text of another language);
  * - filter linked-entry records by their own `locale` field.
  *
@@ -65,6 +67,12 @@ export type { SitemapPublication };
  * files without any storage location (toPublicationDetail), and the
  * download route asks getPublicFileDownload, which reads the file and its
  * publication anonymously and only then signs a 60 s URL.
+ *
+ * About page (M3-09, DECISIONS §2.15): the `about` global is read
+ * anonymously too (published version only, this locale only); a locale's
+ * page exists only when isAboutVisible (required fields, EN checkbox).
+ * getAboutPage, getAboutHref and getPublicAboutLocales share one cached
+ * read per locale and request.
  *
  * Returns `{ status: "off" }` (detail, redirect, title: `null`; sitemap:
  * `[]`) when the CMS is off (see payload/env.ts).
@@ -287,5 +295,115 @@ export const getPublicPublicationTitle = cache(async (locale: Locale, slug: stri
   } catch (error) {
     console.error("[og-image] CMS read failed:", readErrorLabel(error));
     throw new PublicationReadError();
+  }
+});
+
+/**
+ * Thrown by getAboutPage and getPublicAboutLocales when the CMS read fails
+ * (M3-09). Fixed message and no cause, as PublicationReadError.
+ */
+export class AboutReadError extends Error {
+  constructor() {
+    super("About page could not be loaded");
+    this.name = "AboutReadError";
+  }
+}
+
+/**
+ * The published `about` global in this locale when visitors can see that
+ * locale's page (isAboutVisible), else null. Anonymous read; one per locale
+ * and request (React `cache`); errors propagate to the caller, which logs
+ * the error name only.
+ */
+const readVisibleAbout = cache(async (locale: Locale) => {
+  const payload = await getPayload({ config });
+  const doc = await findPublicAbout(payload, locale);
+  return doc && isAboutVisible(doc, locale) ? doc : null;
+});
+
+export type AboutPageResult = {
+  mode: "public" | "preview";
+  about: AboutPage;
+  /** Paths of both locales' public About pages when both exist; else {} (no hreflang). Always {} in preview. */
+  alternates: Partial<Record<Locale, string>>;
+};
+
+/**
+ * The About page `/{locale}/about` (M3-09, DECISIONS §2.15 decisions 1, 3,
+ * 4 + 4b(iii), 7B, 8): the published version of this locale when it is
+ * visible, or null (the page calls notFound()). Read at request time, so a
+ * publish or unpublish shows on the next request without a deploy (SRS
+ * FR-020). Deduplicated per request by React `cache` (generateMetadata and
+ * the page). A failed read is logged with the error name only and throws
+ * AboutReadError (the page's error state, HTTP 200 + noindex).
+ *
+ * Staff preview (decision 7B): only in Draft Mode, and only when the
+ * request's Payload session is an Editor or Admin (checked on every
+ * request), the latest version of this locale is read through
+ * lib/cms/staff-preview.ts and `mode` is "preview" (also without the EN
+ * checkbox; null without an H1). A Draft Mode cookie without a staff
+ * session gets exactly the public result.
+ */
+export const getAboutPage = cache(async (locale: Locale): Promise<AboutPageResult | null> => {
+  if (!isCmsEnabled()) return null;
+  // Request APIs outside the try: Next's own errors must pass through.
+  const { isEnabled } = await draftMode();
+  const requestHeaders = isEnabled ? await headers() : null;
+  try {
+    const payload = await getPayload({ config });
+    const staff = requestHeaders ? await staffFromHeaders(payload, requestHeaders) : null;
+    if (staff) {
+      const draft = await findDraftAbout(payload, locale, staff);
+      const about = draft ? toAboutPage(draft, locale) : null;
+      return about ? { mode: "preview", about, alternates: {} } : null;
+    }
+    const doc = await readVisibleAbout(locale);
+    const about = doc ? toAboutPage(doc, locale) : null;
+    if (!about) return null;
+    const other = otherLocale(locale);
+    const counterpart = await readVisibleAbout(other);
+    const alternates = counterpart ? { [locale]: aboutPath(locale), [other]: aboutPath(other) } : {};
+    return { mode: "public", about, alternates };
+  } catch (error) {
+    console.error("[about] CMS read failed:", readErrorLabel(error));
+    throw new AboutReadError();
+  }
+});
+
+/**
+ * Path of this locale's About page when visitors can see it, else null
+ * (M3-09 decision 5: the header and homepage links show only then). Never
+ * throws: with the CMS off null; a failed read is logged with the error name
+ * only and gives null, so a link never breaks the page around it.
+ */
+export const getAboutHref = cache(async (locale: Locale): Promise<string | null> => {
+  if (!isCmsEnabled()) return null;
+  try {
+    return (await readVisibleAbout(locale)) ? aboutPath(locale) : null;
+  } catch (error) {
+    console.error("[about-link] CMS read failed:", readErrorLabel(error));
+    return null;
+  }
+});
+
+export type PublicAboutLocale = { locale: Locale; updatedAt: string | null };
+
+/**
+ * The locales whose About page visitors can see, with the global's
+ * `updatedAt` (sitemap, M3-09 decision 8). With the CMS off []. A failed
+ * read is logged with the error name only and throws AboutReadError.
+ */
+export const getPublicAboutLocales = cache(async (): Promise<PublicAboutLocale[]> => {
+  if (!isCmsEnabled()) return [];
+  try {
+    const visible: PublicAboutLocale[] = [];
+    for (const locale of LOCALES) {
+      const doc = await readVisibleAbout(locale);
+      if (doc) visible.push({ locale, updatedAt: typeof doc.updatedAt === "string" ? doc.updatedAt : null });
+    }
+    return visible;
+  } catch (error) {
+    console.error("[sitemap] CMS read failed:", readErrorLabel(error));
+    throw new AboutReadError();
   }
 });
