@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { MahiraMark } from "@/components/brand/mahira";
 import { HeroCover } from "@/components/home/hero-cover";
+import { HomeAboutLink } from "@/components/home/home-about-link";
 import { LatestPublications } from "@/components/home/latest-publications";
 import { PublicationLead } from "@/components/home/publication-lead";
 import { SectionHeader } from "@/components/home/section-header";
@@ -144,6 +145,7 @@ export default function Home() {
                       Jelajahi publikasi
                       <ArrowIcon className="h-3.5 w-3.5" />
                     </a>
+                    {cmsOn ? <HomeAboutLink /> : null}
                   </div>
 
                   <div>

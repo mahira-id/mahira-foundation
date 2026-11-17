@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
+import { COLOR } from "@/lib/design/tokens";
 import type { Locale } from "@/lib/i18n/locales";
 import { OG_IMAGE_SIZE } from "@/lib/seo/site";
 
@@ -13,11 +14,11 @@ import { OG_IMAGE_SIZE } from "@/lib/seo/site";
  *
  * Fonts: Hanken Grotesk 700 latin + latin-ext TTF (SIL OFL 1.1) in
  * assets/fonts/ (source and checksums in assets/fonts/README.md); logo
- * public/logo/MAHIRA_L_BLUE.svg. Read once per server instance. Colours copy
- * the tokens of app/(site)/globals.css (`ImageResponse` cannot read CSS
- * variables; one token source is DEC-024, still open).
+ * public/logo/MAHIRA_L_BLUE.svg. Read once per server instance. Colours come
+ * from lib/design/tokens.ts (`ImageResponse` cannot read CSS variables; its
+ * values are checked against the tokens of app/globals.css, DEC-024).
  */
-const COLORS = { white: "#ffffff", ink: "#101010", brand500: "#1e6fb7", brand700: "#144c7e", orange: "#ff6a00" };
+const COLORS = COLOR;
 
 const FONT_FILES = ["HankenGrotesk-latin-700-normal.ttf", "HankenGrotesk-latin-ext-700-normal.ttf"] as const;
 const FONT_FAMILY = '"Hanken Grotesk", "Hanken Grotesk Ext"';

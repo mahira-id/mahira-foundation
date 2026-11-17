@@ -4,6 +4,7 @@ import { connection } from "next/server";
 
 import { AboutContent } from "@/components/about/about-content";
 import { PreviewBanner } from "@/components/publication/preview-banner";
+import { AboutNavLink } from "@/components/site/header-about-link";
 import { LocaleHeader } from "@/components/site/locale-header";
 import { AboutReadError, getAboutPage, type AboutPageResult } from "@/lib/cms/public-content";
 import { aboutPath } from "@/lib/about/about-view";
@@ -79,7 +80,7 @@ export default async function AboutRoutePage({ params }: Props) {
     const dictionary = getDictionary(locale);
     return (
       <>
-        <LocaleHeader locale={locale} />
+        <LocaleHeader aboutLink={<AboutNavLink current locale={locale} />} locale={locale} />
         <main className="container-editorial py-16" data-about-error id="main">
           <h1 className="text-3xl font-bold tracking-tight text-ink">{dictionary.about.errorTitle}</h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{dictionary.detail.errorBody}</p>
@@ -98,7 +99,7 @@ export default async function AboutRoutePage({ params }: Props) {
 
   return (
     <>
-      <LocaleHeader locale={locale} switcher={switcherFor(locale, result.alternates)} />
+      <LocaleHeader aboutLink={<AboutNavLink current locale={locale} />} locale={locale} switcher={switcherFor(locale, result.alternates)} />
       <AboutContent about={result.about} banner={preview ? <PreviewBanner about locale={locale} /> : null} preview={preview} />
     </>
   );

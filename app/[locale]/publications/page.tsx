@@ -6,6 +6,7 @@ import { Suspense, type ReactNode } from "react";
 import { IndexFilters } from "@/components/publication/index-filters";
 import { IndexPagination } from "@/components/publication/index-pagination";
 import { PublicationList } from "@/components/publication/publication-list";
+import { AboutNavLink } from "@/components/site/header-about-link";
 import { LocaleHeader } from "@/components/site/locale-header";
 import { getPublicationIndex } from "@/lib/cms/public-content";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -50,7 +51,7 @@ export default async function PublicationsPage({ params, searchParams }: Props) 
 
   return (
     <>
-      <LocaleHeader locale={locale} />
+      <LocaleHeader aboutLink={<AboutNavLink locale={locale} />} locale={locale} />
       <main id="main" className="container-editorial py-16">
         <h1 className="text-4xl font-bold tracking-tight">{dictionary.publications.title}</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{dictionary.publications.intro}</p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/mahira";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -12,6 +13,13 @@ type LocaleHeaderProps = {
    * other locale's publication index.
    */
   switcher?: { href: string; unavailable: boolean };
+  /**
+   * The "Tentang" / "About" link (M3-09, DECISIONS §2.15 decision 5), put
+   * before the language switcher: `<AboutNavLink locale={…} />`, which
+   * renders nothing unless that locale's About page is visible. Pages with
+   * no CMS read (not-found, error boundary) pass none.
+   */
+  aboutLink?: ReactNode;
 };
 
 /**
@@ -19,7 +27,7 @@ type LocaleHeaderProps = {
  * header. The logo goes to `/`, which is Indonesian, so English pages mark
  * it with `hrefLang="id"` (P8 A).
  */
-export function LocaleHeader({ locale, switcher }: LocaleHeaderProps) {
+export function LocaleHeader({ locale, switcher, aboutLink }: LocaleHeaderProps) {
   const dictionary = getDictionary(locale);
 
   return (
@@ -33,6 +41,7 @@ export function LocaleHeader({ locale, switcher }: LocaleHeaderProps) {
         >
           <Logo className="h-7 w-auto sm:h-8" priority tone="emblem" />
         </Link>
+        {aboutLink}
         <LanguageSwitcher
           locale={locale}
           otherHref={switcher?.href ?? languageSwitchHref(otherLocale(locale))}

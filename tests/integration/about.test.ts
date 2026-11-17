@@ -7,9 +7,12 @@ import { diffAbout, restoreAbout, snapshotAbout, summarizeAbout, type AboutSnaps
 import {
   areaEmail,
   areaLabel,
+  areaPrefix,
   assertOwnerIntact,
   cleanupArea,
   countLeftovers,
+  createGroup,
+  firstId,
   formatCounts,
   hookNote,
   randomPassword,
@@ -48,6 +51,7 @@ type AboutInput = Partial<Pick<About, "hero" | "sections" | "seo" | "contactEmai
 
 const AREA = "about";
 const LABEL = areaLabel(AREA);
+const PREFIX = areaPrefix(AREA);
 const EDITOR_EMAIL = areaEmail(AREA, "editor");
 const CONTACT = areaEmail(AREA, "contact");
 const SITE = "https://mahira.id";
@@ -130,6 +134,14 @@ function hreflangs(html: string): Record<string, string> {
 
 function texts(html: string, element: string): string[] {
   return [...html.matchAll(new RegExp(`<${element}(?:\\s[^>]*)?>([^<]*)</${element}>`, "g"))].map((match) => match[1] as string);
+}
+
+/** The header About links (`<a data-header-about>`): their attributes and text. */
+function headerLinks(html: string): (Attributes & { text: string })[] {
+  return [...html.matchAll(/(<a\s[^>]*\bdata-header-about\b[^>]*>)([^<]*)<\/a>/g)].map((match) => ({
+    ...attributes(match[1] as string),
+    text: match[2] as string,
+  }));
 }
 
 /** Value of the Draft Mode cookie a response sets, or undefined when it sets none. */
@@ -505,5 +517,124 @@ describe("About page (M3-09: about global, /{locale}/about, preview, SEO, sitema
     assert.equal(result.status, 200, `Editor publish: ${restFact(result)}`);
     assertAboutPage(await page("id"), "GET /id/about after the Editor publish", "id", "T3");
     assertAboutAbsent(await page("en"), "GET /en/about (checkbox off)", "en");
+  });
+
+  // ------------------------------------------------------------ UI (FEAT-B): links and page structure
+  const unpublishAll = () =>
+    p().updateGlobal({ slug: "about", data: { _status: "draft" }, unpublishAllLocales: true, depth: 0, overrideAccess: true });
+
+  test("ABUI1 header link 'Tentang'/'About' on the index, the detail and the About page only while that locale's About exists; the About page marks it current", async () => {
+    // A published + public publication of the area for the detail page (cleaned by the area cleanup).
+    const authorId = await firstId(p(), "authors");
+    const typeDoc = await p().create({ collection: "publication-types", data: { name: `${LABEL}Jenis`, slug: `${PREFIX}type` }, locale: "id", overrideAccess: true });
+    await p().update({ collection: "publication-types", id: typeDoc.id, data: { name: `${LABEL}Jenis EN` }, locale: "en", overrideAccess: true });
+    const type = await p().update({ collection: "publication-types", id: typeDoc.id, data: { isActive: true }, locale: "id", overrideAccess: true });
+    const topicDoc = await p().create({ collection: "topics", data: { name: `${LABEL}Topik`, slug: `${PREFIX}topic` }, locale: "id", overrideAccess: true });
+    await p().update({ collection: "topics", id: topicDoc.id, data: { name: `${LABEL}Topik EN` }, locale: "en", overrideAccess: true });
+    const topic = await p().update({ collection: "topics", id: topicDoc.id, data: { isActive: true }, locale: "id", overrideAccess: true });
+    const publicationSlug = `${PREFIX}pub`;
+    await p().create({
+      collection: "publications",
+      data: {
+        title: `${LABEL}publication`,
+        slug: publicationSlug,
+        locale: "id",
+        translationGroup: await createGroup(p(), AREA, "pub"),
+        summary: `${LABEL}summary`,
+        publicationType: type.id,
+        topics: [topic.id],
+        authors: [authorId],
+        accessLevel: "public",
+        publishedAt: "2090-01-05T03:00:00.000Z",
+        _status: "published",
+      },
+      depth: 0,
+      overrideAccess: true,
+    });
+    const idPages = ["/id/publications", `/id/publications/${publicationSlug}`];
+    const links = async (path: string) => {
+      const result = await getPage(path);
+      assert.equal(result.status, 200, `GET ${path} ${pageFact(result)}`);
+      return headerLinks(result.body);
+    };
+
+    // 1. ID published, EN not: the ID header shows the link (text, href), the EN header none.
+    await write("id", { ...aboutData("id", "T3"), contactEmail: CONTACT, enReady: false }, "published");
+    for (const path of idPages) {
+      const found = await links(path);
+      assert.equal(found.length, 1, `GET ${path}: ${found.length} header About links`);
+      assert.equal(found[0]?.href, "/id/about", `GET ${path}: href`);
+      assert.equal(found[0]?.text, "Tentang", `GET ${path}: text`);
+      assert.equal(found[0]?.["aria-current"], undefined, `GET ${path}: not current`);
+    }
+    assert.deepEqual(await links("/en/publications"), [], "EN index without the EN About page");
+    const own = await links("/id/about");
+    assert.deepEqual(own.map((link) => [link.href, link["aria-current"]]), [["/id/about", "page"]], "the About page marks its own link current");
+
+    // 2. EN complete + checkbox: the EN header shows "About".
+    await write("en", { ...aboutData("en", "E3"), enReady: true }, "published");
+    const en = await links("/en/publications");
+    assert.deepEqual(en.map((link) => [link.href, link.text]), [["/en/about", "About"]], "EN index with the EN About page");
+    assert.deepEqual((await links("/en/about")).map((link) => [link.href, link["aria-current"]]), [["/en/about", "page"]], "EN About page");
+
+    // 3. Checkbox off: the EN link is gone with the page; ID stays.
+    await write("id", { enReady: false }, "published");
+    assert.deepEqual(await links("/en/publications"), [], "EN index after the checkbox is off");
+    assert.equal((await links("/id/publications")).length, 1, "ID index keeps its link");
+
+    // 4. Unpublished: no link anywhere and no About page.
+    await unpublishAll();
+    for (const path of ["/id/publications", `/id/publications/${publicationSlug}`, "/en/publications"]) {
+      assert.deepEqual(await links(path), [], `GET ${path} after unpublish`);
+    }
+  });
+
+  test("ABUI2 homepage link 'Selengkapnya tentang Mahira' to /id/about only while the ID About page exists; #tentang stays", async () => {
+    const homepage = async () => {
+      const result = await getPage("/");
+      assert.equal(result.status, 200, `GET / ${pageFact(result)}`);
+      assert.equal(result.body.includes('id="tentang"'), true, "#tentang section");
+      return (result.body.match(/<a\s[^>]*>/g) ?? []).filter((tag) => /\sdata-home-about-link(?:[\s=>]|$)/.test(tag)).map(attributes);
+    };
+    assert.deepEqual(await homepage(), [], "link while About is unpublished");
+    await write("id", { ...aboutData("id", "T3"), contactEmail: CONTACT, enReady: false }, "published");
+    const shown = await homepage();
+    assert.deepEqual(shown.map((link) => link.href), ["/id/about"], "link while the ID About page exists");
+    assert.equal((await getPage("/")).body.includes("Selengkapnya tentang Mahira"), true, "link text");
+    // Only the ID page counts: EN published alone does not matter, and the link stays /id/about.
+    await write("en", { ...aboutData("en", "E3"), enReady: true }, "published");
+    assert.deepEqual((await homepage()).map((link) => link.href), ["/id/about"], "link with both pages");
+    await unpublishAll();
+    assert.deepEqual(await homepage(), [], "link after unpublish");
+    await write("id", { ...aboutData("id", "T3"), contactEmail: CONTACT, enReady: false }, "published");
+  });
+
+  test("ABUI3 page structure: #main, one H1, H2 per section (label above heading only when both), H3 of a list, ol/ul, blockquote, item titles in <strong>, CTA labels; the preview banner is the first element of main", async () => {
+    const result = await page("id");
+    assertAboutPage(result, "GET /id/about", "id", "T3");
+    const html = result.body;
+    const t = (part: string) => fx("id", "T3", part);
+    assert.match(html, /<main[^>]*\sid="main"/, "main#main");
+    assert.equal((html.match(/<main[\s>]/g) ?? []).length, 1, "one main");
+    assert.equal((html.match(/<section[^>]*\sdata-about-section/g) ?? []).length, 2, "two sections");
+    assert.deepEqual(texts(html, "h3"), [t("l2 heading")], "H3 = list heading");
+    assert.deepEqual(texts(html, "p").filter((text) => text === t("s1 label") || text === t("s2 label")), [t("s1 label")], "label above the heading only when both are set");
+    assert.match(html, new RegExp(`<p[^>]*data-about-label[^>]*>${t("s1 label").replace(/[[\]]/g, "\\$&")}</p>`), "label marker");
+    for (const title of ["n1 title", "n2 title"]) {
+      assert.match(html, new RegExp(`<p[^>]*data-about-item-title[^>]*><strong>${t(title).replace(/[[\]]/g, "\\$&")}</strong></p>`), `item title ${title} in <strong>`);
+    }
+    assert.match(html, new RegExp(`<strong>${t("n2 subtitle").replace(/[[\]]/g, "\\$&")}</strong>`), "item sub-label in <strong>");
+    assert.match(html, new RegExp(`<blockquote[^>]*data-about-quote[^>]*><p[^>]*>${t("s1 quote").replace(/[[\]]/g, "\\$&")}</p></blockquote>`), "quote text in its blockquote");
+    for (const label of ["cta anchor", "cta publications", "cta email"]) {
+      assert.equal(html.includes(`>${t(label)}<`), true, `CTA label "${label}"`);
+    }
+    assert.equal(html.includes('class="skip-link"') && html.includes('href="#main"'), true, "skip link to #main");
+
+    // Preview: the banner is the first element in main; the page structure is the same.
+    await write("id", aboutData("id", "T4"), "draft");
+    const preview = await page("id", previewHeaders());
+    assertAboutPage(preview, "preview GET /id/about", "id", "T4", true);
+    assert.match(preview.body, /<main[^>]*\sid="main"[^>]*><aside[^>]*data-preview-banner/, "banner is the first element of main");
+    assert.equal((preview.body.match(/<aside[^>]*data-preview-banner/g) ?? []).length, 1, "one banner element");
   });
 });
