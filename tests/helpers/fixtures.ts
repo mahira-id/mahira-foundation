@@ -22,6 +22,7 @@ export const LABEL_ROOT = "[FIXTURE] test ";
 export const EMAIL_DOMAIN = "@example.invalid";
 
 export type Area =
+  | "about"
   | "access"
   | "admin"
   | "detail"

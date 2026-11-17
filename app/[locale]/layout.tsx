@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
+import { THEME_COLOR } from "@/lib/design/tokens";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, LOCALES } from "@/lib/i18n/locales";
 import { SITE_URL } from "@/lib/seo/site";
-import "../(site)/globals.css";
+import "../globals.css";
 
 /**
  * Root layout of the locale-prefixed pages (DEC-005, ADR-0005; Owner
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1E6FB7",
+  themeColor: THEME_COLOR,
   colorScheme: "light",
 };
 

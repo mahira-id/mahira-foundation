@@ -8,7 +8,10 @@ import { isCmsEnabled } from "@/payload/env";
  * payload/env.ts), `/admin` and `/api/*` answer 404. Payload Server Functions
  * POST to `/admin`, so they are covered too. The CMS-backed public pages
  * `/id/publications` and `/en/publications` (M3-01) answer 404 as well, so
- * Production shows no publication pages until M4.
+ * Production shows no publication pages until M4. The About page
+ * `/id/about` and `/en/about` (M3-09, DECISIONS §2.15 decision 1) is
+ * CMS-backed too and answers the same 404. Upgrade review item: the matcher
+ * entries (DEC-006, ENVIRONMENTS §3.1).
  *
  * This is a gate, not authorization: when the CMS is on, Payload access
  * control and the app route handlers still decide every request. `/api/*`
@@ -102,5 +105,12 @@ function redirectToAdminLogin(request: NextRequest): NextResponse {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/:path*", "/id/publications/:path*", "/en/publications/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/:path*",
+    "/id/publications/:path*",
+    "/en/publications/:path*",
+    "/id/about/:path*",
+    "/en/about/:path*",
+  ],
 };

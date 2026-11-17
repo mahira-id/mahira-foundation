@@ -9,8 +9,9 @@ import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publica
  * build mode. No Payload import, so it also runs where the CMS is off.
  *
  * GATE_MODE: off  = CMS env absent         -> /admin, /api/* (preview handlers included),
- *                                             /{id,en}/publications and
- *                                             /{id,en}/publications/{slug} 404
+ *                                             /{id,en}/publications,
+ *                                             /{id,en}/publications/{slug} and
+ *                                             /{id,en}/about (M3-09) 404
  *            prod = VERCEL_ENV=production  -> same as off
  *            on   = full .env.local        -> /admin reachable, anonymous /api/* 403,
  *                                             anonymous /api/preview 404 without the
@@ -148,7 +149,16 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
       });
     }
     // G5.3/G5.4 (M3-05, DECISIONS §2.11 P14 A): detail URLs are closed too.
-    for (const [index, path] of ["/id/publications", "/en/publications", "/id/publications/gate-check", "/en/publications/gate-check"].entries()) {
+    // G5.5/G5.6 (M3-09, DECISIONS §2.15 decision 1): the About pages are CMS-backed and closed as well.
+    const closedPages = [
+      "/id/publications",
+      "/en/publications",
+      "/id/publications/gate-check",
+      "/en/publications/gate-check",
+      "/id/about",
+      "/en/about",
+    ];
+    for (const [index, path] of closedPages.entries()) {
       test(`G5.${index + 1} GET ${path}: 404, noindex, no-store`, async () => {
         assertClosed(await request("GET", path), `GET ${path}`);
       });

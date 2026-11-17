@@ -30,7 +30,7 @@ Homepage hanya ada di `/` dan hanya menampilkan publikasi `locale: id`; bare `/i
 4. Latest publications: editorial list/feature layout; link ke katalog.
 5. Topics (Bidang Kerja, DEC-003): tampilkan hanya taksonomi aktif dan terkurasi.
 6. Learning Hub teaser: hanya jika katalog memiliki materi nyata. Mulai M3-12 (DECISIONS §2.7 P2 A); sampai saat itu blok dan item menu "Learning Hub" (header, footer) tidak tampil.
-7. About/impact: fakta dan klaim harus memiliki sumber/approval.
+7. About/impact: fakta dan klaim harus memiliki sumber/approval. M3-09: seksi `#tentang` tetap statis dan mendapat tautan "Selengkapnya tentang Mahira" ke `/id/about`, tampil hanya bila About ID tampil (§11).
 8. Footer: legal, contact, social links yang valid.
 
 ### Data
@@ -210,3 +210,16 @@ Index: title/intro, topic/format filters only if data exists, resource listing, 
 ## 10. Wireframe and review checklist
 
 Before high-fidelity UI, create low-fidelity wireframes for homepage, publication index, publication detail, search results, locked state, account overview, and CMS create/edit. Review content density with real publication examples in both locales. Confirm mobile flow, keyboard navigation, empty/error/locked states, and editorial usability with an actual editor.
+
+## 11. About (`/{locale}/about`, M3-09)
+
+Keputusan Owner 2026-11-17 (DECISIONS §2.15 keputusan 1–5, 7, 8, 10, 14). Sumber isi: dokumen Owner 2026-11-17; spesifikasi ini tidak menyalin isinya.
+
+- **Route dan keberadaan.** `/id/about` dan `/en/about` dirender dari global Payload `about` (DATA-MODEL §4.6.1). Halaman suatu locale ada hanya bila versinya published dan field wajibnya terisi: judul hero (H1), judul SEO, dan deskripsi SEO; untuk EN juga kotak staf "Versi EN siap tayang" dicentang (`isAboutVisible` di `lib/about/about-view.ts`). Bila tidak, `notFound()` dengan pola halaman detail publikasi (halaman not-found Mahira; HTTP 200 + `noindex` untuk browser, 404 untuk crawler `htmlLimitedBots`), dan locale itu tidak muncul di navigasi maupun sitemap. Saat CMS mati (tanpa env atau `VERCEL_ENV=production`) kedua route menjawab 404 + `noindex` + `no-store` dari `proxy.ts`. Gagal baca → state galat di server (HTTP 200 + `noindex`, `data-about-error`, tautan muat ulang), tanpa host DB di HTML.
+- **Urutan dan isi.** Hero: eyebrow, H1, paragraf pembuka, sampai 2 CTA. Lalu seksi sesuai urutan di CMS. Setiap seksi: label (eyebrow), judul (H2; bila kosong label menjadi H2), paragraf, kutipan sorot (`blockquote`), daftar bernomor (`ol`) atau berpoin (`ul`) dengan judul + subjudul + teks per butir, paragraf penutup, dan sampai 2 CTA. Daftar boleh punya subjudul dan pengantar sendiri. Setiap seksi dengan `anchor` mendapat `id` yang dapat menjadi target CTA. Tata letak ditentukan kode, bukan editor; tanpa blok tim, mitra, atau statistik.
+- **CTA.** Jenis `anchor` (ke seksi di halaman yang sama), `publications` (ke `/{locale}/publications`), dan `email` (`mailto:` ke email kontak; dibuang bila email kosong). CTA yang targetnya tidak ada dibuang. Tanpa CTA "Bangun Kolaborasi" (form masuk M6). Kanal kontak lain, daftar personel, dan data legal tidak ditampilkan (DECISIONS §2.15 keputusan 14).
+- **Register visual.** Editorial: hero biru seperti homepage, seksi di `container-editorial` dengan batas lebar baca, tombol `btn-*`, komponen dan token yang ada; tanpa warna baru dan tanpa mode gelap (keputusan 10).
+- **Navigasi.** Header `LocaleHeader` (indeks, detail, dan About) mendapat tautan "Tentang"/"About" hanya bila About locale itu tampil (`data-header-about`; tautan menjadi `aria-current` di halaman About). Not-found dan error tidak membaca CMS sehingga tanpa tautan. Seksi `#tentang` di homepage tetap, ditambah tautan "Selengkapnya tentang Mahira" ke `/id/about` hanya bila About ID tampil (`data-home-about-link`).
+- **Pratinjau.** `/api/preview?about=<locale>` (EDITORIAL-WORKFLOW §9.5): draf tampil dengan banner "Keluar dari pratinjau", `noindex, nofollow`, `no-store`; sesi staf diperiksa lagi di setiap request Draft Mode. Tujuan keluar: staf + About locale itu tampil → halaman publiknya; staf tanpa About tampil → `/admin/globals/about`.
+- **SEO.** SEO-SPECIFICATION §12: title/description dari field SEO, canonical, hreflang hanya bila kedua locale tampil, sitemap, OG `/og/site`.
+- **Tes.** TEST-PLAN §12.2: AB1–AB10, ABUI1–ABUI3, ABU1–ABU8b, G5.5/G5.6, I5.

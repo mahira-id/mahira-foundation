@@ -101,8 +101,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('id' | 'en') | ('id' | 'en')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    about: About;
+  };
+  globalsSelect: {
+    about: AboutSelect<false> | AboutSelect<true>;
+  };
   locale: 'id' | 'en';
   widgets: {
     collections: CollectionsWidget;
@@ -602,6 +606,197 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Halaman /{locale}/about. Satu status terbit untuk ID dan EN; halaman EN hanya tayang bila "Versi EN siap tayang" dicentang dan field wajib EN terisi.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about".
+ */
+export interface About {
+  id: number;
+  hero: {
+    eyebrow?: string | null;
+    /**
+     * Judul halaman (H1).
+     */
+    title: string;
+    /**
+     * Pisahkan paragraf dengan satu baris kosong.
+     */
+    lead?: string | null;
+    /**
+     * Paling banyak 2 tautan aksi di bawah judul.
+     */
+    ctas?:
+      | {
+          label: string;
+          kind: 'anchor' | 'publications' | 'email';
+          /**
+           * Anchor bagian tujuan, sama dengan field Anchor bagian itu.
+           */
+          anchor?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Bagian halaman sesuai urutan tampil.
+   */
+  sections?:
+    | {
+        /**
+         * Opsional: id bagian untuk tautan #anchor (huruf kecil, angka, tanda hubung).
+         */
+        anchor?: string | null;
+        /**
+         * Judul bagian.
+         */
+        label?: string | null;
+        /**
+         * Subjudul bagian. Wajib diisi bila Label kosong.
+         */
+        heading?: string | null;
+        /**
+         * Pisahkan paragraf dengan satu baris kosong.
+         */
+        body?: string | null;
+        /**
+         * Kutipan sorotan (opsional).
+         */
+        quote?: string | null;
+        lists?:
+          | {
+              heading?: string | null;
+              /**
+               * Pisahkan paragraf dengan satu baris kosong.
+               */
+              intro?: string | null;
+              style: 'numbered' | 'bulleted';
+              items?:
+                | {
+                    /**
+                     * Judul butir atau kata pembuka tebal.
+                     */
+                    title?: string | null;
+                    /**
+                     * Sub-label tebal (opsional).
+                     */
+                    subtitle?: string | null;
+                    text?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Paragraf penutup setelah daftar. Pisahkan paragraf dengan satu baris kosong.
+         */
+        outro?: string | null;
+        /**
+         * Paling banyak 2 tautan aksi di akhir bagian.
+         */
+        ctas?:
+          | {
+              label: string;
+              kind: 'anchor' | 'publications' | 'email';
+              /**
+               * Anchor bagian tujuan, sama dengan field Anchor bagian itu.
+               */
+              anchor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  seo: {
+    /**
+     * Isi <title> halaman.
+     */
+    title: string;
+    /**
+     * Meta description.
+     */
+    description: string;
+  };
+  contactEmail?: string | null;
+  /**
+   * Centang bila teks English sudah lengkap. Tanpa centang, /en/about tidak tayang walau dokumen terbit.
+   */
+  enReady?: boolean | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about_select".
+ */
+export interface AboutSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        lead?: T;
+        ctas?:
+          | T
+          | {
+              label?: T;
+              kind?: T;
+              anchor?: T;
+              id?: T;
+            };
+      };
+  sections?:
+    | T
+    | {
+        anchor?: T;
+        label?: T;
+        heading?: T;
+        body?: T;
+        quote?: T;
+        lists?:
+          | T
+          | {
+              heading?: T;
+              intro?: T;
+              style?: T;
+              items?:
+                | T
+                | {
+                    title?: T;
+                    subtitle?: T;
+                    text?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        outro?: T;
+        ctas?:
+          | T
+          | {
+              label?: T;
+              kind?: T;
+              anchor?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  contactEmail?: T;
+  enReady?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

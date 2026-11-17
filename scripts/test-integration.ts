@@ -30,9 +30,13 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *   downloads     publication files: PDF content check, private bucket, /api/files/{id}/download
  *                 access checks and 60 s signed URL, decision 8, one record per file, client
  *                 uploads, /api/media/file/* 404 (M3-08)
- *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left (always last)
+ *   about         /{locale}/about from the `about` global: published only, EN checkbox, closed
+ *                 REST, staff preview (?about=), SEO, sitemap; snapshot + restore of the
+ *                 singleton (M3-09)
+ *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left, no fixture
+ *                 text in the About global (always last)
  *
- * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,db-invariants]
+ * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,db-invariants]
  * Never run two at once: the files share one database and one port.
  */
 const FILES = {
@@ -50,6 +54,7 @@ const FILES = {
   redirect: "tests/integration/slug-redirect.test.ts",
   seo: "tests/integration/seo.test.ts",
   downloads: "tests/integration/publication-files.test.ts",
+  about: "tests/integration/about.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;

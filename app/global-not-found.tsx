@@ -3,11 +3,12 @@ import { Hanken_Grotesk } from "next/font/google";
 import Link from "next/link";
 
 import { Logo } from "@/components/brand/mahira";
+import { THEME_COLOR } from "@/lib/design/tokens";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/locales";
 import { SITE_NAME, SITE_URL } from "@/lib/seo/site";
 import { isCmsEnabled } from "@/payload/env";
-import "./(site)/globals.css";
+import "./globals.css";
 
 /**
  * Global 404 page (M3-07 item 9, DECISIONS §2.13; `experimental.globalNotFound`
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1E6FB7",
+  themeColor: THEME_COLOR,
   colorScheme: "light",
 };
 

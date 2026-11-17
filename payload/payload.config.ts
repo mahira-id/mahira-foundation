@@ -15,6 +15,7 @@ import { Topics } from "./collections/Topics";
 import { TranslationGroups } from "./collections/TranslationGroups";
 import { Users } from "./collections/Users";
 import { SUPABASE_ROOT_CA_2021 } from "./db/supabase-root-ca";
+import { About } from "./globals/About";
 import { readCmsEnv } from "./env";
 import { FILES_BUCKET, SIGNED_DOWNLOAD_TTL_SECONDS, storageClientConfig } from "./storage";
 
@@ -84,6 +85,8 @@ export default buildConfig({
     PublicationFiles,
     PublicationSlugs,
   ],
+  // M3-09 (DECISIONS §2.15 decision 1): the About page, one localized global.
+  globals: [About],
   plugins: [
     s3Storage({
       enabled: cms !== null,

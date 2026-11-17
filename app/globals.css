@@ -23,6 +23,15 @@
   --color-dark-silver: #848484;
   --color-orange: #ff6a00;
   --color-green: #1b684c;
+  --color-white: #ffffff;
+  /* Translucent white and ink: the only places an rgb() literal may appear (DEC-024). */
+  --color-white-a07: rgb(255 255 255 / 0.07);
+  --color-white-a08: rgb(255 255 255 / 0.08);
+  --color-white-a10: rgb(255 255 255 / 0.1);
+  --color-white-a25: rgb(255 255 255 / 0.25);
+  --color-white-a45: rgb(255 255 255 / 0.45);
+  --color-ink-a06: rgb(16 16 16 / 0.06);
+  --color-ink-a18: rgb(16 16 16 / 0.18);
 
   --radius-xs: 3px;
   --radius-sm: 4px;
@@ -41,14 +50,14 @@
   }
 
   body {
-    background: #ffffff;
+    background: var(--color-white);
     color: var(--color-ink);
     font-family: var(--font-sans);
   }
 
   ::selection {
     background: var(--color-brand-500);
-    color: #ffffff;
+    color: var(--color-white);
   }
 
   :focus-visible {
@@ -57,7 +66,7 @@
   }
 
   .on-dark :focus-visible {
-    outline-color: #ffffff;
+    outline-color: var(--color-white);
   }
 
   h1,
@@ -135,7 +144,7 @@
     transform: translateY(-200%);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-sm);
-    background: #ffffff;
+    background: var(--color-white);
     color: var(--color-ink);
     padding: 0.75rem 1rem;
     font-size: 0.75rem;
@@ -178,7 +187,7 @@
   }
 
   .btn-light {
-    background: #ffffff;
+    background: var(--color-white);
     color: var(--color-ink);
   }
 
@@ -187,18 +196,18 @@
   }
 
   .btn-ghost-light {
-    border-color: rgb(255 255 255 / 0.45);
-    color: #ffffff;
+    border-color: var(--color-white-a45);
+    color: var(--color-white);
   }
 
   .btn-ghost-light:hover {
-    border-color: #ffffff;
-    background: rgb(255 255 255 / 0.1);
+    border-color: var(--color-white);
+    background: var(--color-white-a10);
   }
 
   .btn-primary {
     background: var(--color-brand-500);
-    color: #ffffff;
+    color: var(--color-white);
   }
 
   .btn-primary:hover {
@@ -212,13 +221,13 @@
 
   .btn-outline-dark:hover {
     background: var(--color-ink);
-    color: #ffffff;
+    color: var(--color-white);
   }
 
   .hero-grid {
     background-image:
-      linear-gradient(to right, rgb(255 255 255 / 0.08) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.08) 1px, transparent 1px);
+      linear-gradient(90deg, var(--color-white-a08) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-white-a08) 1px, transparent 1px);
     background-size: 88px 88px;
     mask-image: linear-gradient(to right, transparent 0%, black 42%);
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 42%);
@@ -244,8 +253,8 @@
     inset: 0;
     z-index: -1;
     background-image:
-      linear-gradient(to right, rgb(255 255 255 / 0.07) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+      linear-gradient(90deg, var(--color-white-a07) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-white-a07) 1px, transparent 1px);
     background-size: 3rem 3rem;
     pointer-events: none;
   }
@@ -257,17 +266,17 @@
 
   .publication-cover[data-tone="blue"] {
     background: var(--color-brand-500);
-    color: #ffffff;
+    color: var(--color-white);
   }
 
   .publication-cover[data-tone="ink"] {
     background: var(--color-ink);
-    color: #ffffff;
+    color: var(--color-white);
   }
 
   .publication-cover[data-tone="green"] {
     background: var(--color-green);
-    color: #ffffff;
+    color: var(--color-white);
   }
 
   .publication-cover[data-tone="silver"] {
@@ -278,8 +287,8 @@
 
   .publication-cover[data-tone="silver"]::before {
     background-image:
-      linear-gradient(to right, rgb(16 16 16 / 0.06) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(16 16 16 / 0.06) 1px, transparent 1px);
+      linear-gradient(90deg, var(--color-ink-a06) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-ink-a06) 1px, transparent 1px);
   }
 
   .cover__title {
@@ -311,11 +320,11 @@
   }
 
   .cover__bottom {
-    border-top: 1px solid rgb(255 255 255 / 0.25);
+    border-top: 1px solid var(--color-white-a25);
   }
 
   .publication-cover[data-tone="silver"] .cover__bottom {
-    border-top-color: rgb(16 16 16 / 0.18);
+    border-top-color: var(--color-ink-a18);
   }
 
   .publication-row summary {

@@ -22,7 +22,7 @@ Menetapkan bagaimana Mahira mengelompokkan, menghubungkan, menerjemahkan, menerb
 | Author | Person credited as author/editor/contributor. | Named researcher. | Many-to-many with publications; role/sequence on relation. |
 | Publication Asset | File or resource attached to publication. | Cover, PDF, appendix, dataset. | Many assets per publication; individual access classification proposed. |
 | Learning Resource | Educational item in Learning Hub. Cakupan launch (DEC-014; DECISIONS §2.8 Q2 A): video/playlist YouTube yang di-embed, panduan, dan toolkit yang dapat diunduh publik, dikelompokkan per tema. | Video, playlist, guide, downloadable toolkit. | Model final, jenis materi, dan relasi OPEN (M3-11). |
-| Static Page | Institutional information page. | About, contact, policy. | Localized and published through CMS. |
+| Static Page | Institutional information page. | About, contact, policy. | Localized and published through CMS. Diterapkan untuk About (M3-09, DECISIONS §2.15): global Payload `about` (DATA-MODEL §4.6.1), field berlokalisasi ID/EN tanpa fallback, draf → publish, struktur tetap (hero, seksi, daftar, kutipan, SEO) tanpa rich-text; halaman suatu locale ada hanya bila versinya published (EN juga "Versi EN siap tayang"). Halaman statis lain (contact, policy) belum ada. |
 | Event | Event information, if approved in scope. | Seminar or webinar. | Pasca-launch (M6, DECISIONS §2.8 Q3 A). |
 
 ## 3. Taxonomy rules

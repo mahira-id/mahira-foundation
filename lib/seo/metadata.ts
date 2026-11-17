@@ -1,5 +1,6 @@
 import type { Metadata, MetadataRoute } from "next";
 
+import { aboutPath, type AboutPage } from "@/lib/about/about-view";
 import type { SitemapPublication } from "@/lib/cms/sitemap-query";
 import { LOCALES, otherLocale, type Locale } from "@/lib/i18n/locales";
 import type { PublicationDetail } from "@/lib/publications/detail-view";
@@ -127,16 +128,48 @@ export function detailMetadata(publication: PublicationDetail, alternates: Parti
 }
 
 /**
- * Entries of /sitemap.xml. `publications` null = CMS off (Vercel Production
- * today): only `/`. Otherwise `/`, both indexes and every published + public
- * detail page with its `updatedAt` (Owner M3-07 decision 4).
+ * The public About page (M3-09, DECISIONS §2.15 decision 8): `<title>` =
+ * the SEO title as is (no site-name template; the field is the full title),
+ * the meta description, a self canonical `/{locale}/about`, hreflang only
+ * when both locales' pages exist (`alternates` from getAboutPage, {}
+ * otherwise), Open Graph `website` with the generated site image `/og/site`.
  */
-export function sitemapEntries(publications: SitemapPublication[] | null): MetadataRoute.Sitemap {
+export function aboutMetadata(about: AboutPage, alternates: Partial<Record<Locale, string>>): Metadata {
+  const { locale } = about;
+  const title = about.seoTitle ?? about.title;
+  const description = about.seoDescription ?? undefined;
+  const canonical = aboutPath(locale);
+  const counterpart = alternates[otherLocale(locale)];
+  return {
+    title: { absolute: title },
+    description,
+    alternates: counterpart
+      ? { canonical, languages: { [locale]: canonical, [otherLocale(locale)]: counterpart } }
+      : { canonical },
+    ...social({ type: "website", locale, title, description, url: canonical, image: generatedImage("/og/site", SITE_NAME) }),
+  };
+}
+
+/**
+ * Entries of /sitemap.xml. `publications` null = CMS off (Vercel Production
+ * today): only `/`. Otherwise `/`, both indexes, the About page of every
+ * locale where it exists (M3-09 decision 8, with the global's `updatedAt`)
+ * and every published + public detail page with its `updatedAt` (Owner
+ * M3-07 decision 4).
+ */
+export function sitemapEntries(
+  publications: SitemapPublication[] | null,
+  aboutLocales: { locale: Locale; updatedAt: string | null }[] = [],
+): MetadataRoute.Sitemap {
   const home = { url: `${SITE_URL}/` };
   if (publications === null) return [home];
   return [
     home,
     ...LOCALES.map((locale) => ({ url: `${SITE_URL}${indexHref(locale, {}, 1)}` })),
+    ...aboutLocales.map(({ locale, updatedAt }) => ({
+      url: `${SITE_URL}${aboutPath(locale)}`,
+      ...(updatedAt ? { lastModified: updatedAt } : {}),
+    })),
     ...publications.map((publication) => ({
       url: `${SITE_URL}/${publication.locale}/publications/${publication.slug}`,
       lastModified: publication.updatedAt,

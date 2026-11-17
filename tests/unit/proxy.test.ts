@@ -72,7 +72,7 @@ describe("proxy.ts — CMS gate", () => {
   });
 
   test("CMS off: 404 before the login check, with or without an auth cookie", () => {
-    for (const path of ["/admin", "/admin/collections/topics", "/admin/login", "/api/users/me", "/id/publications"]) {
+    for (const path of ["/admin", "/admin/collections/topics", "/admin/login", "/api/users/me", "/id/publications", "/id/about", "/en/about"]) {
       assertGateClosed(proxy(request(path)));
     }
     assertGateClosed(proxy(request("/admin", { cookie: `${PAYLOAD_TOKEN_COOKIE}=abc` })));
@@ -86,12 +86,14 @@ describe("proxy.ts — CMS gate", () => {
     assert.notEqual(response.status, 404);
   });
 
-  test("matcher covers exactly /admin, /api and both publication indexes", () => {
+  test("matcher covers exactly /admin, /api, both publication indexes and both About pages (M3-09)", () => {
     assert.deepEqual(config.matcher, [
       "/admin/:path*",
       "/api/:path*",
       "/id/publications/:path*",
       "/en/publications/:path*",
+      "/id/about/:path*",
+      "/en/about/:path*",
     ]);
   });
 });
@@ -151,7 +153,7 @@ describe("proxy.ts — admin login redirect (CMS on, item 1c)", () => {
 
   test("PX6 non-GET admin requests (Server Functions) and other matched paths pass without a cookie", () => {
     for (const method of ["POST", "HEAD", "PUT"]) assertPassedOn(proxy(request("/admin", { method })), `${method} /admin`);
-    for (const path of ["/api/users/me", "/api/users/login", "/api/publications", "/id/publications", "/en/publications"]) {
+    for (const path of ["/api/users/me", "/api/users/login", "/api/publications", "/id/publications", "/en/publications", "/id/about", "/en/about"]) {
       assertPassedOn(proxy(request(path)), `GET ${path}`);
     }
   });

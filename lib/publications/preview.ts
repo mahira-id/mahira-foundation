@@ -1,4 +1,4 @@
-import { isLocale } from "../i18n/locales";
+import { isLocale, type Locale } from "../i18n/locales";
 import { SLUG_PATTERN } from "../../payload/fields/slug";
 
 /**
@@ -53,4 +53,41 @@ export function exitTarget(locale: string, slug: string): string {
  */
 export function adminEditPath(id: number): string {
   return `/admin/collections/publications/${id}`;
+}
+
+/**
+ * Staff draft preview of the About page (M3-09, DECISIONS §2.15 decision
+ * 7B): the same handler with `?about=<locale>` instead of `?id=<id>`. The
+ * admin Preview button of the `about` global (payload/globals/About.ts)
+ * opens it for the locale being edited; the handler redirects to the public
+ * path of that locale, built from the validated locale only.
+ */
+export function aboutPreviewUrl(locale: unknown): string | null {
+  return typeof locale === "string" && isLocale(locale) ? `${PREVIEW_PATH}?about=${locale}` : null;
+}
+
+/** Public path of the About page of a locale (ADR-0005: `/{locale}/about` in both languages). */
+export function aboutPath(locale: Locale): string {
+  return `/${locale}/about`;
+}
+
+/** Edit page of the `about` global in /admin (Payload 3.93.0 `admin/globals/<slug>`); the exit without a public About goes there. */
+export const ABOUT_ADMIN_PATH = "/admin/globals/about";
+
+export type PreviewRequest = { kind: "publication"; id: number } | { kind: "about"; locale: Locale };
+
+/**
+ * What `/api/preview` was asked for: exactly one of `id` (parsePreviewId) or
+ * `about` (an exact locale). Both, neither, or an invalid value: null (the
+ * handler's 404). `id` keeps its M3-05 reading (the first value).
+ */
+export function parsePreviewRequest(params: URLSearchParams): PreviewRequest | null {
+  const hasId = params.has("id");
+  if (hasId === params.has("about")) return null;
+  if (hasId) {
+    const id = parsePreviewId(params.get("id"));
+    return id === null ? null : { kind: "publication", id };
+  }
+  const locale = params.get("about");
+  return locale !== null && isLocale(locale) ? { kind: "about", locale } : null;
 }

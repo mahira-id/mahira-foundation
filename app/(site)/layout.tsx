@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk } from "next/font/google";
+import { THEME_COLOR } from "@/lib/design/tokens";
 import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
 import { HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from "@/lib/seo/site";
-import "./globals.css";
+import "../globals.css";
 
 const hankenGrotesk = Hanken_Grotesk({
   variable: "--font-hanken-grotesk",
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1E6FB7",
+  themeColor: THEME_COLOR,
   colorScheme: "light",
 };
 

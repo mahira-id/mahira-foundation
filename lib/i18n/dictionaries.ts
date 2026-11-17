@@ -66,6 +66,13 @@ export type Dictionary = {
     notice: string;
     exit: string;
   };
+  /** About page `/{locale}/about` (M3-09, DECISIONS §2.15); its content comes from the CMS. */
+  about: {
+    /** Header link label (decision 5). */
+    navLabel: string;
+    /** Error state of a failed read (with detail.errorBody and detail.reload). */
+    errorTitle: string;
+  };
   /**
    * Not-found page of the locale-prefixed pages (app/[locale]/not-found.tsx,
    * M3-05b); both locales also on the global 404 page (app/global-not-found.tsx, M3-07).
@@ -145,6 +152,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: "Pratinjau draf: belum tentu terlihat pengunjung.",
       exit: "Keluar dari pratinjau",
     },
+    about: {
+      navLabel: "Tentang",
+      errorTitle: "Halaman ini belum dapat dimuat.",
+    },
     notFound: {
       title: "Halaman tidak ditemukan",
       body: "Halaman yang Anda cari tidak ada atau tidak lagi tersedia.",
@@ -216,6 +227,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     preview: {
       notice: "Draft preview: visitors may not see this version.",
       exit: "Exit preview",
+    },
+    about: {
+      navLabel: "About",
+      errorTitle: "This page could not be loaded.",
     },
     notFound: {
       title: "Page not found",

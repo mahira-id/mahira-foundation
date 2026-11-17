@@ -265,18 +265,23 @@ Gunakan rhythm spacing yang konsisten dan terdokumentasi (misalnya token kecil, 
 
 # 14. Token dan implementasi
 
-PDD ini mendokumentasikan intent dan nilai yang disetujui. Saat codebase dibuat, satu sumber token runtime harus dipilih: (A) DESIGN.md menghasilkan CSS/Tailwind tokens; atau (B) file CSS/theme yang ada menjadi canonical dan PDD/DESIGN.md mencerminkan nilainya. Jangan menyimpan nilai yang sama secara manual di banyak tempat.
+Sumber token runtime dipilih pada 2026-11-17 (DEC-024 Accepted, DECISIONS §2.15 keputusan 9): **opsi B**. `app/globals.css` adalah satu-satunya sumber token runtime (blok `@theme` Tailwind 4, yang juga menjadi properti CSS kustom); aturan CSS hanya memakai `var(--…)`. PDD dan `docs/design/DESIGN-TOKENS.md` hanya menjelaskan nama dan makna token, tidak menyalin nilainya; nilai warna merek yang disetujui ada di §4. Lima nilai warna yang tidak dapat membaca CSS (`themeColor` di tiga root layout dan gambar OG) ada di `lib/design/tokens.ts`, dan tes unit `tests/unit/design-tokens.test.ts` gagal bila nilainya berbeda dari CSS atau bila literal warna muncul di luar `@theme`. Jangan menyimpan nilai yang sama secara manual di tempat lain.
 
-| **Token konseptual**  | **Peran runtime yang disarankan**                       | **Konsumen**                                       |
-|-----------------------|---------------------------------------------------------|----------------------------------------------------|
-| --color-primary       | Primary brand/action                                    | Button, link, nav active, focus ring yang sesuai.  |
-| --color-primary-tint  | Surface highlight                                       | Selected row, info panel, active filters.          |
-| --color-accent-orange | Accent brand                                            | Marker, small visual emphasis, non-critical badge. |
-| --color-success       | Semantic success (berbasis green brand dengan validasi) | Success state dan status aktif.                    |
-| --color-text          | Primary text (#101010)                                  | Heading, body, labels.                             |
-| --color-text-muted    | Neutral text yang cukup gelap                           | Secondary copy, helper text, metadata penting.     |
-| --color-border        | Border netral turunan silver                            | Input, card boundary, divider.                     |
-| --font-family-sans    | Hanken Grotesk                                          | Seluruh UI: heading, body, control, metadata.      |
+| **Token runtime** | **Makna** | **Konsumen** |
+|---|---|---|
+| `--color-brand-500` | Primary brand/action | Button, link, nav active, focus ring, hero. |
+| `--color-brand-50` … `--color-brand-900` | Ramp turunan primary: 50–100 permukaan lembut, 200–300 garis aksen dan hover, 600–800 hover/active dan link di latar terang, 900 permukaan gelap terbatas | Selected row, info panel, active filters, hero. |
+| `--color-orange` | Aksen brand terbatas | Marker, penekanan visual kecil, badge non-kritis. |
+| `--color-green` | Aksen brand dan status positif (dengan label teks) | Success state dan status aktif. |
+| `--color-ink` | Teks utama | Heading, body, label. |
+| `--color-ink-soft`, `--color-muted` | Teks sekunder yang cukup gelap | Copy sekunder, helper text, metadata penting. |
+| `--color-silver` | Permukaan sekunder | Latar grup, cover tanpa gambar. |
+| `--color-line` | Garis netral | Border input, batas kartu, divider (juga warna border bawaan). |
+| `--color-dark-silver` | Netral tengah | Ikon sekunder, disabled, metadata yang tidak kritis. |
+| `--color-white` | Kanvas dan teks di atas biru | Latar halaman, foreground di hero. |
+| `--color-white-a07` … `--color-white-a45`, `--color-ink-a06`, `--color-ink-a18` | Putih dan ink transparan (satu-satunya tempat literal `rgb()` boleh muncul) | Garis dan lapisan di atas biru, bayangan halus. |
+| `--radius-xs` … `--radius-lg` | Skala radius kecil dan utilitarian | Tombol, kartu, input. |
+| `--font-sans` | Hanken Grotesk dengan fallback sistem | Seluruh UI: heading, body, control, metadata. |
 
 # 15. Checklist review desain
 
