@@ -3,7 +3,7 @@ import { after, before, describe, test } from "node:test";
 import { sql, type PostgresAdapter } from "@payloadcms/db-postgres";
 import type { Payload } from "payload";
 
-import { findPublicResources } from "../../lib/cms/learning-hub-query";
+import { findPublicLearningHub, findPublicResources } from "../../lib/cms/learning-hub-query";
 import { isResourceVisible, newestCards, type ResourceDoc } from "../../lib/learning-hub/catalog-view";
 import type { LearningResource } from "../../payload/payload-types";
 import {
@@ -18,6 +18,7 @@ import {
   randomPassword,
   totalOf,
 } from "../helpers/fixtures";
+import { adminFormHasValue, adminFormLocale, adminLocaleLabel } from "../helpers/admin-form";
 import { diffGlobal, restoreGlobal, snapshotGlobal, summarizeGlobal, type GlobalSnapshot } from "../helpers/global-state";
 import { BASE_URL, assertServerUp, getPage, login, pageFact, postForm, rest, restFact, type PageResult } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
@@ -33,7 +34,11 @@ import { assertNotFoundPage, decodeAmp, robotsContent } from "../helpers/publica
  * never show before M3-13; the YouTube source is reduced to its ID at the
  * save boundary; anonymous REST/GraphQL is denied; the guide preview runs
  * through `/api/preview?resource=<id>&locale=<l>` + Draft Mode and checks
- * the staff session on every request.
+ * the staff session on every request. M3-12b (LH12, LH13): each admin save
+ * lands in the locale of the form, and the admin edit view of the global and
+ * of a guide starts each locale's form with that locale's stored values
+ * (tests/helpers/admin-form.ts); without `?locale` the admin opens in the
+ * locale chosen last (Payload 3.93.0 user preference).
  *
  * The `learning-hub` global is a singleton on the shared `mahira-cms`:
  * `before` snapshots every row of its tables (tests/helpers/global-state.ts)
@@ -59,6 +64,10 @@ const BYPASS = "__prerender_bypass";
 const GOOGLEBOT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
 /** The admin Unpublish button (Payload 3.93.0): PATCH with these query params and body {_status:"draft"}. */
 const UNPUBLISH_QUERY = "?depth=0&fallback-locale=null&unpublishAllLocales=true";
+/** Where the admin edit form of the global posts (Payload 3.93.0); the admin adds `&locale=<l>` and, for Save Draft, `&draft=true`. */
+const GLOBAL_FORM = "/api/globals/learning-hub?depth=0&fallback-locale=null";
+/** Locale names in the admin header localizer (payload.config.ts `localization.locales` labels). */
+const LOCALE_NAME: Record<"id" | "en", string> = { id: "Bahasa Indonesia", en: "English" };
 const STAFF_ONLY = ["enReady", "en_ready", "_status", "Versi EN siap tayang", "sortOrder", "sort_order"];
 /** Synthetic IDs in the YouTube ID format (no real video or playlist). */
 const VIDEO_ID = "fixtureVid1";
@@ -865,5 +874,138 @@ describe("Learning Hub (M3-11/12: resources, catalog, guide pages, YouTube IDs, 
     const locs = await sitemapLocs();
     assert.equal(locs.some((loc) => loc.includes(`/learning-hub/${PREFIX}`)), false, "an unpublished guide in the sitemap");
     if (!realCatalog.id) assert.equal(locs.includes(`${SITE}/id/learning-hub`), false, "the empty catalog in the sitemap");
+  });
+
+  // ------------------------------------------------- M3-12b: the admin edit form per locale
+  /** The admin edit view as the Editor: HTTP 200, this locale's name in the header and in the form action. */
+  async function adminView(path: string, locale: Locale): Promise<string> {
+    const result = await getPage(path, { Cookie: `payload-token=${editor()}` });
+    assert.equal(result.status, 200, `GET ${path} as the Editor: ${pageFact(result)}`);
+    assert.equal(adminLocaleLabel(result.body), LOCALE_NAME[locale], `${path}: locale shown in the admin header`);
+    assert.equal(adminFormLocale(result.body), locale, `${path}: locale of the form action (where Save Draft / Publish go)`);
+    return result.body;
+  }
+
+  test("LH12 (M3-12b) the global per locale through the admin's requests: Publish in EN and Save Draft in ID land in their own locale rows; the staff REST draft read, the public read and the admin edit view show each locale's stored values; without ?locale the admin opens in the last chosen locale; Unpublish keeps both locales", async () => {
+    const text = (locale: Locale, part: string) => fx(locale, "F", part);
+    const content = (locale: Locale) => ({
+      hero: { title: text(locale, "H1"), intro: text(locale, "intro") },
+      seo: { title: text(locale, "seo title"), description: text(locale, "seo description") },
+    });
+    // Start (LH2): ID published with tag H, EN without text. The admin form in English: Publish.
+    let result = await rest("POST", `${GLOBAL_FORM}&locale=en`, { token: editor(), body: { ...content("en"), _status: "published" } });
+    assert.equal(result.status, 200, `Editor Publish (EN form): ${restFact(result)}`);
+    // The admin form in Bahasa Indonesia: Save Draft.
+    result = await rest("POST", `${GLOBAL_FORM}&locale=id&draft=true`, { token: editor(), body: { ...content("id"), _status: "draft" } });
+    assert.equal(result.status, 200, `Editor Save Draft (ID form): ${restFact(result)}`);
+
+    // Stored rows: each save in its own locale row (published document and latest version).
+    const live = await rows(sql`SELECT l._locale::text AS locale, l.hero_title AS title, g._status::text AS status
+                                  FROM learning_hub_locales l JOIN learning_hub g ON g.id = l._parent_id ORDER BY 1`);
+    assert.deepEqual(live.map((row) => [row.locale, row.title, row.status]), [["en", text("en", "H1"), "published"], ["id", fx("id", "H", "H1"), "published"]], "published rows: EN = the EN publish, ID = still the published H");
+    const latest = await rows(sql`SELECT l._locale::text AS locale, l.version_hero_title AS title, v.version__status::text AS status
+                                    FROM _learning_hub_v_locales l JOIN _learning_hub_v v ON v.id = l._parent_id WHERE v.latest ORDER BY 1`);
+    assert.deepEqual(latest.map((row) => [row.locale, row.title, row.status]), [["en", text("en", "H1"), "draft"], ["id", text("id", "H1"), "draft"]], "latest version: the ID draft plus the EN text");
+
+    // The REST read the admin uses, as the Editor: the latest draft or the published text of each locale.
+    const staff = async (query: string) => {
+      const read = await rest("GET", `/api/globals/learning-hub${query}`, { token: editor() });
+      assert.equal(read.status, 200, `Editor GET /api/globals/learning-hub${query}: ${restFact(read)}`);
+      return (read.body.hero ?? {}) as { title?: string | null; intro?: string | null };
+    };
+    assert.deepEqual(await staff("?draft=true&locale=id&depth=0"), content("id").hero, "staff draft read ID = the ID draft");
+    assert.deepEqual(await staff("?draft=true&locale=en&depth=0"), content("en").hero, "staff draft read EN = the EN text");
+    assert.equal((await staff("?locale=id&depth=0")).title, fx("id", "H", "H1"), "staff published read ID");
+    assert.equal((await staff("?locale=en&depth=0")).title, text("en", "H1"), "staff published read EN");
+    // The public read (published only, this locale only, no fallback) is unchanged.
+    assert.equal((await findPublicLearningHub(p(), "id"))?.hero?.title, fx("id", "H", "H1"), "public read ID: the published text, never the draft");
+    assert.equal((await findPublicLearningHub(p(), "en"))?.hero?.title, text("en", "H1"), "public read EN");
+
+    // The admin edit view starts each locale with that locale's values and never shows the other locale's text.
+    for (const [locale, other] of [["id", "en"], ["en", "id"]] as const) {
+      const html = await adminView(`/admin/globals/learning-hub?locale=${locale}`, locale);
+      for (const [path, part] of [["hero.title", "H1"], ["hero.intro", "intro"], ["seo.title", "seo title"], ["seo.description", "seo description"]] as const) {
+        assert.equal(adminFormHasValue(html, path, text(locale, part)), true, `${locale} form: ${path} starts with the stored ${locale} value`);
+      }
+      assert.equal(html.includes(`${LABEL}${other} `), false, `${locale} form: text of ${other}`);
+    }
+
+    // Without ?locale the admin opens in the locale chosen last on any admin page (Payload 3.93.0 user
+    // preference `locale`): after English on a collection page the global form is English, so typing there
+    // saves EN text (the Owner's Preview step C, M3-12b).
+    for (const [locale, other] of [["en", "id"], ["id", "en"]] as const) {
+      const chosen = await getPage(`/admin/collections/topics?locale=${locale}`, { Cookie: `payload-token=${editor()}` });
+      assert.equal(chosen.status, 200, `GET /admin/collections/topics?locale=${locale}: ${pageFact(chosen)}`);
+      const html = await adminView("/admin/globals/learning-hub", locale);
+      assert.equal(adminFormHasValue(html, "hero.title", text(locale, "H1")), true, `no ?locale after ${locale}: the ${locale} value`);
+      assert.equal(html.includes(`${LABEL}${other} `), false, `no ?locale after ${locale}: text of ${other}`);
+    }
+
+    // Unpublish like the admin button (no locale parameter): both locales keep their text, the public read is empty.
+    result = await rest("POST", `${GLOBAL_FORM}&unpublishAllLocales=true`, { token: editor(), body: { _status: "draft" } });
+    assert.equal(result.status, 200, `Editor Unpublish: ${restFact(result)}`);
+    assert.deepEqual(await staff("?draft=true&locale=id&depth=0"), content("id").hero, "after Unpublish: staff draft read ID");
+    assert.deepEqual(await staff("?draft=true&locale=en&depth=0"), content("en").hero, "after Unpublish: staff draft read EN");
+    for (const locale of ["id", "en"] as const) {
+      assert.equal(await findPublicLearningHub(p(), locale), null, `after Unpublish: public read ${locale}`);
+      const html = await adminView(`/admin/globals/learning-hub?locale=${locale}`, locale);
+      assert.equal(adminFormHasValue(html, "hero.title", text(locale, "H1")), true, `after Unpublish: ${locale} form keeps its value`);
+    }
+  });
+
+  test("LH13 (M3-12b) the admin edit view of a guide starts each locale with its stored values, the shared sections and a pending EN draft included", async () => {
+    const tag = (locale: Locale, part: string) => fx(locale, "AF", part);
+    const guide = await createResource(
+      "id",
+      {
+        type: "guide",
+        materialLanguage: "id",
+        title: tag("id", "title"),
+        summary: tag("id", "summary"),
+        slug: `${PREFIX}form`,
+        sections: [
+          { label: tag("id", "s1 label"), heading: tag("id", "s1 heading"), body: tag("id", "s1 body") },
+          { label: tag("id", "s2 label"), lists: [{ style: "numbered", items: [{ title: tag("id", "item title"), text: tag("id", "item text") }] }] },
+        ],
+      },
+      "published",
+    );
+    try {
+      await updateResource(
+        guide,
+        "en",
+        { title: tag("en", "title"), summary: tag("en", "summary"), slug: `${PREFIX}form-en`, sections: [{ label: tag("en", "s1 label"), heading: tag("en", "s1 heading") }] },
+        "published",
+      );
+      // A pending EN revision: the EN form starts with it, the ID form keeps the ID text.
+      await updateResource(guide, "en", { title: tag("en", "title draft") }, "draft");
+      const expected: Record<Locale, [string, string][]> = {
+        id: [
+          ["title", tag("id", "title")],
+          ["summary", tag("id", "summary")],
+          ["slug", `${PREFIX}form`],
+          ["sections.0.label", tag("id", "s1 label")],
+          ["sections.0.heading", tag("id", "s1 heading")],
+          ["sections.0.body", tag("id", "s1 body")],
+          ["sections.1.label", tag("id", "s2 label")],
+          ["sections.1.lists.0.items.0.title", tag("id", "item title")],
+          ["sections.1.lists.0.items.0.text", tag("id", "item text")],
+        ],
+        en: [
+          ["title", tag("en", "title draft")],
+          ["summary", tag("en", "summary")],
+          ["slug", `${PREFIX}form-en`],
+          ["sections.0.label", tag("en", "s1 label")],
+          ["sections.0.heading", tag("en", "s1 heading")],
+        ],
+      };
+      for (const [locale, other] of [["id", "en"], ["en", "id"]] as const) {
+        const html = await adminView(`/admin/collections/learning-resources/${guide}?locale=${locale}`, locale);
+        for (const [path, value] of expected[locale]) assert.equal(adminFormHasValue(html, path, value), true, `${locale} form: ${path} starts with the stored value`);
+        assert.equal(html.includes(`${LABEL}${other} AF`), false, `${locale} form: text of ${other}`);
+      }
+    } finally {
+      await p().delete({ collection: "learning-resources", id: guide, overrideAccess: true });
+    }
   });
 });
