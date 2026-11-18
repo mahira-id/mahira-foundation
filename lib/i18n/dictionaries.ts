@@ -74,6 +74,32 @@ export type Dictionary = {
     errorTitle: string;
   };
   /**
+   * Learning Hub `/{locale}/learning-hub` (M3-11/12, DECISIONS §2.16): UI
+   * labels only; the H1, intro and every resource text come from the CMS.
+   */
+  learningHub: {
+    /** Header, footer and homepage link label (decision 11A). */
+    navLabel: string;
+    /** Error state of a failed read (with detail.errorBody and detail.reload). */
+    errorTitle: string;
+    /** Heading of the toolkit section (decision 10A; hidden while empty, until M3-13). */
+    toolkitHeading: string;
+    /** Type label of a card. */
+    types: Record<"video" | "playlist" | "guide" | "toolkit", string>;
+    /** "Bahasa materi" label of a card or guide, by the material's language (decision 5A). */
+    materialLanguage: Record<Locale, string>;
+    /** Link to the video or playlist on youtube.com (decision 8A). */
+    watch: string;
+    /** Accessible name of the play button of the click-to-load facade, with the resource title. */
+    play: (title: string) => string;
+    /** Link of a guide card to its page. */
+    read: string;
+    /** The catalog link in a guide page's breadcrumb. */
+    backToCatalog: string;
+    /** Link to the catalog under the homepage block (decision 11A). */
+    viewAll: string;
+  };
+  /**
    * Not-found page of the locale-prefixed pages (app/[locale]/not-found.tsx,
    * M3-05b); both locales also on the global 404 page (app/global-not-found.tsx, M3-07).
    */
@@ -156,6 +182,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
       navLabel: "Tentang",
       errorTitle: "Halaman ini belum dapat dimuat.",
     },
+    learningHub: {
+      navLabel: "Learning Hub",
+      errorTitle: "Learning Hub belum dapat dimuat.",
+      toolkitHeading: "Toolkit",
+      types: { video: "Video", playlist: "Playlist", guide: "Panduan", toolkit: "Toolkit" },
+      materialLanguage: { id: "Berbahasa Indonesia", en: "Berbahasa Inggris" },
+      watch: "Tonton di YouTube",
+      play: (title) => `Putar: ${title}`,
+      read: "Baca panduan",
+      backToCatalog: "Learning Hub",
+      viewAll: "Lihat semua materi",
+    },
     notFound: {
       title: "Halaman tidak ditemukan",
       body: "Halaman yang Anda cari tidak ada atau tidak lagi tersedia.",
@@ -231,6 +269,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
     about: {
       navLabel: "About",
       errorTitle: "This page could not be loaded.",
+    },
+    learningHub: {
+      navLabel: "Learning Hub",
+      errorTitle: "The Learning Hub could not be loaded.",
+      toolkitHeading: "Toolkit",
+      types: { video: "Video", playlist: "Playlist", guide: "Guide", toolkit: "Toolkit" },
+      materialLanguage: { id: "In Indonesian", en: "In English" },
+      watch: "Watch on YouTube",
+      play: (title) => `Play: ${title}`,
+      read: "Read the guide",
+      backToCatalog: "Learning Hub",
+      viewAll: "View all resources",
     },
     notFound: {
       title: "Page not found",

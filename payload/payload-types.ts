@@ -76,6 +76,7 @@ export interface Config {
     media: Media;
     'publication-files': PublicationFile;
     'publication-slugs': PublicationSlug;
+    'learning-resources': LearningResource;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +93,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     'publication-files': PublicationFilesSelect<false> | PublicationFilesSelect<true>;
     'publication-slugs': PublicationSlugsSelect<false> | PublicationSlugsSelect<true>;
+    'learning-resources': LearningResourcesSelect<false> | LearningResourcesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -103,9 +105,11 @@ export interface Config {
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('id' | 'en') | ('id' | 'en')[];
   globals: {
     about: About;
+    'learning-hub': LearningHub;
   };
   globalsSelect: {
     about: AboutSelect<false> | AboutSelect<true>;
+    'learning-hub': LearningHubSelect<false> | LearningHubSelect<true>;
   };
   locale: 'id' | 'en';
   widgets: {
@@ -320,6 +324,116 @@ export interface PublicationSlug {
   createdAt: string;
 }
 /**
+ * Materi /{locale}/learning-hub. Satu record untuk ID dan EN; versi EN hanya tayang bila "Versi EN siap tayang" dicentang dan judul serta ringkasan EN terisi. Toolkit belum tampil di situs sampai M3-13.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-resources".
+ */
+export interface LearningResource {
+  id: number;
+  /**
+   * Video dan playlist diputar di katalog; panduan dan toolkit punya halaman sendiri.
+   */
+  type: 'video' | 'playlist' | 'guide' | 'toolkit';
+  title: string;
+  /**
+   * Tampil di kartu katalog dan sebagai meta description halaman panduan.
+   */
+  summary: string;
+  /**
+   * URL halaman: /id/learning-hub/<slug> atau /en/learning-hub/<slug>. Jangan diubah setelah terbit: belum ada pengalihan dari slug lama.
+   */
+  slug?: string | null;
+  /**
+   * Bahasa materinya sendiri (video, panduan, file); tampil sebagai label di kedua versi bahasa.
+   */
+  materialLanguage: 'id' | 'en';
+  /**
+   * Tema utama. Materi hanya tampil bila bidang kerjanya aktif.
+   */
+  topic: number | Topic;
+  /**
+   * Tempel URL video atau playlist YouTube. Yang disimpan hanya ID-nya.
+   */
+  youtubeId?: string | null;
+  /**
+   * Opsional. Tanpa gambar, kartu memakai sampul tipografi.
+   */
+  coverImage?: (number | null) | Media;
+  /**
+   * Isi halaman panduan atau toolkit, sesuai urutan tampil.
+   */
+  sections?:
+    | {
+        /**
+         * Opsional: id bagian untuk tautan #anchor (huruf kecil, angka, tanda hubung).
+         */
+        anchor?: string | null;
+        /**
+         * Judul bagian.
+         */
+        label?: string | null;
+        /**
+         * Subjudul bagian. Wajib diisi bila Label kosong.
+         */
+        heading?: string | null;
+        /**
+         * Pisahkan paragraf dengan satu baris kosong.
+         */
+        body?: string | null;
+        /**
+         * Kutipan sorotan (opsional).
+         */
+        quote?: string | null;
+        lists?:
+          | {
+              heading?: string | null;
+              /**
+               * Pisahkan paragraf dengan satu baris kosong.
+               */
+              intro?: string | null;
+              style: 'numbered' | 'bulleted';
+              items?:
+                | {
+                    /**
+                     * Judul butir atau kata pembuka tebal.
+                     */
+                    title?: string | null;
+                    /**
+                     * Sub-label tebal (opsional).
+                     */
+                    subtitle?: string | null;
+                    text?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Paragraf penutup setelah daftar. Pisahkan paragraf dengan satu baris kosong.
+         */
+        outro?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Opsional. Angka kecil tampil lebih dulu dalam bidang kerjanya; tanpa angka: setelahnya, terbaru dulu.
+   */
+  sortOrder?: number | null;
+  /**
+   * Diisi otomatis saat terbit bila kosong; boleh diubah. Mengurutkan materi terbaru.
+   */
+  publishedAt?: string | null;
+  /**
+   * Centang bila judul dan ringkasan English sudah lengkap. Tanpa centang, materi ini tidak tampil di /en/learning-hub.
+   */
+  enReady?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -378,6 +492,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'publication-slugs';
         value: number | PublicationSlug;
+      } | null)
+    | ({
+        relationTo: 'learning-resources';
+        value: number | LearningResource;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -569,6 +687,53 @@ export interface PublicationSlugsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-resources_select".
+ */
+export interface LearningResourcesSelect<T extends boolean = true> {
+  type?: T;
+  title?: T;
+  summary?: T;
+  slug?: T;
+  materialLanguage?: T;
+  topic?: T;
+  youtubeId?: T;
+  coverImage?: T;
+  sections?:
+    | T
+    | {
+        anchor?: T;
+        label?: T;
+        heading?: T;
+        body?: T;
+        quote?: T;
+        lists?:
+          | T
+          | {
+              heading?: T;
+              intro?: T;
+              style?: T;
+              items?:
+                | T
+                | {
+                    title?: T;
+                    subtitle?: T;
+                    text?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        outro?: T;
+        id?: T;
+      };
+  sortOrder?: T;
+  publishedAt?: T;
+  enReady?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -731,6 +896,38 @@ export interface About {
   createdAt?: string | null;
 }
 /**
+ * Judul (H1), pengantar, dan SEO halaman /{locale}/learning-hub. Katalog suatu bahasa hanya tayang bila ada minimal satu materi yang tampil dalam bahasa itu.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-hub".
+ */
+export interface LearningHub {
+  id: number;
+  hero: {
+    /**
+     * Judul halaman (H1). Kosong atau belum terbit: "Learning Hub".
+     */
+    title: string;
+    /**
+     * Pengantar di bawah judul. Pisahkan paragraf dengan satu baris kosong.
+     */
+    intro?: string | null;
+  };
+  seo?: {
+    /**
+     * Isi <title> halaman. Kosong: judul halaman.
+     */
+    title?: string | null;
+    /**
+     * Meta description. Kosong: paragraf pertama pengantar.
+     */
+    description?: string | null;
+  };
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "about_select".
  */
@@ -793,6 +990,28 @@ export interface AboutSelect<T extends boolean = true> {
       };
   contactEmail?: T;
   enReady?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "learning-hub_select".
+ */
+export interface LearningHubSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        title?: T;
+        intro?: T;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
   _status?: T;
   updatedAt?: T;
   createdAt?: T;

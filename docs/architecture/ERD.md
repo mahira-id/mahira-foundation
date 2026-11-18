@@ -13,8 +13,7 @@ erDiagram
   PUBLICATION }o--|| PUBLICATION_TYPE : has_type
   PUBLICATION }o--o{ PUBLICATION : translation_group
   PUBLICATION ||--o{ PUBLICATION_SLUG : public_url_history
-  LEARNING_RESOURCE }o--o{ TOPIC : relates_to
-  LEARNING_RESOURCE }o--o{ PUBLICATION : references
+  LEARNING_RESOURCE }o--|| TOPIC : theme
 
   PUBLICATION {
     string id PK
@@ -62,16 +61,32 @@ erDiagram
     string slug
   }
   LEARNING_RESOURCE {
-    string id PK
+    int id PK
+    string type
     string title
+    string summary
     string slug
-    string resource_type
+    string material_language
+    int topic_id FK
+    string youtube_id
+    int cover_image_id FK
+    int sort_order
+    datetime published_at
+    boolean en_ready
+    string status
+  }
+  LEARNING_HUB_TEXTS {
+    string hero_title
+    string hero_intro
+    string seo_title
+    string seo_description
     string status
   }
 ```
 
 `PUBLICATION_ASSET` is the Payload upload collection `publication-files` as built in M3-08 (DECISIONS §2.14, DATA-MODEL §4.2.1): a Publication lists its files in order through `publications_rels.publication_files_id` (field `files`, upload `hasMany`; drafts in `_publications_v_rels`), with no back-relation column on the file. A file belongs to exactly one publication record, enforced by a Publication `beforeChange` hook, not by a database constraint. The object lives in the private bucket `publication-files`; `filename`, `prefix` and `_objectKey` locate it and stay server-only.
 
+`LEARNING_RESOURCE` is the Payload collection `learning-resources` (M3-11, DECISIONS §2.16, DATA-MODEL §4.5; tables `lh_resources*`): one record per resource with field-localized ID/EN, one required Topic as its theme, an optional playlist cover in `media`, and its own sections array (the About section model, without CTAs). It has no relation to `PUBLICATION` in M3 (decision 14). `type` is `video`, `playlist`, `guide` or `toolkit`; toolkits exist in the model but are not public until M3-13, which adds a `toolkit-files` upload collection (private bucket `publication-files`, prefix `toolkits/`, PDF only) and a `file` relation on the toolkit; that relation is not in this diagram yet. `LEARNING_HUB_TEXTS` is the singleton global `learning-hub` (catalog H1, intro and SEO texts per locale; tables `learning_hub*`); it has no relations.
 The diagram uses direct many-to-many labels for readability. Actual Payload implementation may generate join tables, arrays, or relation collections depending on the selected adapter and relationship configuration. If author order or contribution role is needed, use an explicit relation collection rather than an unqualified many-to-many relation.
 
 ## 2. Public account and entitlement domain
@@ -132,7 +147,7 @@ erDiagram
 
 ## 3. Ownership overlay
 
-- Payload-owned: About (global singleton `about`, M3-09, DECISIONS §2.15, DATA-MODEL §4.6.1; tanpa relasi ke entitas lain, array bersarang hero CTA → seksi → daftar → butir milik dokumen itu sendiri), Publication, PublicationSlug (riwayat slug publik, unik per `locale` + `slug`; M3-07, DATA-MODEL §4.8), PublicationAsset (koleksi `publication-files`, M3-08, DECISIONS §2.14 butir 1, DATA-MODEL §4.2.1), Author, Topic, PublicationType, LearningResource, Page, StaffUser.
+- Payload-owned: About (global singleton `about`, M3-09, DECISIONS §2.15, DATA-MODEL §4.6.1; tanpa relasi ke entitas lain, array bersarang hero CTA → seksi → daftar → butir milik dokumen itu sendiri), Publication, PublicationSlug (riwayat slug publik, unik per `locale` + `slug`; M3-07, DATA-MODEL §4.8), PublicationAsset (koleksi `publication-files`, M3-08, DECISIONS §2.14 butir 1, DATA-MODEL §4.2.1), Author, Topic, PublicationType, LearningResource (koleksi `learning-resources`, M3-11, DECISIONS §2.16, DATA-MODEL §4.5; relasi wajib ke Topic, opsional ke `media`) dan teks katalognya (global singleton `learning-hub`, DATA-MODEL §4.5.1), Page, StaffUser.
 - Supabase Auth-owned: Auth user identity.
 - App schema-owned: PublicUserProfile, Entitlement, audit/event tables, future payment tables.
 - Object storage-owned: binary object; database holds metadata and opaque object key.

@@ -77,3 +77,17 @@ export function CloseIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function PlayIcon({ className }: IconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+      focusable="false"
+      viewBox="0 0 16 16"
+    >
+      <path d="M4 2.5v11l9-5.5-9-5.5Z" />
+    </svg>
+  );
+}

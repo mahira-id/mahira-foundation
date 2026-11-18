@@ -2,9 +2,19 @@ import type { Payload } from "payload";
 
 import { isAboutVisible } from "@/lib/about/about-view";
 import { findPublicAbout, presentDoc, type FindGlobalPort } from "@/lib/cms/about-query";
+import { findPublicResource, GUIDE_SELECT, RESOURCE_POPULATE } from "@/lib/cms/learning-hub-query";
 import { DETAIL_POPULATE, DETAIL_SELECT, findPublicRef } from "@/lib/cms/publication-detail-query";
-import type { Locale } from "@/lib/i18n/locales";
-import { ABOUT_ADMIN_PATH, aboutPath, adminEditPath, exitTarget, previewTarget } from "@/lib/publications/preview";
+import { isLocale, type Locale } from "@/lib/i18n/locales";
+import { isResourceVisible } from "@/lib/learning-hub/catalog-view";
+import {
+  ABOUT_ADMIN_PATH,
+  aboutPath,
+  adminEditPath,
+  exitTarget,
+  previewTarget,
+  resourceAdminPath,
+  resourcePath,
+} from "@/lib/publications/preview";
 import { staffRoleOfUser } from "@/payload/access/roles";
 
 /**
@@ -15,7 +25,8 @@ import { staffRoleOfUser } from "@/payload/access/roles";
  * before it enables Draft Mode, getPublicationDetail and getAboutPage
  * (lib/cms/public-content.ts) check it again on every request in Draft
  * Mode, and the exit handler (app/api/preview/exit/route.ts) checks it
- * before it sends anyone to /admin. Reads run as that user with
+ * before it sends anyone to /admin. Since M3-11 also the Learning Hub
+ * guide preview (DECISIONS §2.16 decision 12A, getLearningResource). Reads run as that user with
  * `overrideAccess: false` and `fallbackLocale: false`, so Payload access
  * control still applies. Index and homepage reads never come here.
  */
@@ -46,14 +57,18 @@ export async function findDraftRef(payload: FindPort, id: number, user: StaffUse
 }
 
 /**
- * Fields of the exit form: a publication (`id`, `locale`, `slug`) or, since
- * M3-09, the About page (`about` = its locale; the other fields unused).
+ * Fields of the exit form: a publication (`id`, `locale`, `slug`), since
+ * M3-09 the About page (`about` = its locale; the other fields unused), or
+ * since M3-11 a Learning Hub guide (`resource` = its id, with `locale` and
+ * `slug` of the previewed page; `id` unused).
  */
-export type ExitForm = { id: number | null; locale: string; slug: string; about?: Locale | null };
+export type ExitForm = { id: number | null; locale: string; slug: string; about?: Locale | null; resource?: number | null };
 
 /** Where the exit goes without a staff session or when the CMS read fails: only paths of this site. */
 export function fallbackExitTarget(form: ExitForm): string {
-  return form.about ? aboutPath(form.about) : exitTarget(form.locale, form.slug);
+  if (form.about) return aboutPath(form.about);
+  if (form.resource) return resourcePath(form.locale, form.slug) ?? "/";
+  return exitTarget(form.locale, form.slug);
 }
 
 /**
@@ -69,6 +84,12 @@ export function fallbackExitTarget(form: ExitForm): string {
  * locale's About is public (published, required fields, EN checkbox; read
  * anonymously), else the global's edit page in /admin; everyone else
  * `/{locale}/about`.
+ *
+ * Learning Hub guide (M3-11): for the Editor or Admin, the guide's public
+ * page in the posted locale (its own live slug, not the posted one) when
+ * visitors can see it there (read anonymously, isResourceVisible), else the
+ * record's edit page in /admin; everyone else the posted guide path when
+ * locale and slug are valid, else `/`.
  */
 export async function previewExitTarget(
   payload: AuthPort & FindPort & FindGlobalPort,
@@ -81,6 +102,14 @@ export async function previewExitTarget(
     if (!staff) return fallback;
     const live = await findPublicAbout(payload, form.about);
     return isAboutVisible(live, form.about) ? aboutPath(form.about) : ABOUT_ADMIN_PATH;
+  }
+  if (form.resource) {
+    const staff = await staffFromHeaders(payload, headers);
+    if (!staff) return fallback;
+    if (!isLocale(form.locale)) return resourceAdminPath(form.resource);
+    const live = await findPublicResource(payload, form.resource, form.locale);
+    const target = live && live.type === "guide" && isResourceVisible(live, form.locale) ? resourcePath(form.locale, live.slug) : null;
+    return target ?? resourceAdminPath(form.resource);
   }
   if (form.id === null) return fallback;
   const staff = await staffFromHeaders(payload, headers);
@@ -101,6 +130,44 @@ export async function findDraftPublication(payload: FindPort, locale: Locale, sl
     depth: 1,
     select: DETAIL_SELECT,
     populate: DETAIL_POPULATE,
+    locale,
+    fallbackLocale: false,
+    draft: true,
+    user,
+    overrideAccess: false,
+  });
+  return result.docs[0] ?? null;
+}
+
+/**
+ * Type and this locale's slug of the latest version (draft included) of a
+ * Learning Hub resource, for the preview redirect (M3-11); or null.
+ */
+export async function findDraftResourceRef(payload: FindPort, id: number, locale: Locale, user: StaffUser) {
+  const result = await payload.find({
+    collection: "learning-resources",
+    where: { id: { equals: id } },
+    limit: 1,
+    depth: 0,
+    select: { type: true, slug: true },
+    locale,
+    fallbackLocale: false,
+    draft: true,
+    user,
+    overrideAccess: false,
+  });
+  return result.docs[0] ?? null;
+}
+
+/** The latest version (draft included) of the guide of this locale with this slug, with the page fields; or null. */
+export async function findDraftGuide(payload: FindPort, locale: Locale, slug: string, user: StaffUser) {
+  const result = await payload.find({
+    collection: "learning-resources",
+    where: { and: [{ type: { equals: "guide" } }, { slug: { equals: slug } }] },
+    limit: 1,
+    depth: 1,
+    select: GUIDE_SELECT,
+    populate: RESOURCE_POPULATE,
     locale,
     fallbackLocale: false,
     draft: true,

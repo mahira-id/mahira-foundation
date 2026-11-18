@@ -34,3 +34,29 @@ export const PUBLIC_FILE_READ: Where = {
  * checkbox (lib/about/about-view.ts `isAboutVisible`).
  */
 export const PUBLIC_ABOUT_READ: Where = { _status: { equals: "published" } };
+
+/**
+ * Resource types visitors may see (M3-11/12, DECISIONS §2.16 decisions 2A,
+ * 9A): videos, playlists and guides. Toolkits are created in the admin but
+ * stay off the public site until their file download is built (M3-13),
+ * which then adds "toolkit" here.
+ */
+export const PUBLIC_LEARNING_RESOURCE_TYPES = ["video", "playlist", "guide"] as const;
+
+/**
+ * What an anonymous Local API read of `learning-resources` may see: the
+ * published version of a record of a public type. All Learning Hub material
+ * is public (DEC-014), so there is no access level. Whether a locale shows
+ * the record also needs that locale's required fields, an active Topic and,
+ * for EN, "Versi EN siap tayang" (lib/learning-hub/catalog-view.ts
+ * `isResourceVisible`).
+ */
+export const PUBLIC_LEARNING_RESOURCE_READ: Where = {
+  and: [{ _status: { equals: "published" } }, { type: { in: [...PUBLIC_LEARNING_RESOURCE_TYPES] } }],
+};
+
+/**
+ * What an anonymous Local API read of the `learning-hub` global (catalog H1,
+ * intro, SEO fields) may see: the published version only, as for About.
+ */
+export const PUBLIC_LEARNING_HUB_READ: Where = { _status: { equals: "published" } };

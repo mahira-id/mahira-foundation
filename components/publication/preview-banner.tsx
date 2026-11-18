@@ -3,8 +3,9 @@ import type { Locale } from "@/lib/i18n/locales";
 import { PREVIEW_EXIT_PATH } from "@/lib/publications/preview";
 
 type PreviewBannerProps = { locale: Locale } & (
-  | { id: number; slug: string; about?: undefined }
-  | { about: true; id?: undefined; slug?: undefined }
+  | { id: number; slug: string; about?: undefined; resource?: undefined }
+  | { about: true; id?: undefined; slug?: undefined; resource?: undefined }
+  | { resource: number; slug: string; id?: undefined; about?: undefined }
 );
 
 /**
@@ -15,17 +16,21 @@ type PreviewBannerProps = { locale: Locale } & (
  * DECISIONS §2.10) to the exit handler, which disables Draft Mode and goes
  * to the live public page, or to the edit page in /admin when there is none
  * (M3-05b). A publication posts `id`, `locale` and `slug`; the About page
- * posts `about` (its locale) and `locale`.
+ * posts `about` (its locale) and `locale`; a Learning Hub guide (M3-11)
+ * posts `resource` (its id), `locale` and `slug`.
  */
 export function PreviewBanner(props: PreviewBannerProps) {
   const { locale } = props;
   const labels = getDictionary(locale).preview;
+  let record = <input name="id" type="hidden" value={props.id} />;
+  if (props.about) record = <input name="about" type="hidden" value={locale} />;
+  if (props.resource !== undefined) record = <input name="resource" type="hidden" value={props.resource} />;
   return (
     <aside className="border-b border-brand-200 bg-brand-50" data-preview-banner role="status">
       <div className="container-editorial flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-semibold text-ink">{labels.notice}</p>
         <form action={PREVIEW_EXIT_PATH} method="post">
-          {props.about ? <input name="about" type="hidden" value={locale} /> : <input name="id" type="hidden" value={props.id} />}
+          {record}
           <input name="locale" type="hidden" value={locale} />
           {props.about ? null : <input name="slug" type="hidden" value={props.slug} />}
           <button className="btn btn-outline-dark" type="submit">

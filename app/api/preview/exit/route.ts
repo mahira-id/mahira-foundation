@@ -13,13 +13,15 @@ import { isCmsEnabled } from "@/payload/env";
  * Exit of the staff draft preview (M3-05, DECISIONS §2.11 P11 A; target
  * since M3-05b): the native POST form of the preview banner (fields `id`,
  * `locale`, `slug`; since M3-09 the About banner posts `about` = its
- * locale). Disables Draft Mode (Next adds the clearing `__prerender_bypass`
- * cookie to this response) and answers 303 to previewExitTarget: for a
- * verified Editor/Admin session the public detail of the live version (or
- * the public About page), else the record's (or the global's) edit page in
- * /admin; without a staff session, the detail URL of the posted locale and
- * slug when both are valid (the About path of a valid `about` locale), else
- * `/`. A failed CMS read logs the error name only and uses that last
+ * locale; since M3-11 the guide banner posts `resource` = its id with
+ * `locale` and `slug`). Disables Draft Mode (Next adds the clearing
+ * `__prerender_bypass` cookie to this response) and answers 303 to
+ * previewExitTarget: for a verified Editor/Admin session the public detail
+ * of the live version (or the public About page or guide page), else the
+ * record's (or the global's) edit page in /admin; without a staff session,
+ * the detail URL of the posted locale and slug when both are valid (the
+ * About path of a valid `about` locale; the guide path for `resource`),
+ * else `/`. A failed CMS read logs the error name only and uses that last
  * target. POST only; Next answers other methods with 405.
  */
 export async function POST(request: NextRequest) {
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
     return new Response("Not Found", { status: 404, headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } });
   }
 
-  const form: ExitForm = { id: null, locale: "", slug: "", about: null };
+  const form: ExitForm = { id: null, locale: "", slug: "", about: null, resource: null };
   try {
     const body = await request.formData();
     const field = (name: string) => {
@@ -39,6 +41,7 @@ export async function POST(request: NextRequest) {
     form.slug = field("slug");
     const about = field("about");
     form.about = isLocale(about) ? about : null;
+    form.resource = parsePreviewId(field("resource"));
   } catch {
     // Not a form body: no fields, so the exit goes to `/`.
   }

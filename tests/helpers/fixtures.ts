@@ -30,6 +30,7 @@ export type Area =
   | "guard"
   | "home"
   | "index"
+  | "learning-hub"
   | "locale"
   | "preview"
   | "race"
@@ -100,6 +101,37 @@ async function fileIds(payload: Payload, prefix: string): Promise<number[]> {
   return files.docs.filter((doc) => typeof doc.filename === "string" && doc.filename.startsWith(prefix)).map((doc) => doc.id);
 }
 
+/**
+ * Learning Hub resources (M3-11) whose slug starts with the prefix or whose
+ * title starts with the label, in either locale (slug and title are
+ * localized; videos have no slug), in the record or its latest version
+ * (a pending draft).
+ */
+async function resourceIds(payload: Payload, prefix: string, label: string): Promise<number[]> {
+  const ids = new Set<number>();
+  for (const locale of ["id", "en"] as const) {
+    for (const draft of [false, true]) {
+      const found = await payload.find({
+        collection: "learning-resources",
+        where: { or: [{ slug: { like: prefix } }, { title: { like: label } }] },
+        locale,
+        fallbackLocale: false,
+        draft,
+        depth: 0,
+        pagination: false,
+        overrideAccess: true,
+        select: { slug: true, title: true },
+      });
+      for (const doc of found.docs) {
+        const slug: unknown = doc.slug;
+        const title: unknown = doc.title;
+        if ((typeof slug === "string" && slug.startsWith(prefix)) || (typeof title === "string" && title.startsWith(label))) ids.add(doc.id);
+      }
+    }
+  }
+  return [...ids];
+}
+
 async function userIds(payload: Payload, prefix: string): Promise<number[]> {
   const users = await payload.find({
     collection: "users",
@@ -117,6 +149,8 @@ export type FixtureCounts = {
   publicationSlugs: number;
   /** Publication files (M3-08, filename prefix); deleting one also deletes its bucket object. */
   publicationFiles: number;
+  /** Learning Hub resources (M3-11, slug prefix or title label in either locale). */
+  learningResources: number;
   translationGroups: number;
   topics: number;
   publicationTypes: number;
@@ -161,6 +195,7 @@ export async function cleanupArea(payload: Payload, area: Area): Promise<Fixture
     publications: 0,
     publicationSlugs: 0,
     publicationFiles: 0,
+    learningResources: 0,
     translationGroups: 0,
     topics: 0,
     publicationTypes: 0,
@@ -178,6 +213,11 @@ export async function cleanupArea(payload: Payload, area: Area): Promise<Fixture
   for (const id of await fileIds(payload, prefix)) {
     await payload.delete({ collection: "publication-files", id, overrideAccess: true });
     counts.publicationFiles++;
+  }
+  // Before the topics they point to (M3-11, area learning-hub).
+  for (const id of await resourceIds(payload, prefix, areaLabel(area))) {
+    await payload.delete({ collection: "learning-resources", id, overrideAccess: true });
+    counts.learningResources++;
   }
   for (const id of await slugIds(payload, "authors", prefix)) {
     await payload.delete({ collection: "authors", id, overrideAccess: true });
@@ -210,6 +250,7 @@ export async function countLeftovers(payload: Payload, area?: Area): Promise<Fix
     publications: (await slugIds(payload, "publications", prefix)).length,
     publicationSlugs: (await slugIds(payload, "publication-slugs", prefix)).length,
     publicationFiles: (await fileIds(payload, prefix)).length,
+    learningResources: (await resourceIds(payload, prefix, label)).length,
     translationGroups: (await groupIds(payload, label)).length,
     topics: (await slugIds(payload, "topics", prefix)).length,
     publicationTypes: (await slugIds(payload, "publication-types", prefix)).length,

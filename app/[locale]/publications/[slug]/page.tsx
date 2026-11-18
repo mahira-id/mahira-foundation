@@ -6,6 +6,7 @@ import { PublicationDetail } from "@/components/publication/publication-detail";
 import { PreviewBanner } from "@/components/publication/preview-banner";
 import { PublicationErrorState } from "@/components/publication/publication-error-state";
 import { AboutNavLink } from "@/components/site/header-about-link";
+import { LearningHubNavLink } from "@/components/site/header-learning-hub-link";
 import { LocaleHeader } from "@/components/site/locale-header";
 import {
   getPublicationDetail,
@@ -97,7 +98,7 @@ export default async function PublicationDetailPage({ params }: Props) {
   if (result === "error" || target === "error") {
     return (
       <>
-        <LocaleHeader aboutLink={<AboutNavLink locale={locale} />} locale={locale} />
+        <LocaleHeader learningHubLink={<LearningHubNavLink locale={locale} />} aboutLink={<AboutNavLink locale={locale} />} locale={locale} />
         <PublicationErrorState
           action={
             // A plain link: a full page load is the reload, with or without JavaScript.
@@ -118,7 +119,7 @@ export default async function PublicationDetailPage({ params }: Props) {
 
   return (
     <>
-      <LocaleHeader aboutLink={<AboutNavLink locale={locale} />} locale={locale} switcher={switcherFor(locale, result.alternates)} />
+      <LocaleHeader learningHubLink={<LearningHubNavLink locale={locale} />} aboutLink={<AboutNavLink locale={locale} />} locale={locale} switcher={switcherFor(locale, result.alternates)} />
       <main id="main">
         {preview ? <PreviewBanner id={result.publication.id} locale={locale} slug={result.publication.slug} /> : null}
         <PublicationDetail locale={locale} preview={preview} publication={result.publication} />
