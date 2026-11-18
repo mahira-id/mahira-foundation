@@ -1,26 +1,35 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { MahiraMark } from "@/components/brand/mahira";
+import { Paragraphs, Section } from "@/components/content/structured-sections";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { learningHubPath, type GuidePage as GuidePageModel } from "@/lib/learning-hub/catalog-view";
 
 /**
  * A Learning Hub guide `/{locale}/learning-hub/{slug}` (M3-12, DECISIONS
- * §2.16 decisions 3A, 6A). Server component, no data access. Structure kept
- * by any restyling (asserted by tests/integration/learning-hub.test.ts):
+ * §2.16 decisions 3A, 6A). Server component, no data access. The sections use
+ * the same components as the About page (components/content/
+ * structured-sections.tsx, `marker="guide"`). Structure kept by any
+ * restyling (asserted by tests/integration/learning-hub.test.ts):
  * `<main id="main" data-lh-page="guide" data-preview>` with the optional
- * preview banner first, one H1 (the guide title), the summary, the
- * "Bahasa materi" label `data-lh-language`, and one
- * `section[data-lh-section]` per structured section with an H2 (the
- * heading, else the label). All text is plain (no markup from the CMS).
+ * preview banner first, one H1 (the guide title), the summary, the "Bahasa
+ * materi" label `data-lh-language`, and one `section[data-lh-section]` per
+ * structured section with an H2 (the heading, else the label). All text is
+ * plain (no markup from the CMS).
  */
 export function GuidePage({ guide, preview, banner }: { guide: GuidePageModel; preview: boolean; banner?: ReactNode }) {
   const labels = getDictionary(guide.locale).learningHub;
   return (
     <main data-lh-page="guide" data-preview={preview ? "true" : "false"} id="main">
       {banner}
-      <header className="on-dark bg-brand-500 text-white" data-lh-hero>
-        <div className="container-editorial pt-14 pb-16 sm:pt-16 sm:pb-20">
+      <header className="on-dark relative overflow-hidden bg-brand-500 text-white" data-lh-hero>
+        <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0 opacity-80" />
+        <MahiraMark
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-48 top-1/2 hidden h-[36rem] w-auto -translate-y-1/2 text-white/[0.045] lg:block"
+        />
+        <div className="container-editorial relative pt-14 pb-16 sm:pt-16 sm:pb-20 lg:pt-24 lg:pb-28">
           <p className="eyebrow text-white">
             <Link className="underline-offset-4 hover:underline" href={learningHubPath(guide.locale)}>
               {labels.backToCatalog}
@@ -28,67 +37,19 @@ export function GuidePage({ guide, preview, banner }: { guide: GuidePageModel; p
             {guide.themeName ? <span> · {guide.themeName}</span> : null}
           </p>
           <h1 className="mt-6 max-w-4xl text-[clamp(2.25rem,5.4vw,4.75rem)] font-extrabold leading-[1] tracking-[-0.04em] text-balance">{guide.title}</h1>
-          <div className="mt-8 max-w-2xl space-y-5 text-base leading-relaxed text-white sm:text-lg">
-            {guide.summary.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-          </div>
+          <Paragraphs className="mt-8 max-w-2xl space-y-5 text-base leading-relaxed text-white sm:text-lg" items={guide.summary} />
           {guide.materialLanguage ? (
             <p className="mt-6 text-sm font-semibold text-white" data-lh-language={guide.materialLanguage}>
               {labels.materialLanguage[guide.materialLanguage]}
             </p>
           ) : null}
         </div>
+        <div className="relative h-1 bg-brand-700">
+          <span className="absolute inset-y-0 left-0 w-24 bg-orange" />
+        </div>
       </header>
       {guide.sections.map((section, index) => (
-        <section className="section-space bg-white" data-lh-section id={section.anchor ?? undefined} key={index}>
-          <div className="container-editorial max-w-3xl">
-            <h2 className="text-[clamp(1.75rem,3.4vw,2.875rem)] font-bold leading-[1.06] tracking-[-0.03em] text-ink">{section.heading ?? section.label}</h2>
-            {section.body.map((paragraph, bodyIndex) => (
-              <p className="mt-5 text-lg leading-relaxed text-ink-soft" key={bodyIndex}>
-                {paragraph}
-              </p>
-            ))}
-            {section.quote ? (
-              <blockquote className="mt-8 border-l-4 border-orange pl-6" data-lh-quote>
-                <p className="text-xl font-semibold text-ink">{section.quote}</p>
-              </blockquote>
-            ) : null}
-            {section.lists.map((list, listIndex) => {
-              const items = list.items.map((item, itemIndex) => (
-                <li className="py-2 text-base text-ink-soft" key={itemIndex}>
-                  {item.title ? <strong className="text-ink">{item.title}</strong> : null}
-                  {item.subtitle ? <span> {item.subtitle}</span> : null}
-                  {item.text ? <span> {item.text}</span> : null}
-                </li>
-              ));
-              return (
-                <div className="mt-8" key={listIndex}>
-                  {list.heading ? <h3 className="text-xl font-bold text-ink">{list.heading}</h3> : null}
-                  {list.intro.map((paragraph, introIndex) => (
-                    <p className="mt-3 text-base text-ink-soft" key={introIndex}>
-                      {paragraph}
-                    </p>
-                  ))}
-                  {list.style === "numbered" ? (
-                    <ol className="mt-4 list-decimal pl-6" data-lh-list="numbered">
-                      {items}
-                    </ol>
-                  ) : (
-                    <ul className="mt-4 list-disc pl-6" data-lh-list="bulleted">
-                      {items}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
-            {section.outro.map((paragraph, outroIndex) => (
-              <p className="mt-5 text-lg leading-relaxed text-ink-soft" key={outroIndex}>
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        </section>
+        <Section index={index} key={index} marker="guide" section={section} />
       ))}
     </main>
   );
