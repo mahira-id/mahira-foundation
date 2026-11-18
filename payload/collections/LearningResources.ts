@@ -77,7 +77,7 @@ export const LearningResources: CollectionConfig = {
     useAsTitle: "title",
     defaultColumns: ["title", "type", "topic", "_status", "enReady", "updatedAt"],
     description:
-      "Materi /{locale}/learning-hub. Satu record untuk ID dan EN; versi EN hanya tayang bila \"Versi EN siap tayang\" dicentang dan judul serta ringkasan EN terisi. Toolkit belum tampil di situs sampai M3-13.",
+      "Materi /{locale}/learning-hub. Satu record untuk ID dan EN; versi EN hanya tayang bila \"Versi EN siap tayang\" dicentang dan judul serta ringkasan EN terisi. Periksa Locale di pojok kanan atas sebelum mengetik.",
     // Decision 12A: Preview button of a guide -> /api/preview?resource=<id>&locale=<l>,
     // which checks the staff session before Draft Mode (app/api/preview/route.ts).
     preview: (doc, { locale }) => resourcePreviewUrl(doc, locale),

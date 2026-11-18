@@ -635,7 +635,8 @@ export const getHomepageLearningHub = cache(async (): Promise<HomeLearningHub | 
  * The Learning Hub entries of the sitemap (decision 13A): the catalog of
  * each locale that exists, with the latest `updatedAt` of its visible
  * resources and published texts, and every visible guide with its
- * `updatedAt`. With the CMS off empty. A failed read is logged with the
+ * `updatedAt`; since M3-13 `guides` also lists visible toolkits (their
+ * detail pages; no PDF URL). With the CMS off empty. A failed read is logged with the
  * error name only and throws LearningHubReadError.
  */
 export const getLearningHubSitemap = cache(async (): Promise<LearningHubSitemap> => {
@@ -648,7 +649,7 @@ export const getLearningHubSitemap = cache(async (): Promise<LearningHubSitemap>
       const texts = await readLearningHubTexts(locale);
       sitemap.catalogs.push({ locale, lastModified: latestTimestamp([...visible.map((doc) => doc.updatedAt), texts?.updatedAt]) });
       for (const doc of visible) {
-        if (doc.type !== "guide" || typeof doc.slug !== "string") continue;
+        if ((doc.type !== "guide" && doc.type !== "toolkit") || typeof doc.slug !== "string") continue;
         sitemap.guides.push({ locale, slug: doc.slug, lastModified: typeof doc.updatedAt === "string" ? doc.updatedAt : null });
       }
     }

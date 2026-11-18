@@ -53,7 +53,7 @@ async function HomeLearningHubContent() {
                 {card.materialLanguage ? <p className="mt-3 text-sm font-semibold text-ink-soft">{labels.materialLanguage[card.materialLanguage]}</p> : null}
                 {card.href ? (
                   <Link className="mt-4 inline-flex text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900" href={card.href}>
-                    {labels.read}
+                    {card.type === "toolkit" ? labels.readToolkit : labels.read}
                   </Link>
                 ) : card.youtube ? (
                   <a

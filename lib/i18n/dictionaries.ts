@@ -94,6 +94,12 @@ export type Dictionary = {
     play: (title: string) => string;
     /** Link of a guide card to its page. */
     read: string;
+    /** Link of a toolkit card (catalog, homepage) to its page (M3-13). */
+    readToolkit: string;
+    /** PDF · N file on a toolkit card (M3-13, DECISIONS §2.17 decision 6A). */
+    fileCount: (count: number) => string;
+    /** Note of a toolkit's staff draft preview, where its files have no link. */
+    filesPreviewNote: string;
     /** The catalog link in a guide page's breadcrumb. */
     backToCatalog: string;
     /** Link to the catalog under the homepage block (decision 11A). */
@@ -191,6 +197,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       watch: "Tonton di YouTube",
       play: (title) => `Putar: ${title}`,
       read: "Baca panduan",
+      readToolkit: "Lihat toolkit",
+      fileCount: (count) => `PDF · ${count} file`,
+      filesPreviewNote: "Unduhan aktif setelah diterbitkan.",
       backToCatalog: "Learning Hub",
       viewAll: "Lihat semua materi",
     },
@@ -279,6 +288,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       watch: "Watch on YouTube",
       play: (title) => `Play: ${title}`,
       read: "Read the guide",
+      readToolkit: "View the toolkit",
+      fileCount: (count) => (count === 1 ? `PDF · 1 file` : `PDF · ${count} files`),
+      filesPreviewNote: "Downloads become active once published.",
       backToCatalog: "Learning Hub",
       viewAll: "View all resources",
     },

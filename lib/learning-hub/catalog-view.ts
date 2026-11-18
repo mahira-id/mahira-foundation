@@ -327,7 +327,11 @@ export function toGuidePage(doc: ResourceDoc, locale: Locale): GuidePage | null 
   };
 }
 
-/** Learning Hub entries of /sitemap.xml (decision 13A): existing catalogs and visible guides. */
+/**
+ * Learning Hub entries of /sitemap.xml (decision 13A; M3-13, DECISIONS §2.17
+ * decision 7A): existing catalogs and visible guides and toolkits (`guides`
+ * lists every resource with a detail page). Never a PDF.
+ */
 export type LearningHubSitemap = {
   catalogs: { locale: Locale; lastModified: string | null }[];
   guides: { locale: Locale; slug: string; lastModified: string | null }[];

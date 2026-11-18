@@ -18,9 +18,10 @@ import { SLUG_PATTERN } from "@/payload/fields/slug";
 
 /**
  * Learning Hub detail page (M3-12, DECISIONS §2.16 decisions 6A, 7A, 12A,
- * 13A): only a guide visible in this locale has a page at
- * `/{locale}/learning-hub/{slug}`; videos and playlists play in the catalog
- * and toolkits are never public before M3-13. Everything else: notFound().
+ * 13A; M3-13, §2.17 decision 6A): only a guide or a toolkit visible in this
+ * locale has a page at `/{locale}/learning-hub/{slug}`; videos and playlists
+ * play in the catalog. A toolkit page adds the file panel. Everything else:
+ * notFound().
  * No slug history in this run (a published guide's slug must not change,
  * EDITORIAL-WORKFLOW). With the CMS off proxy.ts answers 404 first.
  *

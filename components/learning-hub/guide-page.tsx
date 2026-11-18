@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { MahiraMark } from "@/components/brand/mahira";
 import { Paragraphs, Section } from "@/components/content/structured-sections";
+import { PublicationFiles } from "@/components/publication/publication-files";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { learningHubPath, type GuidePage as GuidePageModel } from "@/lib/learning-hub/catalog-view";
 
@@ -10,7 +11,10 @@ import { learningHubPath, type GuidePage as GuidePageModel } from "@/lib/learnin
  * A Learning Hub guide `/{locale}/learning-hub/{slug}` (M3-12, DECISIONS
  * §2.16 decisions 3A, 6A). Server component, no data access. The sections use
  * the same components as the About page (components/content/
- * structured-sections.tsx, `marker="guide"`). Structure kept by any
+ * structured-sections.tsx, `marker="guide"`). A toolkit (M3-13, DECISIONS
+ * §2.17 decision 6A) uses the same page (`data-lh-page="toolkit"`) and adds
+ * the publication file panel after its sections, with the "Bahasa materi"
+ * labels for the document language and its own preview note. Structure kept by any
  * restyling (asserted by tests/integration/learning-hub.test.ts):
  * `<main id="main" data-lh-page="guide" data-preview>` with the optional
  * preview banner first, one H1 (the guide title), the summary, the "Bahasa
@@ -21,7 +25,7 @@ import { learningHubPath, type GuidePage as GuidePageModel } from "@/lib/learnin
 export function GuidePage({ guide, preview, banner }: { guide: GuidePageModel; preview: boolean; banner?: ReactNode }) {
   const labels = getDictionary(guide.locale).learningHub;
   return (
-    <main data-lh-page="guide" data-preview={preview ? "true" : "false"} id="main">
+    <main data-lh-page={guide.type} data-preview={preview ? "true" : "false"} id="main">
       {banner}
       <header className="on-dark relative overflow-hidden bg-brand-500 text-white" data-lh-hero>
         <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0 opacity-80" />
@@ -51,6 +55,17 @@ export function GuidePage({ guide, preview, banner }: { guide: GuidePageModel; p
       {guide.sections.map((section, index) => (
         <Section index={index} key={index} marker="guide" section={section} />
       ))}
+      {guide.type === "toolkit" ? (
+        <div className="container-editorial pb-16 sm:pb-20">
+          <PublicationFiles
+            files={guide.files}
+            languageLabel={(language) => labels.materialLanguage[language]}
+            locale={guide.locale}
+            preview={preview}
+            previewNote={labels.filesPreviewNote}
+          />
+        </div>
+      ) : null}
     </main>
   );
 }

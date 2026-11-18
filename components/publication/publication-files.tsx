@@ -4,6 +4,12 @@ import type { PublicationFileItem } from "@/lib/publications/detail-view";
 import { fileFormatLabel, fileKindLabel, fileLanguageLabel } from "@/lib/publications/file-labels";
 
 /**
+ * A panel row. `kind` is set for publication files only; a toolkit file
+ * (M3-13) has none and its row shows no kind label.
+ */
+export type PanelFile = Omit<PublicationFileItem, "kind"> & { kind?: PublicationFileItem["kind"] };
+
+/**
  * File panel of the publication detail page (M3-08, DECISIONS §2.14 item 7).
  * Only the files visitors may download reach it (publicFiles), so there is
  * no locked state: restricted files are hidden until M5. No files, no panel.
@@ -11,15 +17,21 @@ import { fileFormatLabel, fileKindLabel, fileLanguageLabel } from "@/lib/publica
  * the download route (works without JavaScript; the route checks access
  * again on every request). In the staff draft preview (`preview`) the files
  * show without links and with a note that downloads activate after publishing.
+ * The toolkit detail page (M3-13) reuses it with its own `previewNote` and
+ * `languageLabel`; publication callers pass neither.
  */
 export function PublicationFiles({
   files,
   locale,
   preview = false,
+  previewNote,
+  languageLabel,
 }: {
-  files: PublicationFileItem[];
+  files: PanelFile[];
   locale: Locale;
   preview?: boolean;
+  previewNote?: string;
+  languageLabel?: (language: Locale) => string;
 }) {
   if (files.length === 0) return null;
   const labels = getDictionary(locale).files;
@@ -43,11 +55,15 @@ export function PublicationFiles({
             <div className="min-w-0">
               <p className="text-base font-semibold text-ink [overflow-wrap:anywhere]">{file.label}</p>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
-                <span>{fileKindLabel(file.kind, locale)}</span>
-                <span aria-hidden="true">·</span>
+                {file.kind ? (
+                  <>
+                    <span>{fileKindLabel(file.kind, locale)}</span>
+                    <span aria-hidden="true">·</span>
+                  </>
+                ) : null}
                 <span>
                   <span className="sr-only">{`${labels.documentLanguage}: `}</span>
-                  <span lang={file.language}>{fileLanguageLabel(file.language, locale)}</span>
+                  <span lang={file.language}>{languageLabel ? languageLabel(file.language) : fileLanguageLabel(file.language, locale)}</span>
                 </span>
                 <span aria-hidden="true">·</span>
                 <span>{fileFormatLabel(file.sizeBytes, locale)}</span>
@@ -64,7 +80,7 @@ export function PublicationFiles({
       </ul>
       {preview ? (
         <p className="mt-4 text-sm text-muted" data-files-preview-note>
-          {labels.previewNote}
+          {previewNote ?? labels.previewNote}
         </p>
       ) : null}
     </section>

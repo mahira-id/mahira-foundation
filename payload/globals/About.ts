@@ -55,7 +55,7 @@ export const About: GlobalConfig = {
   label: "About",
   admin: {
     description:
-      "Halaman /{locale}/about. Satu status terbit untuk ID dan EN; halaman EN hanya tayang bila \"Versi EN siap tayang\" dicentang dan field wajib EN terisi.",
+      "Halaman /{locale}/about. Satu status terbit untuk ID dan EN; halaman EN hanya tayang bila \"Versi EN siap tayang\" dicentang dan field wajib EN terisi. Periksa Locale di pojok kanan atas sebelum mengetik.",
     // DECISIONS §2.15 decision 7B: Preview button -> /api/preview?about=<locale>,
     // which checks the staff session before Draft Mode (app/api/preview/route.ts).
     preview: (_doc, { locale }) => aboutPreviewUrl(locale),

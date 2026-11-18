@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
 import type { Payload } from "payload";
 
+import { findPublicResources } from "../../lib/cms/learning-hub-query";
 import { signedFileUrl } from "../../lib/cms/publication-file-storage";
 import { findPublicToolkitFile } from "../../lib/cms/toolkit-file-query";
+import { newestCards, type ResourceDoc } from "../../lib/learning-hub/catalog-view";
 import { attachmentDisposition } from "../../lib/publications/file-download";
 import type { LearningResource, PublicationFile, ToolkitFile, User } from "../../payload/payload-types";
 import {
@@ -23,6 +25,7 @@ import {
 import { BASE_URL, assertServerUp, getPage, login, pageFact, rest, restErrors, restFact } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
 import { fixturePdf } from "../helpers/pdf";
+import { assertNotFoundPage } from "../helpers/publication-pages";
 
 /**
  * Toolkit files and the toolkit download (M3-13, DECISIONS §2.16 decision
@@ -43,8 +46,11 @@ import { fixturePdf } from "../helpers/pdf";
  * TK5); `idonly` on `idonly` (published, EN not ready); `inactive` on
  * `inactive` (published, inactive Topic); `free` on no toolkit. One
  * publication file `pubfile` on a published + public publication `pub` for
- * the cross-route checks. The Owner guard runs before any fixture is
- * written and after cleanup.
+ * the cross-route checks. The UI tests (TKUI1–TKUI5, decisions 6A and 7A)
+ * add, on first use: files `u1` (ID document), `u2` (EN document), `u3`;
+ * toolkit `ui` (published 2090, newest, EN ready, files u1 + u2), draft-only
+ * toolkit `prev` (file u3) and guide `gd` (a theme in the same Topic). The
+ * Owner guard runs before any fixture is written and after cleanup.
  *
  * Signed URLs are bearer credentials: assertions and diagnostics never
  * print a Location or a URL, only statuses, hosts as booleans and header
@@ -164,7 +170,7 @@ describe("toolkit files and the toolkit download (M3-13: private bucket under to
     name: string,
     fileNames: string[],
     status: "published" | "draft",
-    options: { enReady?: boolean; topic?: number } = {},
+    options: { enReady?: boolean; topic?: number; publishedAt?: string } = {},
   ): Promise<LearningResource> {
     const record = await p().create({
       collection: "learning-resources",
@@ -178,7 +184,7 @@ describe("toolkit files and the toolkit download (M3-13: private bucket under to
         slug: slug(name),
         enReady: options.enReady ?? true,
         files: fileNames.map((key) => file(key).id),
-        publishedAt: PUBLISHED_AT,
+        publishedAt: options.publishedAt ?? PUBLISHED_AT,
         _status: status,
       },
       draft: status === "draft",
@@ -625,5 +631,205 @@ describe("toolkit files and the toolkit download (M3-13: private bucket under to
     }
     const anonymous = await getPage(`/api/preview?resource=${kit("live").id}&locale=id`);
     assert.equal(anonymous.status, 404, `anonymous preview entry: ${pageFact(anonymous)}`);
+  });
+
+  // ------------------------------------------------------------ UI (DECISIONS §2.17 decisions 6A, 7A)
+  const UI_PUBLISHED_AT = "2090-01-01T03:00:00.000Z";
+  const titleOf = (name: string, locale: Locale) => `${LABEL}${locale} ${name}`;
+  const strip = (html: string) => html.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  let uiReady: Promise<void> | undefined;
+
+  /** UI fixtures once: files u1 (ID document) and u2 (EN document), toolkit `ui` (newest, published, EN ready), guide `gd` (a theme in the same Topic), draft-only toolkit `prev` with file u3. */
+  function uiFixtures(): Promise<void> {
+    uiReady ??= (async () => {
+      await upload("u1", { en: true }, "id");
+      await upload("u2", { en: true }, "en");
+      await upload("u3");
+      await createToolkit("ui", ["u1", "u2"], "published", { publishedAt: UI_PUBLISHED_AT });
+      await createToolkit("prev", ["u3"], "draft");
+      const guide = await p().create({
+        collection: "learning-resources",
+        locale: "id",
+        data: {
+          type: "guide",
+          materialLanguage: "id",
+          topic: topicId as number,
+          title: titleOf("gd", "id"),
+          summary: `${LABEL}id ringkasan gd`,
+          slug: slug("gd"),
+          enReady: true,
+          publishedAt: PUBLISHED_AT,
+          _status: "published",
+        },
+        depth: 0,
+        overrideAccess: true,
+      });
+      await p().update({
+        collection: "learning-resources",
+        id: guide.id,
+        locale: "en",
+        data: { title: titleOf("gd", "en"), summary: `${LABEL}en summary gd`, slug: slug("gd", "en"), _status: "published" },
+        depth: 0,
+        overrideAccess: true,
+      });
+      toolkits.set("gd", guide);
+    })();
+    return uiReady;
+  }
+
+  /** The `<article data-lh-card="toolkit">` of a toolkit title in a catalog page, or null. */
+  function toolkitCard(html: string, title: string): string | null {
+    for (const match of html.matchAll(/<article[^>]*\sdata-lh-card="toolkit"[^>]*>([\s\S]*?)<\/article>/g)) {
+      if ((match[1] as string).includes(`>${title}<`)) return match[1] as string;
+    }
+    return null;
+  }
+
+  /** Panel rows in document order: file id, link href (null without a link) and the visible text. */
+  function panelRows(html: string): { id: number; href: string | null; text: string }[] {
+    return [...html.matchAll(/<li[^>]*\sdata-publication-file="(\d+)"[^>]*>([\s\S]*?)<\/li>/g)].map((match) => ({
+      id: Number(match[1]),
+      href: /<a[^>]*\shref="([^"]+)"/.exec(match[2] as string)?.[1] ?? null,
+      text: strip(match[2] as string),
+    }));
+  }
+
+  test("TKUI1 catalog: the Toolkit section comes before the first theme; the card shows title, summary, Bahasa materi, “PDF · N file” and the detail link, never a download link, never repeated in a theme", async () => {
+    await uiFixtures();
+    for (const locale of ["id", "en"] as const) {
+      const page = await getPage(`/${locale}/learning-hub`);
+      assert.equal(page.status, 200, `GET /${locale}/learning-hub: ${pageFact(page)}`);
+      const html = page.body;
+      const sectionAt = html.search(/<section[^>]*\sdata-lh-toolkits/);
+      const themeAt = html.search(/<section[^>]*\sdata-lh-theme="/);
+      assert.ok(sectionAt !== -1, `${locale}: Toolkit section exists`);
+      assert.ok(themeAt !== -1, `${locale}: a theme exists (the guide fixture)`);
+      assert.ok(sectionAt < themeAt, `${locale}: Toolkit section (${sectionAt}) before the first theme (${themeAt})`);
+      const section = /<section[^>]*\sdata-lh-toolkits[^>]*>([\s\S]*?)<\/section>/.exec(html)?.[1] ?? "";
+      assert.match(section, /<h2[^>]*>Toolkit<\/h2>/, `${locale}: section heading`);
+      const card = toolkitCard(section, titleOf("ui", locale));
+      assert.ok(card, `${locale}: the toolkit card is in the Toolkit section`);
+      const text = strip(card);
+      assert.ok(text.includes(locale === "id" ? `${LABEL}id ringkasan ui` : `${LABEL}en summary ui`), `${locale}: summary`);
+      assert.equal(/data-lh-language="id"/.test(card), true, `${locale}: Bahasa materi attribute`);
+      assert.ok(text.includes(locale === "id" ? "Berbahasa Indonesia" : "In Indonesian"), `${locale}: Bahasa materi label`);
+      assert.equal(/<p[^>]*\sdata-lh-files="2"/.test(card), true, `${locale}: file count attribute`);
+      assert.ok(text.includes(locale === "id" ? "PDF · 2 file" : "PDF · 2 files"), `${locale}: file count text`);
+      const links = [...card.matchAll(/<a[^>]*\shref="([^"]+)"/g)].map((match) => match[1]);
+      assert.deepEqual(links, [`/${locale}/learning-hub/${slug("ui", locale)}`], `${locale}: the only link of the card is the detail page`);
+      assert.equal(/<a[^>]*\sdata-lh-read/.test(card), true, `${locale}: detail link marker`);
+      assert.equal(html.includes("/api/learning-hub/files/"), false, `${locale}: no download link anywhere in the catalog`);
+      const themeHtml = html.slice(html.indexOf("</section>", sectionAt));
+      assert.equal(themeHtml.includes(`>${titleOf("ui", locale)}<`), false, `${locale}: the toolkit is not repeated in a theme`);
+      assert.equal(themeHtml.includes(`>${titleOf("gd", locale)}<`), true, `${locale}: the guide is in its theme`);
+    }
+  });
+
+  test("TKUI2 detail page: the file panel lists the files in stored order with locale labels, document language (“In Indonesian” on the EN page) and ?locale= links; no file name, key or storage URL in the HTML", async () => {
+    await uiFixtures();
+    for (const locale of ["id", "en"] as const) {
+      const page = await getPage(`/${locale}/learning-hub/${slug("ui", locale)}`);
+      assert.equal(page.status, 200, `GET toolkit page (${locale}): ${pageFact(page)}`);
+      const html = page.body;
+      assert.equal(html.includes('data-lh-page="toolkit"'), true, `${locale}: toolkit main`);
+      assert.equal(html.includes('data-files-mode="live"'), true, `${locale}: live panel`);
+      assert.equal(html.includes("data-files-preview-note"), false, `${locale}: no preview note on a live page`);
+      const rows = panelRows(html);
+      assert.deepEqual(
+        rows.map((row) => row.id),
+        [file("u1").id, file("u2").id],
+        `${locale}: stored order`,
+      );
+      assert.deepEqual(
+        rows.map((row) => row.href),
+        [file("u1").id, file("u2").id].map((id) => `/api/learning-hub/files/${id}/download?locale=${locale}`),
+        `${locale}: download links carry the page locale`,
+      );
+      const [first, second] = rows.map((row) => row.text);
+      assert.ok((first as string).includes(`${LABEL}${locale} u1`) && (first as string).includes("PDF ·"), `${locale}: first label and format`);
+      assert.ok((second as string).includes(`${LABEL}${locale} u2`), `${locale}: second label`);
+      assert.ok((first as string).includes(locale === "id" ? "Berbahasa Indonesia" : "In Indonesian"), `${locale}: u1 is an Indonesian document`);
+      assert.ok((second as string).includes(locale === "id" ? "Berbahasa Inggris" : "In English"), `${locale}: u2 is an English document`);
+      for (const name of ["u1", "u2"]) {
+        assert.equal(html.includes(fileName(name)), false, `${locale}: stored file name of ${name} in the HTML`);
+      }
+      assert.equal(/storage\.supabase\.co|X-Amz-|toolkits\/|_objectKey|"prefix"/.test(html), false, `${locale}: no storage location in the HTML`);
+    }
+  });
+
+  test("TKUI3 staff draft preview: the files show without links and with the note “Unduhan aktif setelah diterbitkan.”; anonymous visitors get not-found", async () => {
+    await uiFixtures();
+    const entry = await getPage(`/api/preview?resource=${kit("prev").id}&locale=id`, { Cookie: `payload-token=${token()}` });
+    assert.equal(entry.status, 307, `Editor preview entry: ${pageFact(entry)}`);
+    let bypass: string | undefined;
+    for (const cookie of entry.setCookies) {
+      const [pair = ""] = cookie.split(";");
+      if (pair.startsWith("__prerender_bypass=")) bypass = pair;
+    }
+    assert.ok(bypass, "Draft Mode cookie set");
+    const path = `/id/learning-hub/${slug("prev")}`;
+    const page = await getPage(path, { Cookie: `${bypass}; payload-token=${token()}` });
+    assert.equal(page.status, 200, `Editor preview page: ${pageFact(page)}`);
+    const html = page.body;
+    assert.equal(html.includes('data-lh-page="toolkit"'), true, "toolkit main");
+    assert.equal(html.includes('data-preview="true"'), true, "preview mode");
+    assert.equal(html.includes('data-files-mode="preview"'), true, "preview panel");
+    const rows = panelRows(html);
+    assert.deepEqual(
+      rows.map((row) => row.id),
+      [file("u3").id],
+      "the draft toolkit's ready file is listed",
+    );
+    assert.deepEqual(
+      rows.map((row) => row.href),
+      [null],
+      "no link in the preview",
+    );
+    assert.equal(html.includes("/api/learning-hub/files/"), false, "no download path in the preview");
+    assert.match(strip(/<p[^>]*\sdata-files-preview-note[^>]*>[\s\S]*?<\/p>/.exec(html)?.[0] ?? ""), /^Unduhan aktif setelah diterbitkan\.$/);
+    const anonymous = await getPage(path);
+    assertNotFoundPage(anonymous, `anonymous GET ${path}`, "id");
+    assert.equal(anonymous.body.includes(titleOf("prev", "id")), false, "draft title for an anonymous visitor");
+  });
+
+  test("TKUI4 homepage and sitemap: a visible toolkit joins the 3 newest block and links to its detail page; the sitemap lists the detail pages and no PDF", async (t) => {
+    await uiFixtures();
+    const home = await getPage("/");
+    assert.equal(home.status, 200, `GET /: ${pageFact(home)}`);
+    const newest = newestCards(await findPublicResources(p(), "id").then((docs) => docs as ResourceDoc[]), "id");
+    const inBlock = newest.some((card) => card.id === kit("ui").id);
+    if (!inBlock) {
+      t.diagnostic("OBSERVED: real resources outrank the fixture toolkit; the homepage card check is skipped");
+    } else {
+      const item = /<li[^>]*\sdata-home-learning-card="toolkit"[^>]*>([\s\S]*?)<\/li>/g;
+      const cards = [...home.body.matchAll(item)].map((match) => match[1] as string);
+      const card = cards.find((html) => html.includes(`>${titleOf("ui", "id")}<`));
+      assert.ok(card, "the toolkit is a card of the homepage block");
+      const hrefs = [...card.matchAll(/<a[^>]*\shref="([^"]+)"/g)].map((match) => match[1]);
+      assert.deepEqual(hrefs, [`/id/learning-hub/${slug("ui")}`], "the card links to the detail page only");
+    }
+    assert.equal(home.body.includes("/api/learning-hub/files/"), false, "no download link on the homepage");
+
+    const sitemap = await getPage("/sitemap.xml");
+    assert.equal(sitemap.status, 200, `GET /sitemap.xml: ${pageFact(sitemap)}`);
+    const locs = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1] as string);
+    for (const locale of ["id", "en"] as const) {
+      assert.equal(locs.includes(`https://mahira.id/${locale}/learning-hub/${slug("ui", locale)}`), true, `${locale}: toolkit detail page in the sitemap`);
+    }
+    assert.equal(locs.some((loc) => loc.includes(slug("prev"))), false, "draft-only toolkit not in the sitemap");
+    assert.equal(locs.some((loc) => /\.pdf|\/api\/|\/files\//i.test(loc)), false, "no PDF or download URL in the sitemap");
+  });
+
+  test("TKUI5 EN only with “Versi EN siap tayang”: the ID-only toolkit is in the ID catalog and page, not in EN", async () => {
+    await uiFixtures();
+    const idCatalog = await getPage("/id/learning-hub");
+    assert.ok(toolkitCard(idCatalog.body, titleOf("idonly", "id")), "ID catalog card of the toolkit without the EN checkbox");
+    assert.equal((await getPage(`/id/learning-hub/${slug("idonly")}`)).status, 200, "ID page");
+    const enCatalog = await getPage("/en/learning-hub");
+    assert.equal(enCatalog.body.includes(titleOf("idonly", "en")), false, "EN catalog: title");
+    assert.equal(enCatalog.body.includes(slug("idonly")), false, "EN catalog: slug");
+    const enPage = await getPage(`/en/learning-hub/${slug("idonly", "en")}`);
+    assertNotFoundPage(enPage, "EN page of a toolkit without Versi EN siap tayang", "en");
+    assert.equal(enPage.body.includes('data-lh-page="toolkit"'), false, "no toolkit page in EN");
   });
 });

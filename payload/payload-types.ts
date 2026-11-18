@@ -326,7 +326,7 @@ export interface PublicationSlug {
   createdAt: string;
 }
 /**
- * Materi /{locale}/learning-hub. Satu record untuk ID dan EN; versi EN hanya tayang bila "Versi EN siap tayang" dicentang dan judul serta ringkasan EN terisi. Toolkit belum tampil di situs sampai M3-13.
+ * Materi /{locale}/learning-hub. Satu record untuk ID dan EN; versi EN hanya tayang bila "Versi EN siap tayang" dicentang dan judul serta ringkasan EN terisi. Periksa Locale di pojok kanan atas sebelum mengetik.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "learning-resources".
@@ -838,7 +838,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * Halaman /{locale}/about. Satu status terbit untuk ID dan EN; halaman EN hanya tayang bila "Versi EN siap tayang" dicentang dan field wajib EN terisi.
+ * Halaman /{locale}/about. Satu status terbit untuk ID dan EN; halaman EN hanya tayang bila "Versi EN siap tayang" dicentang dan field wajib EN terisi. Periksa Locale di pojok kanan atas sebelum mengetik.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "about".
@@ -961,7 +961,7 @@ export interface About {
   createdAt?: string | null;
 }
 /**
- * Judul (H1), pengantar, dan SEO halaman /{locale}/learning-hub. Katalog suatu bahasa hanya tayang bila ada minimal satu materi yang tampil dalam bahasa itu.
+ * Judul (H1), pengantar, dan SEO halaman /{locale}/learning-hub. Katalog suatu bahasa hanya tayang bila ada minimal satu materi yang tampil dalam bahasa itu. Periksa Locale di pojok kanan atas sebelum mengetik.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "learning-hub".
