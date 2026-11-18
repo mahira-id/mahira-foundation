@@ -20,6 +20,13 @@ type LocaleHeaderProps = {
    * no CMS read (not-found, error boundary) pass none.
    */
   aboutLink?: ReactNode;
+  /**
+   * The "Learning Hub" link (M3-12, DECISIONS §2.16 decision 11A), put before
+   * the About link: `<LearningHubNavLink locale={…} />`, which renders
+   * nothing unless that locale's catalog exists. Pages with no CMS read pass
+   * none.
+   */
+  learningHubLink?: ReactNode;
 };
 
 /**
@@ -27,7 +34,7 @@ type LocaleHeaderProps = {
  * header. The logo goes to `/`, which is Indonesian, so English pages mark
  * it with `hrefLang="id"` (P8 A).
  */
-export function LocaleHeader({ locale, switcher, aboutLink }: LocaleHeaderProps) {
+export function LocaleHeader({ locale, switcher, aboutLink, learningHubLink }: LocaleHeaderProps) {
   const dictionary = getDictionary(locale);
 
   return (
@@ -41,6 +48,7 @@ export function LocaleHeader({ locale, switcher, aboutLink }: LocaleHeaderProps)
         >
           <Logo className="h-7 w-auto sm:h-8" priority tone="emblem" />
         </Link>
+        {learningHubLink}
         {aboutLink}
         <LanguageSwitcher
           locale={locale}

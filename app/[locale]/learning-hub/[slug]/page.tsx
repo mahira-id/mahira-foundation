@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { GuidePage } from "@/components/learning-hub/guide-page";
 import { PreviewBanner } from "@/components/publication/preview-banner";
 import { AboutNavLink } from "@/components/site/header-about-link";
+import { LearningHubNavLink } from "@/components/site/header-learning-hub-link";
 import { LocaleHeader } from "@/components/site/locale-header";
 import { getLearningResource, LearningHubReadError, type LearningResourceResult } from "@/lib/cms/public-content";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -69,7 +70,7 @@ export default async function LearningResourcePage({ params }: Props) {
     const dictionary = getDictionary(locale);
     return (
       <>
-        <LocaleHeader aboutLink={<AboutNavLink locale={locale} />} locale={locale} />
+        <LocaleHeader learningHubLink={<LearningHubNavLink locale={locale} />} aboutLink={<AboutNavLink locale={locale} />} locale={locale} />
         <main className="container-editorial py-16" data-lh-error id="main">
           <h1 className="text-3xl font-bold tracking-tight text-ink">{dictionary.learningHub.errorTitle}</h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{dictionary.detail.errorBody}</p>
@@ -89,7 +90,7 @@ export default async function LearningResourcePage({ params }: Props) {
 
   return (
     <>
-      <LocaleHeader aboutLink={<AboutNavLink locale={locale} />} locale={locale} switcher={switcherFor(locale, result.alternates)} />
+      <LocaleHeader learningHubLink={<LearningHubNavLink locale={locale} />} aboutLink={<AboutNavLink locale={locale} />} locale={locale} switcher={switcherFor(locale, result.alternates)} />
       <GuidePage
         banner={preview ? <PreviewBanner locale={locale} resource={guide.id} slug={guide.slug} /> : null}
         guide={guide}

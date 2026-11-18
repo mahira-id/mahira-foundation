@@ -1,8 +1,15 @@
+import { Fragment, type ReactNode } from "react";
+
 import { Logo } from "@/components/brand/mahira";
 import { ArrowIcon } from "@/components/ui/icons";
 import { navigation } from "@/lib/landing-content";
 
-export function Footer() {
+/**
+ * `learningHubItem` (M3-12, DECISIONS §2.16 decision 11A): the "Learning Hub"
+ * list item before "Tentang", from `HomeNavLearningHub variant="footer"`;
+ * the homepage passes it only with the CMS on.
+ */
+export function Footer({ learningHubItem }: { learningHubItem?: ReactNode } = {}) {
   return (
     <footer className="on-dark border-t-2 border-orange bg-ink text-silver">
       <div className="container-editorial py-14 md:py-16">
@@ -26,14 +33,17 @@ export function Footer() {
               <h2 className="eyebrow text-silver">Jelajahi</h2>
               <ul className="mt-4 space-y-3">
                 {navigation.map((item) => (
-                  <li key={item.href}>
-                    <a
-                      className="text-sm text-silver transition-colors hover:text-white"
-                      href={item.href}
-                    >
-                      {item.label}
-                    </a>
-                  </li>
+                  <Fragment key={item.href}>
+                    {item.href === "#tentang" ? learningHubItem : null}
+                    <li>
+                      <a
+                        className="text-sm text-silver transition-colors hover:text-white"
+                        href={item.href}
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  </Fragment>
                 ))}
               </ul>
             </nav>

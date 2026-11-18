@@ -95,8 +95,23 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     // M3-04 (DECISIONS §2.7 P1, P2, P8): no sample publication, author, topic,
     // Learning Hub block or menu item. Case-sensitive: the metadata keyword
     // "learning hub" (app/(site)/layout.tsx) stays; M3-07 left the keywords as they were.
+    // M3-12 (DECISIONS §2.16 decision 11A, §2.7 P2 A): the "Learning Hub" text
+    // and link appear on `/` only with the CMS on and an Indonesian catalog
+    // (the homepage block, which carries `data-home-learning-hub`). With the
+    // CMS off (off, prod) they never appear; with it on and no visible
+    // resource there is none either (the block and the menu items are absent
+    // together, never one without the other).
+    const block = MODE === "on" && home.body.includes("data-home-learning-hub");
+    const menu = MODE === "on" && home.body.includes("data-home-nav-learning-hub");
+    assert.equal(menu, block, "menu items and block of the Learning Hub appear together (decision 11A)");
     for (const sample of SAMPLE_TEXTS) {
+      if (sample === "Learning Hub" && block) continue;
       assert.equal(home.body.includes(sample), false, `sample text "${sample}" on /`);
+    }
+    if (block) {
+      assert.equal(home.body.includes('href="/id/learning-hub"'), true, "block links to /id/learning-hub");
+    } else {
+      assert.equal(home.body.includes("/learning-hub"), false, "no Learning Hub link on / without the block");
     }
   });
 

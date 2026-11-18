@@ -22,7 +22,7 @@ async function HeaderAboutLink({ locale, current }: { locale: Locale; current: b
   return (
     <Link
       aria-current={current ? "page" : undefined}
-      className={`ml-auto pb-0.5 text-[0.8125rem] font-semibold text-white underline-offset-4 hover:underline${current ? " border-b border-orange" : ""}`}
+      className={`ml-auto [[data-header-learning-hub]+&]:ml-0 pb-0.5 text-[0.8125rem] font-semibold text-white underline-offset-4 hover:underline${current ? " border-b border-orange" : ""}`}
       data-header-about
       href={href}
     >

@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { MahiraMark } from "@/components/brand/mahira";
 import { HeroCover } from "@/components/home/hero-cover";
 import { HomeAboutLink } from "@/components/home/home-about-link";
+import { HomeLearningHub, HomeNavLearningHub } from "@/components/home/home-learning-hub";
 import { LatestPublications } from "@/components/home/latest-publications";
 import { PublicationLead } from "@/components/home/publication-lead";
 import { SectionHeader } from "@/components/home/section-header";
@@ -32,7 +33,10 @@ export default function Home() {
 
   return (
     <>
-      <Header />
+      <Header
+        learningHubDesktop={cmsOn ? <HomeNavLearningHub variant="desktop" /> : undefined}
+        learningHubMobile={cmsOn ? <HomeNavLearningHub variant="mobile" /> : undefined}
+      />
       <main id="main">
         <section
           aria-labelledby="beranda-heading"
@@ -101,6 +105,8 @@ export default function Home() {
         ) : (
           <HomeSections plan={planHomepage({ status: "off" })} />
         )}
+
+        {cmsOn ? <HomeLearningHub /> : null}
 
         <section
           aria-labelledby="tentang-heading"
@@ -210,7 +216,7 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer learningHubItem={cmsOn ? <HomeNavLearningHub variant="footer" /> : undefined} />
     </>
   );
 }

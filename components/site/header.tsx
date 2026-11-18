@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Logo } from "@/components/brand/mahira";
 import { ArrowIcon, CloseIcon, MenuIcon } from "@/components/ui/icons";
@@ -32,7 +32,19 @@ function LanguageSwitcher() {
   );
 }
 
-export function Header() {
+/**
+ * `learningHubDesktop` and `learningHubMobile` (M3-12, DECISIONS §2.16
+ * decision 11A): the "Learning Hub" menu item before "Tentang", from
+ * `HomeNavLearningHub` (server components, rendered only while the
+ * Indonesian catalog exists). The homepage passes them only with the CMS on.
+ */
+export function Header({
+  learningHubDesktop,
+  learningHubMobile,
+}: {
+  learningHubDesktop?: ReactNode;
+  learningHubMobile?: ReactNode;
+} = {}) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -74,13 +86,15 @@ export function Header() {
           className="hidden items-center gap-8 lg:flex"
         >
           {navigation.map((item) => (
-            <a
-              className="text-[0.8125rem] font-semibold text-white underline-offset-4 transition-colors hover:underline"
-              href={item.href}
-              key={item.href}
-            >
-              {item.label}
-            </a>
+            <Fragment key={item.href}>
+              {item.href === "#tentang" ? learningHubDesktop : null}
+              <a
+                className="text-[0.8125rem] font-semibold text-white underline-offset-4 transition-colors hover:underline"
+                href={item.href}
+              >
+                {item.label}
+              </a>
+            </Fragment>
           ))}
         </nav>
 
@@ -119,16 +133,19 @@ export function Header() {
             <nav aria-label="Navigasi seluler">
               <ul className="divide-y divide-white/15 border-y border-white/15">
                 {navigation.map((item) => (
-                  <li key={item.href}>
-                    <a
-                      className="flex items-center justify-between py-4 text-base font-semibold text-white"
-                      href={item.href}
-                      onClick={closeMenu}
-                    >
-                      {item.label}
-                      <ArrowIcon className="h-4 w-4 text-white/60" />
-                    </a>
-                  </li>
+                  <Fragment key={item.href}>
+                    {item.href === "#tentang" ? learningHubMobile : null}
+                    <li>
+                      <a
+                        className="flex items-center justify-between py-4 text-base font-semibold text-white"
+                        href={item.href}
+                        onClick={closeMenu}
+                      >
+                        {item.label}
+                        <ArrowIcon className="h-4 w-4 text-white/60" />
+                      </a>
+                    </li>
+                  </Fragment>
                 ))}
               </ul>
             </nav>

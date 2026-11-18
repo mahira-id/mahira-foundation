@@ -96,6 +96,8 @@ export type Dictionary = {
     read: string;
     /** The catalog link in a guide page's breadcrumb. */
     backToCatalog: string;
+    /** Link to the catalog under the homepage block (decision 11A). */
+    viewAll: string;
   };
   /**
    * Not-found page of the locale-prefixed pages (app/[locale]/not-found.tsx,
@@ -190,6 +192,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       play: (title) => `Putar: ${title}`,
       read: "Baca panduan",
       backToCatalog: "Learning Hub",
+      viewAll: "Lihat semua materi",
     },
     notFound: {
       title: "Halaman tidak ditemukan",
@@ -277,6 +280,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       play: (title) => `Play: ${title}`,
       read: "Read the guide",
       backToCatalog: "Learning Hub",
+      viewAll: "View all resources",
     },
     notFound: {
       title: "Page not found",

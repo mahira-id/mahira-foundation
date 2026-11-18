@@ -315,6 +315,37 @@ describe("Learning Hub (M3-11/12: resources, catalog, guide pages, YouTube IDs, 
     }
   });
 
+  test("LHUI1a no catalog: no Learning Hub link in the header of the locale pages and no menu item in the homepage header and footer", async (t) => {
+    for (const locale of ["id", "en"] as const) {
+      if (realCatalog[locale]) {
+        t.diagnostic(`OBSERVED: real resources are visible in ${locale}; the no-menu check is skipped there`);
+        continue;
+      }
+      const index = await getPage(`/${locale}/publications`);
+      assert.equal(index.status, 200, `GET /${locale}/publications ${pageFact(index)}`);
+      // The attribute, not the substring: the About link's class list names the selector `[data-header-learning-hub]+&`.
+      assert.equal(index.body.includes('data-header-learning-hub="'), false, `/${locale}/publications: Learning Hub header link`);
+      assert.equal(index.body.includes(`/${locale}/learning-hub`), false, `/${locale}/publications: link to /${locale}/learning-hub`);
+    }
+    if (realCatalog.id) return;
+    const home = await getPage("/");
+    assert.equal(home.status, 200, `GET / ${pageFact(home)}`);
+    assert.equal(home.body.includes("data-home-nav-learning-hub"), false, "/: Learning Hub menu item (header or footer)");
+    assert.equal(home.body.includes("/learning-hub"), false, "/: any link to a Learning Hub page");
+  });
+
+  test("LHUI2a no catalog: no Learning Hub block on the homepage", async (t) => {
+    if (realCatalog.id) {
+      t.diagnostic("OBSERVED: real resources are visible in id; the no-block check is skipped");
+      return;
+    }
+    const home = await getPage("/");
+    assert.equal(home.status, 200, `GET / ${pageFact(home)}`);
+    assert.equal(home.body.includes("data-home-learning-hub"), false, "/: Learning Hub block");
+    assert.equal(home.body.includes("data-home-learning-card"), false, "/: Learning Hub card");
+    assert.equal(home.body.includes("Learning Hub"), false, "/: the text 'Learning Hub'");
+  });
+
   test("LH1 an unpublished resource is not public: no anonymous Local API read, no catalog", async () => {
     ids.draft = await createResource(
       "id",
@@ -475,6 +506,100 @@ describe("Learning Hub (M3-11/12: resources, catalog, guide pages, YouTube IDs, 
       assert.equal(result.status, 200, `GET ${path} ${pageFact(result)}`);
       for (const name of STAFF_ONLY) assert.equal(result.body.includes(name), false, `"${name}" in ${path}`);
     }
+  });
+
+  test("LHUI1b a catalog exists: the Learning Hub link is in the header of the locale pages (current only on the catalog) and the homepage has the menu items", async () => {
+    for (const locale of ["id", "en"] as const) {
+      const index = await getPage(`/${locale}/publications`);
+      assert.equal(index.status, 200, `GET /${locale}/publications ${pageFact(index)}`);
+      const links = tags(index.body, "a").filter((tag) => "data-header-learning-hub" in tag);
+      assert.deepEqual(links.map((tag) => tag.href), [`/${locale}/learning-hub`], `/${locale}/publications header link`);
+      assert.equal("aria-current" in (links[0] as Attributes), false, "not current on another page");
+      const onCatalog = tags((await catalog(locale)).body, "a").filter((tag) => "data-header-learning-hub" in tag);
+      assert.deepEqual(onCatalog.map((tag) => tag.href), [`/${locale}/learning-hub`], `/${locale}/learning-hub header link`);
+      assert.equal((onCatalog[0] as Attributes)["aria-current"], "page", "current on the catalog");
+    }
+    const guideLinks = tags((await guidePage("id", GUIDE_SLUG.id)).body, "a").filter((tag) => "data-header-learning-hub" in tag);
+    assert.deepEqual(guideLinks.map((tag) => tag.href), ["/id/learning-hub"], "guide page header link");
+    assert.equal("aria-current" in (guideLinks[0] as Attributes), false, "not current on a guide page");
+
+    // Homepage (Indonesian): the desktop nav and the footer list (the mobile list renders only when open).
+    const home = await getPage("/");
+    assert.equal(home.status, 200, `GET / ${pageFact(home)}`);
+    const items = tags(home.body, "a").filter((tag) => "data-home-nav-learning-hub" in tag);
+    assert.equal(items.length >= 2, true, `homepage menu items: ${items.length}`);
+    for (const item of items) assert.equal(item.href, "/id/learning-hub", "homepage menu item href");
+    assert.equal(home.body.includes('href="/en/learning-hub"'), false, "the Indonesian homepage never links to the EN catalog");
+  });
+
+  test("LHUI2b the homepage block: the 3 newest Indonesian resources (guide, video, playlist; the 4th stays out), newest first, the global's H1 and first intro paragraph, link to the catalog", async (t) => {
+    // A 4th (oldest) published resource: it must not reach the block. Deleted right after the read so later tests see the same catalog.
+    const extra = await createResource(
+      "id",
+      { type: "video", materialLanguage: "id", title: fx("id", "X", "title"), summary: fx("id", "X", "summary"), youtubeId: VIDEO_URL, publishedAt: "2089-12-01T00:00:00.000Z" },
+      "published",
+    );
+    let home: PageResult;
+    try {
+      home = await getPage("/");
+    } finally {
+      await p().delete({ collection: "learning-resources", id: extra, overrideAccess: true });
+    }
+    assert.equal(home.status, 200, `GET / ${pageFact(home)}`);
+    const html = home.body;
+    const types = [...html.matchAll(/data-home-learning-card="([^"]+)"/g)].map((match) => match[1] as string);
+    assert.equal(html.match(/<section[^>]*\sdata-home-learning-hub="/g)?.length, 1, "one block");
+    assert.equal(types.length <= 3, true, `at most 3 cards: ${types.length}`);
+    if (realCatalog.id) {
+      t.diagnostic("OBSERVED: real resources are visible in id; the card order and the fixture texts are not asserted");
+      return;
+    }
+    assert.deepEqual(types, ["guide", "video", "playlist"], "newest first");
+    for (const tag of ["G", "V", "P"]) assert.equal(html.includes(fx("id", tag, "title")), true, `card ${tag}`);
+    assert.equal(html.includes(fx("id", "X", "title")), false, "the 4th resource is not on the homepage");
+    assert.equal(html.includes(fx("id", "D", "title")), false, "the draft is not on the homepage");
+    const block = /<section[^>]*\sdata-home-learning-hub[^>]*>([\s\S]*?)<\/section>/.exec(html)?.[1] ?? "";
+    assert.deepEqual(texts(block, "h2"), [fx("id", "H", "H1")], "block title = the ID global's H1");
+    assert.equal(block.includes(`>${fx("id", "H", "intro one")}<`), true, "block description = the first intro paragraph");
+    assert.equal(block.includes(fx("id", "H", "intro two")), false, "only the first paragraph");
+    const links = tags(block, "a");
+    assert.deepEqual(links.filter((tag) => "data-home-learning-hub-link" in tag).map((tag) => tag.href), ["/id/learning-hub"], "link to the catalog");
+    assert.equal(links.some((tag) => tag.href === `/id/learning-hub/${GUIDE_SLUG.id}`), true, "the guide card links to its page");
+    assert.equal(links.some((tag) => tag.href === `https://www.youtube.com/watch?v=${VIDEO_ID}`), true, "the video card links to YouTube (built from the ID)");
+    assert.equal(block.includes("<iframe"), false, "no iframe on the homepage");
+    assert.equal(html.includes("fixturetracking"), false, "no editor URL parameter on the homepage");
+  });
+
+  test("LHUI3 catalog and guide structure: no iframe before the click, a play button per video and playlist, i.ytimg.com only for a video, one H1, theme H2, card H3, guide sections with the shared markup", async () => {
+    const result = await catalog("id");
+    assert.equal(result.status, 200, `GET /id/learning-hub ${pageFact(result)}`);
+    const html = result.body;
+    assert.equal(html.includes("<iframe"), false, "an iframe before any click");
+    assert.equal(texts(html, "h1").length, 1, "one H1");
+    const theme = themeSection(html, topic());
+    assert.ok(theme, "fixture theme section");
+    assert.equal(theme.match(/<h2[\s>]/g)?.length, 1, "one H2 per theme (the Topic name)");
+    assert.equal(theme.match(/<h3[\s>]/g)?.length, 3, "one H3 per card");
+    const buttons = [...theme.matchAll(/<button\s[^>]*>/g)].map((match) => attributes(match[0])).filter((tag) => "data-lh-play" in tag);
+    assert.deepEqual(buttons.map((tag) => tag["aria-label"]).sort(), [`Putar: ${fx("id", "P", "title")}`, `Putar: ${fx("id", "V", "title")}`], "play buttons with an accessible name");
+    for (const tag of buttons) assert.equal(tag.type, "button", "the play control is a button");
+    const images = [...theme.matchAll(/<img\s[^>]*>/g)].map((match) => attributes(match[0]).src ?? "");
+    assert.deepEqual(images.filter((src) => src.includes("ytimg.com")), [`https://i.ytimg.com/vi/${VIDEO_ID}/hqdefault.jpg`], "only the video uses YouTube's image server");
+    assert.equal(theme.includes(PLAYLIST_ID) && theme.includes("ytimg.com/vi/" + PLAYLIST_ID), false, "no thumbnail URL for a playlist");
+    assert.equal(theme.includes("publication-cover"), true, "the playlist without an image gets the typographic cover");
+    assert.deepEqual([...theme.matchAll(/data-lh-language="([^"]+)"/g)].map((match) => match[1]), ["en", "id", "id"], "'Bahasa materi' label per card");
+
+    const page = await guidePage("id", GUIDE_SLUG.id);
+    assert.equal(page.status, 200, `GET guide ${pageFact(page)}`);
+    const body = page.body;
+    assert.equal(body.includes("<iframe"), false, "an iframe on a guide page");
+    assert.equal(texts(body, "h1").length, 1, "guide: one H1");
+    assert.equal(body.match(/<section[^>]*\sdata-lh-section/g)?.length, 2, "one section[data-lh-section] per section");
+    assert.equal(body.includes("data-lh-quote"), true, "blockquote marker");
+    assert.equal(body.includes('data-lh-list="numbered"'), true, "numbered list marker");
+    assert.equal(body.includes("<ol"), true, "numbered list is an <ol>");
+    assert.equal(body.includes("data-about-"), false, "the About markers stay on the About page");
+    assert.equal(body.includes("data-lh-language"), true, "guide 'Bahasa materi' label");
   });
 
   test("LH4 a non-YouTube, look-alike or malformed source is refused (Local API and Editor REST, drafts too); a valid URL stores only the ID", async () => {
