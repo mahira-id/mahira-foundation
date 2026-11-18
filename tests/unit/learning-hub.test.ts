@@ -240,6 +240,9 @@ describe("lib/learning-hub/youtube.ts and the save hook", () => {
       ["video", `https://www.youtube.com/embed/${VIDEO}/extra`],
       ["video", `https://youtu.be/a/${VIDEO}`],
       ["video", `https://www.youtube.com/playlist?list=${PLAYLIST}`],
+      ["video", `https://www.youtube.com/embed/videoseries?list=${PLAYLIST}`],
+      ["video", `https://www.youtube-nocookie.com/embed/videoseries?list=${PLAYLIST}`],
+      ["video", "videoseries"],
       ["video", `https://www.youtube.com/watch?v=${VIDEO}${"a".repeat(2048)}`],
       ["video", "dQw4w9WgXc"],
       ["video", "dQw4w9WgXc!"],
@@ -262,7 +265,7 @@ describe("lib/learning-hub/youtube.ts and the save hook", () => {
     assert.equal(watchUrl("video", VIDEO), `https://www.youtube.com/watch?v=${VIDEO}`);
     assert.equal(watchUrl("playlist", PLAYLIST), `https://www.youtube.com/playlist?list=${PLAYLIST}`);
     assert.equal(videoThumbnailUrl(VIDEO), `https://i.ytimg.com/vi/${VIDEO}/hqdefault.jpg`);
-    for (const bad of [`https://youtu.be/${VIDEO}`, "x\"><script>", null, PLAYLIST]) {
+    for (const bad of [`https://youtu.be/${VIDEO}`, "x\"><script>", null, PLAYLIST, "videoseries"]) {
       assert.equal(embedUrl("video", bad), null, `embed ${String(bad)}`);
       assert.equal(watchUrl("video", bad), null, `watch ${String(bad)}`);
       assert.equal(videoThumbnailUrl(bad), null, `thumbnail ${String(bad)}`);
@@ -298,6 +301,24 @@ describe("lib/learning-hub/youtube.ts and the save hook", () => {
     assert.equal(call({ type: "video", youtubeId: null }).youtubeId, null);
     assert.equal("youtubeId" in call({ title: "x" }, { type: "video", youtubeId: VIDEO }), false, "not sent: stored ID untouched");
     assert.equal(call({ type: "playlist" }, { type: "video", youtubeId: VIDEO }).youtubeId, null, "type changed: stored ID cleared");
+    for (const _status of ["draft", "published"]) {
+      assert.equal(
+        call({ _status, type: "playlist", youtubeId: VIDEO }, { type: "video", youtubeId: VIDEO }).youtubeId,
+        null,
+        `${_status}: video -> playlist with the stored video ID re-sent (admin form): cleared, never kept as a playlist ID`,
+      );
+      assert.equal(
+        call({ _status, type: "video", youtubeId: PLAYLIST }, { type: "playlist", youtubeId: PLAYLIST }).youtubeId,
+        null,
+        `${_status}: playlist -> video with the stored playlist ID re-sent: cleared`,
+      );
+    }
+    assert.equal(
+      call({ type: "playlist", youtubeId: `https://www.youtube.com/playlist?list=${PLAYLIST}` }, { type: "video", youtubeId: VIDEO }).youtubeId,
+      PLAYLIST,
+      "type changed with a new source: parsed for the new type",
+    );
+    assert.equal(call({ type: "video", youtubeId: VIDEO }, { type: "video", youtubeId: VIDEO }).youtubeId, VIDEO, "same type, ID re-sent: kept");
     assert.equal("youtubeId" in call({ type: "video" }, { type: "video", youtubeId: VIDEO }), false, "same type: untouched");
     assert.equal(call({ youtubeId: `https://youtu.be/${VIDEO}` }, { type: "video" }).youtubeId, VIDEO, "stored type used");
 
@@ -333,6 +354,7 @@ describe("lib/learning-hub/catalog-view.ts", () => {
       ["video without ID", { youtubeId: null }],
       ["video with a URL", { youtubeId: `https://youtu.be/${VIDEO}` }],
       ["video with a playlist ID", { youtubeId: PLAYLIST }],
+      ["video with the playlist embed segment", { youtubeId: "videoseries" }],
       ["playlist with a bad ID", { type: "playlist", youtubeId: "short" }],
       ["guide without slug", { type: "guide", slug: null, youtubeId: null }],
       ["guide with a bad slug", { type: "guide", slug: "Bad Slug", youtubeId: null }],

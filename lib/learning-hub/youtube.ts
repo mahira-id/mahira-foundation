@@ -33,8 +33,17 @@ export const YOUTUBE_HOSTS: ReadonlySet<string> = new Set([
 /** Path prefixes of a single video on youtube.com / youtube-nocookie.com: `/<prefix>/<id>`. */
 const VIDEO_PATH_PREFIXES = new Set(["embed", "shorts", "live"]);
 
+/**
+ * The path segment of a playlist embed (`/embed/videoseries?list=…`). It
+ * has the shape of a video ID (11 characters) but is never one, so a
+ * playlist embed URL saved as a video is refused instead of being stored
+ * as the ID `videoseries`.
+ */
+const PLAYLIST_EMBED_SEGMENT = "videoseries";
+
 export function isYouTubeId(kind: YouTubeKind, value: unknown): value is string {
-  return typeof value === "string" && (kind === "video" ? YOUTUBE_VIDEO_ID : YOUTUBE_PLAYLIST_ID).test(value);
+  if (typeof value !== "string") return false;
+  return kind === "video" ? YOUTUBE_VIDEO_ID.test(value) && value !== PLAYLIST_EMBED_SEGMENT : YOUTUBE_PLAYLIST_ID.test(value);
 }
 
 /** The only value of a query parameter, or null when it is missing or repeated. */
@@ -60,7 +69,8 @@ function videoIdOf(url: URL): string | null {
  *   `youtu.be/<id>`;
  * - playlist: the `list=<id>` parameter (`/playlist?list=…`,
  *   `/watch?v=…&list=…`, `/embed/videoseries?list=…`).
- * The ID must then match YOUTUBE_VIDEO_ID or YOUTUBE_PLAYLIST_ID.
+ * The ID must then match YOUTUBE_VIDEO_ID (and not be `videoseries`) or
+ * YOUTUBE_PLAYLIST_ID.
  */
 export function parseYouTubeSource(kind: YouTubeKind, input: unknown): string | null {
   if (typeof input !== "string") return null;

@@ -26,18 +26,19 @@ function kindOf(type: unknown): YouTubeKind | null {
  *   An empty value is stored as null (publishing then needs one: the field's
  *   `validate`).
  * - Any other type (guide, toolkit, none chosen yet): `youtubeId` is null.
- * - Not sent in this save: the stored ID stays, unless the save changes the
- *   type (then it is cleared, so a video ID never stays as a playlist ID).
+ * - The save changes the type (video <-> playlist) and the stored ID is not
+ *   replaced (not sent, or sent unchanged, as the admin form does): the ID
+ *   is cleared, so a video ID never stays as a playlist ID or the reverse.
+ * - Not sent in this save, type unchanged: the stored ID stays.
  */
 export const normalizeYouTubeSource: CollectionBeforeChangeHook = ({ data, originalDoc, req }) => {
   const sentType: unknown = data.type;
   const kind = kindOf(sentType ?? originalDoc?.type);
   if (!kind) return { ...data, youtubeId: null };
   const raw: unknown = data.youtubeId;
-  if (raw === undefined) {
-    const typeChanged = sentType !== undefined && sentType !== originalDoc?.type;
-    return typeChanged ? { ...data, youtubeId: null } : data;
-  }
+  const typeChanged = sentType !== undefined && sentType !== originalDoc?.type;
+  if (raw === undefined) return typeChanged ? { ...data, youtubeId: null } : data;
+  if (typeChanged && raw === originalDoc?.youtubeId) return { ...data, youtubeId: null };
   if (raw === null || (typeof raw === "string" && raw.trim() === "")) return { ...data, youtubeId: null };
   const id = parseYouTubeSource(kind, raw);
   if (id === null) {
