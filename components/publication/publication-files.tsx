@@ -63,7 +63,10 @@ export function PublicationFiles({
                 ) : null}
                 <span>
                   <span className="sr-only">{`${labels.documentLanguage}: `}</span>
-                  <span lang={file.language}>{languageLabel ? languageLabel(file.language) : fileLanguageLabel(file.language, locale)}</span>
+                  {/* The endonym carries the document's lang; a custom label is in the page language and must not. */}
+                  <span lang={languageLabel ? undefined : file.language}>
+                    {languageLabel ? languageLabel(file.language) : fileLanguageLabel(file.language, locale)}
+                  </span>
                 </span>
                 <span aria-hidden="true">·</span>
                 <span>{fileFormatLabel(file.sizeBytes, locale)}</span>

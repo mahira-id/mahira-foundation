@@ -686,9 +686,10 @@ describe("toolkit files and the toolkit download (M3-13: private bucket under to
   }
 
   /** Panel rows in document order: file id, link href (null without a link) and the visible text. */
-  function panelRows(html: string): { id: number; href: string | null; text: string }[] {
+  function panelRows(html: string): { id: number; href: string | null; text: string; html: string }[] {
     return [...html.matchAll(/<li[^>]*\sdata-publication-file="(\d+)"[^>]*>([\s\S]*?)<\/li>/g)].map((match) => ({
       id: Number(match[1]),
+      html: match[2] as string,
       href: /<a[^>]*\shref="([^"]+)"/.exec(match[2] as string)?.[1] ?? null,
       text: strip(match[2] as string),
     }));
@@ -750,6 +751,17 @@ describe("toolkit files and the toolkit download (M3-13: private bucket under to
       assert.ok((second as string).includes(`${LABEL}${locale} u2`), `${locale}: second label`);
       assert.ok((first as string).includes(locale === "id" ? "Berbahasa Indonesia" : "In Indonesian"), `${locale}: u1 is an Indonesian document`);
       assert.ok((second as string).includes(locale === "id" ? "Berbahasa Inggris" : "In English"), `${locale}: u2 is an English document`);
+      // The language label is written in the page language, so it must not carry the document's `lang`
+      // (WCAG 2.2 SC 3.1.2): a screen reader would read "In Indonesian" with an Indonesian voice.
+      const [firstRow, secondRow] = rows;
+      for (const [row, label] of [
+        [firstRow, locale === "id" ? "Berbahasa Indonesia" : "In Indonesian"],
+        [secondRow, locale === "id" ? "Berbahasa Inggris" : "In English"],
+      ] as const) {
+        const span = new RegExp(`<span([^>]*)>${label}</span>`).exec(row?.html ?? "");
+        assert.ok(span, `${locale}: the language label “${label}” is its own span`);
+        assert.equal(/\slang=/.test(span[1] as string), false, `${locale}: the language label “${label}” carries no lang attribute (page language ${locale})`);
+      }
       for (const name of ["u1", "u2"]) {
         assert.equal(html.includes(fileName(name)), false, `${locale}: stored file name of ${name} in the HTML`);
       }
