@@ -41,6 +41,7 @@ Menjadikan publikasi mudah ditemukan dan dibagikan tanpa membuka aset/file yang 
 - Index only if it contains enough useful, curated content.
 
 ### Learning resource
+- Diterapkan di M3-12 (§13): katalog dan panduan punya metadata; video, playlist, dan toolkit tidak punya halaman sendiri.
 - Title, description, thumbnail, format/provider, and dates where relevant.
 - Do not claim course accreditation or learning outcomes without source.
 
@@ -109,3 +110,15 @@ Keputusan Owner M3-09 (DECISIONS §2.15 keputusan 8) diterapkan di branch `feat/
 - **CMS mati:** `/id/about` dan `/en/about` 404 + `noindex` (gerbang `proxy.ts`); Production tetap demikian sampai M4.
 - **§5:** tanpa structured data/JSON-LD (keputusan M3-07 6 tetap).
 - Teks HTML tidak memuat `enReady` atau `_status` (AB9).
+
+## 13. Implementasi M3-12 (2026-11-17)
+
+Keputusan Owner M3-11/M3-12 (DECISIONS §2.16 keputusan 13) diterapkan di branch `feat/m3-11-12-learning-hub`; halaman di PAGE-SPECIFICATIONS §9, route di IA-ROUTING-I18N §3.1, uji di TEST-PLAN §12.2 (LH2, LH3, LH8, LH9, LHU7, G5.7–G5.10, G6.5).
+- **§2, §3 (katalog `/{locale}/learning-hub`):** dapat diindeks selama katalog locale itu ada. `<title>` absolut = judul SEO global `learning-hub` bila terbit, selain itu H1 dengan templat nama situs; deskripsi = deskripsi SEO, selain itu paragraf pertama pengantar (global kosong → tanpa deskripsi; agen tidak menulis teks). Canonical `https://mahira.id/{locale}/learning-hub`; hreflang `id`/`en` hanya bila kedua katalog ada; Open Graph `website` dengan gambar `/og/site`.
+- **§2, §3 (panduan `/{locale}/learning-hub/{slug}`):** `<title>` = judul panduan dengan templat nama situs, deskripsi = ringkasan, canonical ke dirinya sendiri, hreflang hanya bila panduan tampil di kedua locale (slug boleh berbeda per locale), Open Graph `article` dengan `/og/site`. Pratinjau draf: `noindex, nofollow`, tanpa canonical.
+- **Video dan playlist tidak punya URL sendiri**; mereka tidak masuk sitemap dan tidak punya metadata halaman. Toolkit tidak pernah tampil sampai M3-13.
+- **§7:** sitemap memuat katalog tiap locale yang ada dan setiap panduan yang tampil, dengan `lastmod`; tidak memuat draf, video, playlist, atau toolkit. Dibaca saat request, jadi publish dan unpublish terlihat pada request berikutnya.
+- **CMS mati:** kedua route 404 + `noindex` (gerbang `proxy.ts`, matcher 8 entri); Production tetap demikian sampai M4.
+- **§5:** tanpa structured data/JSON-LD, termasuk `VideoObject` (konsisten dengan PUB-OQ-39 dan keputusan M3-07 6).
+- **Privasi (untuk M4-02):** thumbnail video dimuat dari `i.ytimg.com` dan iframe dari `youtube-nocookie.com` hanya setelah klik; kebijakan privasi harus menyebut YouTube/Google (IP terlihat, tanpa cookie sebelum klik).
+- Teks HTML tidak memuat `enReady`, `_status`, atau field staf lain (LH11).

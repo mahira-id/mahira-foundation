@@ -150,9 +150,35 @@ Koleksi upload Payload `publication-files` (`payload/collections/PublicationFile
 
 ### 4.5 LearningResource
 
-**Status (2026-11-12):** cakupan launch disetujui (DEC-014; DECISIONS §2.8 Q2 A): video/playlist YouTube, panduan, dan toolkit unduhan publik, dikelompokkan per tema. Field di bawah tetap usulan; `downloadable` = toolkit. Relasi ke Topic, model bilingual, dan penyimpanan file toolkit OPEN (M3-11).
+**Status (2026-11-17):** cakupan launch disetujui (DEC-014; DECISIONS §2.8 Q2 A) dan detailnya diputuskan (DECISIONS §2.16 keputusan 2–6, 8–11); diterapkan di M3-11 (model) dan M3-12 (halaman). Draf lama ("Proposed fields" dengan `resourceType` `reading`/`external_link`/`downloadable`, `provider`, relasi ke publikasi) digantikan oleh tabel di bawah. Tanpa relasi ke publikasi di M3 (keputusan 14).
 
-Proposed fields: `id`, localized `title`, `slug`, `description`, `resourceType` (video, playlist, reading, external_link, downloadable), `provider`, `externalUrl/embedId`, thumbnail asset, topics/desks, related publications, locale, status, publishedAt, SEO fields. Validate embed host against allowlist; never accept arbitrary iframe HTML from editors without sanitization.
+Koleksi Payload `learning-resources` (`payload/collections/LearningResources.ts`, label admin "Materi Learning Hub"). **Satu record per materi dengan field berlokalisasi ID/EN dan fallback mati** (keputusan 5), seperti About dan Topic. Ini berbeda dari model publikasi (DEC-004: record ID dan EN terpisah yang saling terhubung).
+
+| Field | Tipe | Lokalisasi | Catatan |
+|---|---|---|---|
+| `type` | select: `video`, `playlist`, `guide`, `toolkit` | bersama | Wajib (keputusan 2). |
+| `title` | teks | per locale | Wajib. |
+| `summary` | textarea | per locale | Wajib; teks kartu dan meta description panduan. |
+| `slug` | teks | per locale, `unique` | Unik per `(slug, _locale)` (indeks `lh_resources_slug_idx`); wajib hanya untuk `guide` dan `toolkit` (pola `SLUG_PATTERN`); tidak dipakai video/playlist. Slug terbit tidak boleh diubah (belum ada riwayat slug). |
+| `materialLanguage` | select `id`/`en` | bersama | "Bahasa materi"; wajib; label di kedua locale. |
+| `topic` | relasi ke `topics` (satu) | bersama | Wajib; tema utama (keputusan 4). Topic tidak aktif atau tanpa nama di locale itu → materi tersembunyi. |
+| `youtubeId` | teks | bersama | Hanya video/playlist. Editor menempel URL; hook `normalizeYouTubeSource` menyimpan **hanya ID** (video `^[A-Za-z0-9_-]{11}$`, playlist `^[A-Za-z0-9_-]{10,64}$`) dan menolak host selain allowlist (`youtube.com`, `www.`, `m.`, `youtu.be`, `youtube-nocookie.com`, `www.youtube-nocookie.com`; `http(s)`, tanpa userinfo dan port, ≤ 2048 karakter) dengan `ValidationError` pada `youtubeId`. Berjalan di setiap simpan, draf juga (Payload melewati `validate` pada simpan draf). Jenis lain: `null`. |
+| `coverImage` | upload ke `media` | bersama | Opsional, hanya playlist; tanpa gambar kartu memakai sampul tipografi. |
+| `sections[]` | array seksi | per locale | Hanya `guide`/`toolkit`; model seksi About tanpa CTA (`structuredSectionsField()` di `payload/fields/structured-sections.ts`, DATA-MODEL §4.6.1), tanpa gambar dan rich-text (keputusan 3). |
+| `sortOrder` | angka | bersama | Opsional; kecil lebih dulu dalam satu tema, tanpa angka setelahnya. |
+| `publishedAt` | tanggal | bersama | Terisi saat terbit bila kosong (`setResourcePublishedAt`); mengurutkan terbaru dulu. |
+| `enReady` | checkbox | bersama | "Versi EN siap tayang"; default mati; hanya staf. |
+| `_status` | draft/published | bersama | `versions: { drafts: true, maxPerDoc: 25 }`; satu status untuk ID dan EN. |
+
+- **Akses:** staf (Editor/Admin) membaca semuanya; Local API anonim hanya `_status = published` **dan** `type in (video, playlist, guide)` (`PUBLIC_LEARNING_RESOURCE_READ` di `payload/access/public-read.ts`), jadi toolkit tidak pernah publik sebelum M3-13 (keputusan 9); REST/GraphQL anonim ditolak; `create`/`update`/`readVersions` staf; `delete` hanya Admin (DEC-016). Hook `denyPublicFallback` menolak fallback locale pada pembacaan anonim. Pembacaan publik hanya lewat `lib/cms/public-content.ts` (`overrideAccess: false`, `fallbackLocale: false`).
+- **Penayangan:** `isResourceVisible(doc, locale)` (`lib/learning-hub/catalog-view.ts`): published, jenis publik, judul dan ringkasan locale itu, slug valid (panduan) atau ID YouTube valid (video/playlist), Topic aktif dan bernama; EN juga `enReady`. Katalog suatu locale ada hanya bila ≥ 1 materi tampil (keputusan 11).
+- **URL YouTube** (embed `youtube-nocookie.com`, tautan tonton, thumbnail `i.ytimg.com`) selalu dibangun dari ID tersimpan (`lib/learning-hub/youtube.ts`); URL mentah editor tidak pernah disimpan atau dirender.
+- **Toolkit (diputuskan sekarang, dibangun di M3-13).** `type: "toolkit"` sudah ada (judul, ringkasan, slug, seksi) tetapi tidak publik. M3-13 menambah koleksi unggahan `toolkit-files` di bucket privat yang sama `publication-files` (prefix `toolkits/`), hanya PDF, tanpa access level, unduhan attachment dengan signed URL 60 detik seperti M3-08 (DECISIONS §2.16 keputusan 9), field `file` pada materi, dan pelebaran filter baca publik. Format selain PDF butuh Owner melebarkan daftar MIME bucket dan keputusan baru.
+- **Penyimpanan:** migrasi `20261117_182752_m3_11_learning_hub` menambah 14 tabel (`lh_resources`, `lh_resources_locales`, `lh_resources_sections`, `lh_resources_sections_lists`, `lh_resources_sections_lists_items`, lima tabel versi `_lh_resources_v*`, `learning_hub`, `learning_hub_locales`, `_learning_hub_v`, `_learning_hub_v_locales`) dan 12 enum, plus kolom nullable `payload_locked_documents_rels.lh_resources_id`; RLS aktif di `up()` (DEC-007), `IF EXISTS` di `down()`. Nama tabel `lh_resources` lewat `dbName` karena nama bawaan menghasilkan nama indeks 64 karakter (batas Postgres 63). Diterapkan ke `mahira-cms`; tabel About dan publikasi tidak disentuh.
+
+#### 4.5.1 Global `learning-hub` (teks katalog, M3-12)
+
+Global Payload `payload/globals/LearningHub.ts` (keputusan 10): `hero.title` (wajib), `hero.intro`, `seo.title`, `seo.description`, semuanya per locale (fallback mati); `versions: { drafts: true, max: 25 }`; akses seperti About (anonim hanya published, REST/GraphQL anonim ditolak, `update` staf). Owner mengisinya; agen tidak menulis teks. Global ini **tidak** menentukan apakah katalog ada: tanpa H1 terbit halaman memakai "Learning Hub", dan katalog ada hanya dengan materi yang tampil. Tanpa kotak EN dan tanpa pratinjau.
 
 ### 4.6 Page
 

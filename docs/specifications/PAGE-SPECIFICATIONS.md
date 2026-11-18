@@ -29,7 +29,7 @@ Homepage hanya ada di `/` dan hanya menampilkan publikasi `locale: id`; bare `/i
 3. Publication lead: satu publikasi unggulan dengan cover, type, title, summary, authors, date, access label.
 4. Latest publications: editorial list/feature layout; link ke katalog.
 5. Topics (Bidang Kerja, DEC-003): tampilkan hanya taksonomi aktif dan terkurasi.
-6. Learning Hub teaser: hanya jika katalog memiliki materi nyata. Mulai M3-12 (DECISIONS §2.7 P2 A); sampai saat itu blok dan item menu "Learning Hub" (header, footer) tidak tampil.
+6. Learning Hub teaser: hanya jika katalog ID memiliki materi yang tampil. Diterapkan di M3-12 (DECISIONS §2.16 keputusan 11; §2.7 P2 A terpenuhi): blok `data-home-learning-hub` (sampai 3 materi ID terbaru, tautan ke `/id/learning-hub`; §9.3) di antara seksi CMS dan `#tentang`, dan item menu "Learning Hub" di header (desktop dan seluler) dan footer sebelum "Tentang". Blok dan item tampil bersama atau tidak sama sekali; dengan CMS mati, di Production, atau tanpa materi, tidak ada teks maupun tautan "Learning Hub" (gerbang G1).
 7. About/impact: fakta dan klaim harus memiliki sumber/approval. M3-09: seksi `#tentang` tetap statis dan mendapat tautan "Selengkapnya tentang Mahira" ke `/id/about`, tampil hanya bila About ID tampil (§11).
 8. Footer: legal, contact, social links yang valid.
 
@@ -47,7 +47,7 @@ Implementasi M3-04 (DECISIONS §2.7):
 
 ### States
 - Jika belum ada featured item, gunakan layout latest publications tanpa placeholder klaim.
-- Jika learning hub kosong, sembunyikan blok atau tampilkan state editorial yang disetujui.
+- Jika learning hub kosong, sembunyikan blok (diputuskan: blok dan item menu disembunyikan, DECISIONS §2.16 keputusan 11).
 - Error pada satu section tidak harus menjatuhkan seluruh homepage; tentukan graceful degradation.
 - M3-04 (DECISIONS §2.7 P1 A, P3 A):
   - **CMS mati** (tanpa env, atau `VERCEL_ENV=production`): `/` tetap 200 dengan blok statis; blok Publikasi berisi "Belum ada publikasi yang terbit. Publikasi akan tampil di sini setelah diterbitkan."; Indeks dan Bidang kerja tidak tampil.
@@ -203,9 +203,31 @@ Not a public page, but a critical operational surface. Required groups: core met
 
 **Cakupan launch (DECISIONS §2.8 Q2 A):** katalog per tema, embed video/playlist YouTube, panduan, dan toolkit yang dapat diunduh publik; semua tanpa login; tanpa progress, kuis, atau sertifikat. Referensi struktur: https://www.cips-indonesia.org/cips-learning-hub (identitas dan aset tidak disalin).
 
-**OPEN (M3-11):** model konten dan jenis materi, relasi tema ke Topic/"Bidang kerja", model bilingual, route (IA-ROUTING-I18N §3.1), penyimpanan file toolkit, serta halaman detail per materi vs embed langsung di katalog. Hierarki di bawah adalah baseline lama dan ditinjau ulang di M3-11.
+**Diputuskan 2026-11-17 (DECISIONS §2.16; sebelumnya OPEN di M3-11) dan diterapkan di M3-12.** Model data: DATA-MODEL §4.5. Route: IA-ROUTING-I18N §3.1. SEO: SEO-SPECIFICATION §13. Alur editor: EDITORIAL-WORKFLOW §9.6. Uji: TEST-PLAN §12.2 (LH1–LH11, LHUI1a–LHUI3).
 
-Index: title/intro, topic/format filters only if data exists, resource listing, empty/error/loading. Detail: title, format, summary, thumbnail, external provider/source, embed with accessible title, related publications. External embeds must respect privacy/consent requirements and should not load third-party trackers before necessary consent if policy requires.
+### 9.1 Katalog `/{locale}/learning-hub`
+
+**Audience:** public · **Auth:** none · **Indexing:** indexable selama katalog locale itu ada.
+
+- **Keberadaan.** Katalog suatu locale ada hanya bila ada minimal satu materi yang tampil (published; jenis publik; judul dan ringkasan locale itu; panduan dengan slug, video/playlist dengan ID YouTube valid; Topic aktif dan bernama; EN juga "Versi EN siap tayang"). Selain itu halaman not-found Mahira, tanpa tautan menu dan tanpa sitemap. CMS mati → 404 dari `proxy.ts`. Gagal baca → state galat (HTTP 200 + `noindex`, tautan muat ulang), tanpa host DB di HTML.
+- **Urutan blok.** Hero (H1 dan pengantar dari global Learning Hub; tanpa H1 terbit: "Learning Hub"; tanpa pengantar: tidak ada teks) → seksi "Toolkit" (`data-lh-toolkits`; kosong dan tersembunyi sampai M3-13) → satu seksi per tema (`data-lh-theme`): H2 = nama Topic, deskripsi Topic, lalu kartu materi (`data-lh-card=<jenis>`, H3 = judul). Tema diurut menurut nama Topic; kartu menurut "Urutan" (angka kecil dulu), lalu terbaru dulu. Tanpa filter dan tanpa paginasi.
+- **Kartu.** Jenis (Video, Playlist, Panduan), judul, ringkasan, label "Bahasa materi" ("Berbahasa Indonesia"/"In Indonesian" dan seterusnya; `data-lh-language`). Video dan playlist memuat pemutar; panduan menautkan "Baca panduan" ke halamannya.
+- **Facade YouTube (video dan playlist).** Sebelum klik hanya ada gambar dan tombol putar (`data-lh-play`, nama aksesibel "Putar: <judul>"); **tidak ada `<iframe>` dan tidak ada permintaan ke youtube.com**. Video memakai thumbnail `i.ytimg.com/vi/<id>/hqdefault.jpg`; playlist memakai gambar sampul unggahan editor atau sampul tipografi (`publication-cover`, `data-tone="blue"`). Klik memuat satu iframe `youtube-nocookie.com/embed/<id>?autoplay=1` (atau `videoseries?list=<id>`) dengan atribut `title` ("Video: ..."), lalu fokus pindah ke iframe. Tautan "Tonton di YouTube" (tab baru, `rel="noopener noreferrer"`) selalu ada. URL dibangun hanya dari ID yang tervalidasi; ID tidak valid → pemutar tidak dirender.
+- **Navigasi.** Header halaman `/{locale}/…` mendapat tautan "Learning Hub" sebelum "Tentang" (`data-header-learning-hub`; `aria-current` di katalog) hanya bila katalog locale itu ada. Header dan footer homepage mendapat item yang sama hanya bila katalog ID ada (homepage hanya Indonesia) dan CMS hidup.
+
+### 9.2 Panduan `/{locale}/learning-hub/{slug}`
+
+Hero (judul, ringkasan, label bahasa materi, nama tema) lalu seksi memakai komponen yang sama dengan About (`components/content/structured-sections.tsx`, penanda `data-lh-*`): label, judul, paragraf, daftar, kutipan; tanpa CTA, tanpa gambar. Tautan "Learning Hub" kembali ke katalog. Panduan yang tidak tampil atau slug tak dikenal → not-found. Pratinjau draf staf: `/api/preview?resource=<id>&locale=<l>` dengan banner dan `noindex` (EDITORIAL-WORKFLOW §9.6). Toolkit belum punya halaman publik (M3-13).
+
+### 9.3 Blok homepage
+
+Lihat §2 butir 6: blok `section[data-home-learning-hub]#learning-hub` di antara seksi CMS dan `#tentang`: label "Learning Hub", judul = H1 global (atau "Learning Hub"), deskripsi = paragraf pertama pengantar, sampai 3 materi ID terbaru (jenis, judul, ringkasan, label bahasa, tautan baca atau tonton), dan tautan "Lihat semua materi" ke `/id/learning-hub`. Tidak ada pemutar di blok ini.
+
+### 9.4 State
+
+Katalog kosong (tidak ada materi yang tampil): not-found, menu dan blok tersembunyi. Gagal baca: state galat di katalog; blok dan menu homepage tidak dirender (tidak pernah melempar). Tidak ada state loading terpisah (halaman dirender di server per request).
+
+Privasi: embed hanya setelah klik dan lewat domain `youtube-nocookie.com`; thumbnail video menghubungi server Google (dicatat untuk M4-02, DECISIONS §2.16 keputusan 8).
 
 ## 10. Wireframe and review checklist
 

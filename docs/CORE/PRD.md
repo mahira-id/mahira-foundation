@@ -122,7 +122,7 @@ Catatan: segmen mahasiswa/pendidik berasal dari referensi Learning Hub pada doku
 
 - **Di luar cakupan launch:** login untuk materi, progress tracking, kuis, sertifikat, kelas berbayar, dan LMS penuh.
 
-- **OPEN (M3-11):** model konten dan jenis materi, relasi ke Topic/"Bidang kerja", model bilingual, route, penyimpanan file toolkit, serta halaman detail per materi vs embed langsung di katalog.
+- **Diputuskan 2026-11-17 (DECISIONS §2.16; sebelumnya OPEN di M3-11):** model konten dan jenis materi, relasi ke Topic/"Bidang kerja", model bilingual, route, penyimpanan file toolkit, serta halaman detail per materi vs embed langsung di katalog. Ringkasan: PAGE-SPECIFICATIONS §9 dan DATA-MODEL §4.5.
 
 ## 6.3 Area akun pengguna
 
@@ -152,7 +152,7 @@ Catatan: segmen mahasiswa/pendidik berasal dari referensi Learning Hub pada doku
 |-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
 | Persiapan & technical spike       | Inventaris konten, user story, matriks akses, keputusan bilingual, wireframe; uji Next.js + Payload + Supabase + satu PDF gated.     | Gate sebelum implementasi penuh: koneksi DB, auth, upload/storage, build, dan gating berhasil dibuktikan. |
 | MVP — Publication platform        | Situs publik bilingual-ready, CMS/admin editorial, katalog dan detail publikasi, metadata SEO, search dasar, file publik, role staf. | Editor dapat menerbitkan publikasi nyata; halaman dapat ditemukan dan dibagikan; staging dapat didemokan. |
-| Learning Hub (pra-launch, M3-11–M3-13) | Katalog per tema, embed video/playlist YouTube, panduan, toolkit unduhan publik; tanpa login, progress, kuis, sertifikat (DEC-014). Detail model, route, dan storage toolkit OPEN (M3-11). | AC 9 lulus di staging.                                                                                    |
+| Learning Hub (pra-launch, M3-11–M3-13) | Katalog per tema, embed video/playlist YouTube, panduan, toolkit unduhan publik; tanpa login, progress, kuis, sertifikat (DEC-014). Detail model, route, dan storage toolkit diputuskan 2026-11-17 (DECISIONS §2.16). | AC 9 lulus di staging.                                                                                    |
 | Akses pengguna publik (pra-launch, M5, level `registered`) | Registrasi/login/logout/reset, verifikasi email (DEC-019), area akun minimal, evaluator akses server-side, unduhan file `registered` lewat private bucket dengan signed URL (DECISIONS §2.8 Q1 A). | Matriks akses kolom Visitor/Registered/Editor/Admin teruji otomatis; file privat tidak bocor; AC 5, 6 (file `registered`), 10 lulus. |
 | Launch hardening (M4)             | Performance, accessibility, security review, backup restore, monitoring, privacy/legal readiness, content migration.                 | Checklist rilis dan pemulihan teruji; AC 8 lulus; rilis produksi 1.0.0.                                   |
 | Expansion pasca-launch (M6)       | Event, newsletter, form jaringan dosen (DECISIONS §2.8 Q3 A), bookmark/riwayat/analitik sesuai prioritas.                            | Fitur didorong kebutuhan penggunaan aktual.                                                               |

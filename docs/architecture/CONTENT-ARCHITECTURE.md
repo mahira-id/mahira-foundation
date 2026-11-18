@@ -21,7 +21,7 @@ Menetapkan bagaimana Mahira mengelompokkan, menghubungkan, menerjemahkan, menerb
 | Tag | Label granular dan fleksibel untuk pencarian/editorial curation. | APBN, regional policy. | Many-to-many; optional and controlled. |
 | Author | Person credited as author/editor/contributor. | Named researcher. | Many-to-many with publications; role/sequence on relation. |
 | Publication Asset | File or resource attached to publication. | Cover, PDF, appendix, dataset. | Many assets per publication; individual access classification proposed. |
-| Learning Resource | Educational item in Learning Hub. Cakupan launch (DEC-014; DECISIONS §2.8 Q2 A): video/playlist YouTube yang di-embed, panduan, dan toolkit yang dapat diunduh publik, dikelompokkan per tema. | Video, playlist, guide, downloadable toolkit. | Model final, jenis materi, dan relasi OPEN (M3-11). |
+| Learning Resource | Educational item in Learning Hub. Cakupan launch (DEC-014; DECISIONS §2.8 Q2 A): video/playlist YouTube yang di-embed, panduan, dan toolkit yang dapat diunduh publik, dikelompokkan per tema. | Video, playlist, guide, downloadable toolkit. | Diputuskan 2026-11-17 (DECISIONS §2.16), diterapkan M3-11/M3-12: koleksi Payload `learning-resources`, empat jenis (`video`, `playlist`, `guide`, `toolkit`), satu record per materi dengan field berlokalisasi ID/EN (fallback mati; berbeda dari model publikasi DEC-004), satu tema utama = Topic aktif ("Bidang kerja"), tanpa relasi ke publikasi. Teks katalog di global `learning-hub`. Toolkit dapat dibuat tetapi tidak publik sampai M3-13. DATA-MODEL §4.5. |
 | Static Page | Institutional information page. | About, contact, policy. | Localized and published through CMS. Diterapkan untuk About (M3-09, DECISIONS §2.15): global Payload `about` (DATA-MODEL §4.6.1), field berlokalisasi ID/EN tanpa fallback, draf → publish, struktur tetap (hero, seksi, daftar, kutipan, SEO) tanpa rich-text; halaman suatu locale ada hanya bila versinya published (EN juga "Versi EN siap tayang"). Halaman statis lain (contact, policy) belum ada. |
 | Event | Event information, if approved in scope. | Seminar or webinar. | Pasca-launch (M6, DECISIONS §2.8 Q3 A). |
 
@@ -44,7 +44,7 @@ Menetapkan bagaimana Mahira mengelompokkan, menghubungkan, menerjemahkan, menerb
 - Publication ↔ Tag: many-to-many, optional.
 - Publication → Publication Asset: one-to-many.
 - Publication ↔ Translation group: links language variants according to DEC-004.
-- Learning Resource ↔ Topic/Desk/Publication: OPEN (M3-11). Apakah "tema" katalog Learning Hub sama dengan Topic/"Bidang kerja" belum diputuskan (DECISIONS §2.8).
+- Learning Resource → Topic: many-to-one, wajib. "Tema" katalog Learning Hub adalah Topic ("Bidang kerja") yang ada, satu tema utama per materi, hanya Topic aktif (DECISIONS §2.16 keputusan 4; DEC-003 tidak berubah). Tanpa relasi ke Desk dan tanpa relasi ke Publication di M3 (keputusan 14).
 
 ## 4. Proposed content lifecycle
 
