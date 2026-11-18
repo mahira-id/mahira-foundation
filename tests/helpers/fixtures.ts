@@ -37,6 +37,7 @@ export type Area =
   | "redirect"
   | "search"
   | "seo"
+  | "toolkits"
   | "workflow";
 
 export function areaPrefix(area: Area): string {
@@ -101,6 +102,19 @@ async function fileIds(payload: Payload, prefix: string): Promise<number[]> {
   return files.docs.filter((doc) => typeof doc.filename === "string" && doc.filename.startsWith(prefix)).map((doc) => doc.id);
 }
 
+/** Toolkit files (M3-13) whose stored filename starts with the prefix. */
+async function toolkitFileIds(payload: Payload, prefix: string): Promise<number[]> {
+  const files = await payload.find({
+    collection: "toolkit-files",
+    where: { filename: { like: prefix } },
+    depth: 0,
+    pagination: false,
+    overrideAccess: true,
+    select: { filename: true },
+  });
+  return files.docs.filter((doc) => typeof doc.filename === "string" && doc.filename.startsWith(prefix)).map((doc) => doc.id);
+}
+
 /**
  * Learning Hub resources (M3-11) whose slug starts with the prefix or whose
  * title starts with the label, in either locale (slug and title are
@@ -151,6 +165,8 @@ export type FixtureCounts = {
   publicationFiles: number;
   /** Learning Hub resources (M3-11, slug prefix or title label in either locale). */
   learningResources: number;
+  /** Toolkit files (M3-13, filename prefix); deleting one also deletes its bucket object under `toolkits/`. */
+  toolkitFiles: number;
   translationGroups: number;
   topics: number;
   publicationTypes: number;
@@ -196,6 +212,7 @@ export async function cleanupArea(payload: Payload, area: Area): Promise<Fixture
     publicationSlugs: 0,
     publicationFiles: 0,
     learningResources: 0,
+    toolkitFiles: 0,
     translationGroups: 0,
     topics: 0,
     publicationTypes: 0,
@@ -218,6 +235,12 @@ export async function cleanupArea(payload: Payload, area: Area): Promise<Fixture
   for (const id of await resourceIds(payload, prefix, areaLabel(area))) {
     await payload.delete({ collection: "learning-resources", id, overrideAccess: true });
     counts.learningResources++;
+  }
+  // After the resources (M3-13): a file on a live toolkit cannot be deleted;
+  // the storage plugin deletes each file's bucket object.
+  for (const id of await toolkitFileIds(payload, prefix)) {
+    await payload.delete({ collection: "toolkit-files", id, overrideAccess: true });
+    counts.toolkitFiles++;
   }
   for (const id of await slugIds(payload, "authors", prefix)) {
     await payload.delete({ collection: "authors", id, overrideAccess: true });
@@ -251,6 +274,7 @@ export async function countLeftovers(payload: Payload, area?: Area): Promise<Fix
     publicationSlugs: (await slugIds(payload, "publication-slugs", prefix)).length,
     publicationFiles: (await fileIds(payload, prefix)).length,
     learningResources: (await resourceIds(payload, prefix, label)).length,
+    toolkitFiles: (await toolkitFileIds(payload, prefix)).length,
     translationGroups: (await groupIds(payload, label)).length,
     topics: (await slugIds(payload, "topics", prefix)).length,
     publicationTypes: (await slugIds(payload, "publication-types", prefix)).length,

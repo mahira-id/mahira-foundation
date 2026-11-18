@@ -4,7 +4,8 @@ import { isAdmin, isAnonymousLocalRead, isStaff, staffRoleOf } from "../access/r
 import { SLUG_PATTERN } from "../fields/slug";
 import { structuredSectionsField } from "../fields/structured-sections";
 import { denyPublicFallback } from "../hooks/deny-public-fallback";
-import { normalizeYouTubeSource, setResourcePublishedAt } from "../hooks/learning-resources";
+import { normalizeYouTubeSource, requireReadyToolkitFile, setResourcePublishedAt } from "../hooks/learning-resources";
+import { refuseFileOfAnotherToolkit } from "../hooks/one-publication-per-file";
 import { isYouTubeId } from "../../lib/learning-hub/youtube";
 import { resourcePreviewUrl } from "../../lib/publications/preview";
 
@@ -24,8 +25,9 @@ import { resourcePreviewUrl } from "../../lib/publications/preview";
  * (a structured text page, the About section model, decision 3A) and
  * `toolkit` (file + description) have detail pages
  * `/{locale}/learning-hub/{slug}` (decision 7A; slug unique per locale).
- * Toolkits stay off the public site until M3-13 adds their PDF file
- * (decision 9A; PUBLIC_LEARNING_RESOURCE_READ). Theme = one primary Topic
+ * Since M3-13 (DECISIONS §2.17) a toolkit lists its PDF files in `files`
+ * (one ordered list for ID and EN, each file in one toolkit only) and is
+ * published only with a ready file. Theme = one primary Topic
  * ("Bidang kerja", decision 4A). Editor and Admin edit and publish
  * (DEC-016); only Admin deletes.
  */
@@ -100,7 +102,8 @@ export const LearningResources: CollectionConfig = {
   },
   hooks: {
     beforeOperation: [denyPublicFallback],
-    beforeChange: [normalizeYouTubeSource, setResourcePublishedAt],
+    // M3-13 (DECISIONS §2.17 decisions 1A, 2A): publish needs a ready file; a file belongs to one toolkit.
+    beforeChange: [normalizeYouTubeSource, setResourcePublishedAt, requireReadyToolkitFile, refuseFileOfAnotherToolkit],
   },
   fields: [
     {
@@ -180,6 +183,22 @@ export const LearningResources: CollectionConfig = {
       admin: {
         condition: (data) => data?.type === "playlist",
         description: "Opsional. Tanpa gambar, kartu memakai sampul tipografi.",
+      },
+    },
+    {
+      // M3-13 decisions 1A, 3A: the toolkit's PDFs in display order, one list
+      // for ID and EN (not localized), versioned with drafts, so a file added
+      // in a draft is not live until the toolkit is published. A file belongs
+      // to one toolkit only (refuseFileOfAnotherToolkit).
+      name: "files",
+      type: "upload",
+      label: "File toolkit",
+      relationTo: "toolkit-files",
+      hasMany: true,
+      admin: {
+        condition: (data) => data?.type === "toolkit",
+        description:
+          "File PDF toolkit sesuai urutan tampil, dipakai untuk ID dan EN. Satu file hanya untuk satu toolkit. Terbit butuh minimal satu file ready.",
       },
     },
     {

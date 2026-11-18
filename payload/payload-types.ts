@@ -77,6 +77,7 @@ export interface Config {
     'publication-files': PublicationFile;
     'publication-slugs': PublicationSlug;
     'learning-resources': LearningResource;
+    'toolkit-files': ToolkitFile;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     'publication-files': PublicationFilesSelect<false> | PublicationFilesSelect<true>;
     'publication-slugs': PublicationSlugsSelect<false> | PublicationSlugsSelect<true>;
     'learning-resources': LearningResourcesSelect<false> | LearningResourcesSelect<true>;
+    'toolkit-files': ToolkitFilesSelect<false> | ToolkitFilesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -361,6 +363,10 @@ export interface LearningResource {
    */
   coverImage?: (number | null) | Media;
   /**
+   * File PDF toolkit sesuai urutan tampil, dipakai untuk ID dan EN. Satu file hanya untuk satu toolkit. Terbit butuh minimal satu file ready.
+   */
+  files?: (number | ToolkitFile)[] | null;
+  /**
    * Isi halaman panduan atau toolkit, sesuai urutan tampil.
    */
   sections?:
@@ -435,6 +441,38 @@ export interface LearningResource {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "toolkit-files".
+ */
+export interface ToolkitFile {
+  id: number;
+  /**
+   * Nama file yang tampil di halaman toolkit, mis. "Panduan lengkap". Isi untuk ID dan EN.
+   */
+  label: string;
+  /**
+   * Bahasa isi PDF; tampil sebagai label di kedua versi bahasa.
+   */
+  language: 'id' | 'en';
+  /**
+   * Diisi sistem. Hanya file berstatus ready yang tampil dan dapat diunduh.
+   */
+  status: 'pending' | 'ready' | 'failed' | 'quarantined' | 'archived';
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -496,6 +534,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'learning-resources';
         value: number | LearningResource;
+      } | null)
+    | ({
+        relationTo: 'toolkit-files';
+        value: number | ToolkitFile;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -698,6 +740,7 @@ export interface LearningResourcesSelect<T extends boolean = true> {
   topic?: T;
   youtubeId?: T;
   coverImage?: T;
+  files?: T;
   sections?:
     | T
     | {
@@ -731,6 +774,28 @@ export interface LearningResourcesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "toolkit-files_select".
+ */
+export interface ToolkitFilesSelect<T extends boolean = true> {
+  label?: T;
+  language?: T;
+  status?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

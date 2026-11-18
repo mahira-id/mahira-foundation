@@ -12,6 +12,7 @@ import { PublicationFiles } from "./collections/PublicationFiles";
 import { Publications } from "./collections/Publications";
 import { PublicationSlugs } from "./collections/PublicationSlugs";
 import { PublicationTypes } from "./collections/PublicationTypes";
+import { ToolkitFiles } from "./collections/ToolkitFiles";
 import { Topics } from "./collections/Topics";
 import { TranslationGroups } from "./collections/TranslationGroups";
 import { Users } from "./collections/Users";
@@ -19,7 +20,7 @@ import { SUPABASE_ROOT_CA_2021 } from "./db/supabase-root-ca";
 import { About } from "./globals/About";
 import { LearningHub } from "./globals/LearningHub";
 import { readCmsEnv } from "./env";
-import { FILES_BUCKET, SIGNED_DOWNLOAD_TTL_SECONDS, storageClientConfig } from "./storage";
+import { FILES_BUCKET, SIGNED_DOWNLOAD_TTL_SECONDS, TOOLKIT_FILES_PREFIX, storageClientConfig } from "./storage";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(dirname, "..");
@@ -89,6 +90,8 @@ export default buildConfig({
     // M3-11 (DECISIONS §2.16): Learning Hub resources, after the existing
     // collections so their tables and index names stay as they are.
     LearningResources,
+    // M3-13 (DECISIONS §2.16 decision 9, §2.17): toolkit PDFs, last for the same reason.
+    ToolkitFiles,
   ],
   // M3-09 (DECISIONS §2.15 decision 1): the About page, one localized global.
   // M3-12 (DECISIONS §2.16 decision 10A): texts of the Learning Hub catalog.
@@ -121,6 +124,9 @@ export default buildConfig({
     // - clientUploads: the admin uploads browser → bucket with a presigned
     //   PUT (Vercel Function bodies stop at 4.5 MB); the presign endpoint
     //   `/api/storage-s3-generate-signed-url` is for Editor/Admin only.
+    // - M3-13 (DECISIONS §2.16 decision 9): toolkit files in the same
+    //   bucket under `toolkits/`, with the same handler, TTL and client
+    //   uploads; the toolkit download route signs its own attachment GET.
     s3Storage({
       enabled: cms !== null,
       alwaysInsertFields: true,
@@ -128,6 +134,10 @@ export default buildConfig({
       clientUploads: { access: ({ req }) => staffRoleOf(req) !== null },
       collections: {
         "publication-files": {
+          signedDownloads: { expiresIn: SIGNED_DOWNLOAD_TTL_SECONDS },
+        },
+        "toolkit-files": {
+          prefix: TOOLKIT_FILES_PREFIX,
           signedDownloads: { expiresIn: SIGNED_DOWNLOAD_TTL_SECONDS },
         },
       },

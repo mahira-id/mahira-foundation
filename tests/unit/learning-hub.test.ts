@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import type { Access, CollectionBeforeChangeHook, Field, Payload, PayloadRequest } from "payload";
 
-import { findPublicGuide, findPublicLearningHub, findPublicResource, findPublicResources } from "../../lib/cms/learning-hub-query";
-import { fallbackExitTarget, findDraftGuide, findDraftResourceRef, previewExitTarget, type StaffUser } from "../../lib/cms/staff-preview";
+import { findPublicDetail, findPublicLearningHub, findPublicResource, findPublicResources } from "../../lib/cms/learning-hub-query";
+import { fallbackExitTarget, findDraftDetail, findDraftResourceRef, previewExitTarget, type StaffUser } from "../../lib/cms/staff-preview";
 import {
   catalogTexts,
   compareResources,
@@ -26,7 +26,8 @@ import { structuredSectionsField } from "../../payload/fields/structured-section
 import { About } from "../../payload/globals/About";
 import { LearningHub } from "../../payload/globals/LearningHub";
 import { denyPublicFallback, denyPublicFallbackForGlobal } from "../../payload/hooks/deny-public-fallback";
-import { normalizeYouTubeSource, setResourcePublishedAt } from "../../payload/hooks/learning-resources";
+import { normalizeYouTubeSource, requireReadyToolkitFile, setResourcePublishedAt } from "../../payload/hooks/learning-resources";
+import { refuseFileOfAnotherToolkit } from "../../payload/hooks/one-publication-per-file";
 import { adminFormActions, adminFormHasValue, adminFormLocale, adminLocaleLabel } from "../helpers/admin-form";
 import { fakeReq, fakeUser } from "../helpers/fake-req";
 import { diffGlobal, isGlobalTable, type GlobalSnapshot } from "../helpers/global-state";
@@ -95,7 +96,7 @@ function doc(overrides: Partial<ResourceDoc> = {}): ResourceDoc {
 const guide = (overrides: Partial<ResourceDoc> = {}) => doc({ type: "guide", slug: "fixture-guide", youtubeId: null, ...overrides });
 
 describe("payload/collections/LearningResources.ts and payload/globals/LearningHub.ts", () => {
-  test("LHU1 collection config: slug, drafts + 25 versions, localized vs shared fields, types, no rich text, access matrix (toolkits never public), hooks", async () => {
+  test("LHU1 collection config: slug, drafts + 25 versions, localized vs shared fields, types, no rich text, access matrix (all four types public since M3-13), hooks", async () => {
     assert.equal(LearningResources.slug, "learning-resources");
     assert.equal(LearningResources.dbName, "lh_resources");
     assert.deepEqual(LearningResources.versions, { drafts: true, maxPerDoc: 25 });
@@ -109,13 +110,14 @@ describe("payload/collections/LearningResources.ts and payload/globals/LearningH
       "topic",
       "youtubeId",
       "coverImage",
+      "files",
       "sections",
       "sortOrder",
       "publishedAt",
       "enReady",
     ]);
     for (const name of ["title", "summary", "slug", "sections"]) assert.equal(field(fields, name).localized, true, `${name} localized`);
-    for (const name of ["type", "materialLanguage", "topic", "youtubeId", "coverImage", "sortOrder", "publishedAt", "enReady"]) {
+    for (const name of ["type", "materialLanguage", "topic", "youtubeId", "coverImage", "files", "sortOrder", "publishedAt", "enReady"]) {
       assert.notEqual(field(fields, name).localized, true, `${name} shared`);
     }
     assert.deepEqual(field(fields, "type").options?.map((option) => option.value), ["video", "playlist", "guide", "toolkit"]);
@@ -135,8 +137,8 @@ describe("payload/collections/LearningResources.ts and payload/globals/LearningH
     assert.equal(allTypes(fields).includes("richText"), false, "no rich text (decision 3A)");
     assert.deepEqual(
       allTypes(fields).filter((type) => type === "upload"),
-      ["upload"],
-      "the only upload is the playlist cover (no toolkit file before M3-13)",
+      ["upload", "upload"],
+      "the uploads: the playlist cover and (M3-13) the toolkit files",
     );
     // Guides use the About section model without CTAs (decision 3A).
     assert.deepEqual(names(field(fields, "sections").fields), ["anchor", "label", "heading", "body", "quote", "lists", "outro"]);
@@ -147,9 +149,9 @@ describe("payload/collections/LearningResources.ts and payload/globals/LearningH
     assert.equal(await run(read, editor()), true);
     assert.deepEqual(await run(read, anonymousLocal()), PUBLIC_LEARNING_RESOURCE_READ);
     assert.deepEqual(PUBLIC_LEARNING_RESOURCE_READ, {
-      and: [{ _status: { equals: "published" } }, { type: { in: ["video", "playlist", "guide"] } }],
+      and: [{ _status: { equals: "published" } }, { type: { in: ["video", "playlist", "guide", "toolkit"] } }],
     });
-    assert.deepEqual([...PUBLIC_LEARNING_RESOURCE_TYPES], ["video", "playlist", "guide"], "toolkits stay off the public site until M3-13");
+    assert.deepEqual([...PUBLIC_LEARNING_RESOURCE_TYPES], ["video", "playlist", "guide", "toolkit"], "toolkits public since M3-13 (DECISIONS §2.17)");
     assert.equal(await run(read, anonymousRest()), false);
     assert.equal(await run(read, fakeReq({ payloadAPI: "GraphQL" })), false);
     assert.equal(await run(read, fakeReq({ user: fakeUser("superuser", 3), payloadAPI: "local" })), false, "unknown role, even via Local API");
@@ -166,7 +168,7 @@ describe("payload/collections/LearningResources.ts and payload/globals/LearningH
     assert.equal(await run(remove, admin()), true, "delete admin");
     for (const req of [editor(), anonymousLocal(), anonymousRest()]) assert.equal(await run(remove, req), false, "delete: Admin only");
     assert.deepEqual(LearningResources.hooks?.beforeOperation, [denyPublicFallback]);
-    assert.deepEqual(LearningResources.hooks?.beforeChange, [normalizeYouTubeSource, setResourcePublishedAt]);
+    assert.deepEqual(LearningResources.hooks?.beforeChange, [normalizeYouTubeSource, setResourcePublishedAt, requireReadyToolkitFile, refuseFileOfAnotherToolkit]);
   });
 
   test("LHU1b global learning-hub: slug, drafts, localized hero/seo, published-only anonymous read, staff update, fallback hook; About's sections field unchanged", async () => {
@@ -344,7 +346,7 @@ describe("lib/learning-hub/catalog-view.ts", () => {
     const hidden: Array<[string, Partial<ResourceDoc>]> = [
       ["draft", { _status: "draft" }],
       ["no status", { _status: null }],
-      ["toolkit", { type: "toolkit", slug: "fixture-toolkit" }],
+      ["toolkit without a ready file (M3-13 decision 2A)", { type: "toolkit", slug: "fixture-toolkit" }],
       ["unknown type", { type: "course" }],
       ["no title", { title: "  " }],
       ["no summary", { summary: "" }],
@@ -388,7 +390,7 @@ describe("lib/learning-hub/catalog-view.ts", () => {
     const plan = planCatalog(docs, "id", null) as CatalogPlan;
     assert.ok(plan);
     assert.equal(plan.locale, "id");
-    assert.deepEqual(plan.toolkits, [], "toolkit section empty until M3-13");
+    assert.deepEqual(plan.toolkits, [], "a toolkit without a ready file is hidden (M3-13 decision 2A)");
     assert.equal(plan.cardCount, 6);
     assert.deepEqual(plan.themes.map((theme) => theme.name), ["Ąlpha", "Zeta"], "Intl.Collator order");
     assert.deepEqual(plan.themes[0]?.cards.map((card) => card.id), [13, 11, 12, 15, 14], "sortOrder 1, 2, then newest (publishedAt, createdAt)");
@@ -404,6 +406,7 @@ describe("lib/learning-hub/catalog-view.ts", () => {
       summary: `${F} summary one ${F} summary two`,
       materialLanguage: "id",
       href: null,
+      fileCount: null,
       youtube: {
         kind: "video",
         id: VIDEO,
@@ -455,7 +458,8 @@ describe("lib/learning-hub/catalog-view.ts", () => {
     ]);
     assert.equal(toGuidePage(doc(), "id"), null, "a video has no page");
     assert.equal(toGuidePage(guide({ title: "" }), "id"), null);
-    assert.equal(toGuidePage(guide({ type: "toolkit" }), "id"), null, "no toolkit page before M3-13");
+    assert.equal(toGuidePage(guide({ type: "toolkit" }), "id")?.type, "toolkit", "a toolkit has a page since M3-13 (files: TKU4)");
+    assert.deepEqual(page.files, [], "a guide has no files");
   });
 });
 
@@ -473,7 +477,7 @@ function recordingFind(docs: unknown[]) {
 describe("Learning Hub reads (lib/cms/learning-hub-query.ts, lib/cms/staff-preview.ts)", () => {
   test("LHU5 public reads: anonymous, published, public types, this locale, no fallback; staff reads: latest version as the user", async () => {
     const anonymous = { fallbackLocale: false, draft: false, overrideAccess: false };
-    const publicTypes = { type: { in: ["video", "playlist", "guide"] } };
+    const publicTypes = { type: { in: ["video", "playlist", "guide", "toolkit"] } };
     const list = recordingFind([{ id: 1 }]);
     assert.deepEqual(await findPublicResources(list.payload, "en"), [{ id: 1 }]);
     const [listArgs] = list.calls;
@@ -494,11 +498,12 @@ describe("Learning Hub reads (lib/cms/learning-hub-query.ts, lib/cms/staff-previ
     assert.deepEqual(listArgs.populate, {
       topics: { name: true, description: true, isActive: true },
       media: { url: true, alt: true, mimeType: true, width: true, height: true },
+      "toolkit-files": { label: true, language: true, filesize: true, mimeType: true, status: true },
     });
 
     const one = recordingFind([]);
-    assert.equal(await findPublicGuide(one.payload, "id", "fixture-guide"), null);
-    assert.deepEqual(one.calls[0]?.where, { and: [{ type: { equals: "guide" } }, { slug: { equals: "fixture-guide" } }] });
+    assert.equal(await findPublicDetail(one.payload, "id", "fixture-guide"), null);
+    assert.deepEqual(one.calls[0]?.where, { and: [{ type: { in: ["guide", "toolkit"] } }, { slug: { equals: "fixture-guide" } }] });
     assert.equal((one.calls[0]?.select as Record<string, unknown>).sections, true);
     assert.equal(one.calls[0]?.locale, "id");
     for (const [key, value] of Object.entries(anonymous)) assert.equal(one.calls[0]?.[key], value, key);
@@ -532,18 +537,19 @@ describe("Learning Hub reads (lib/cms/learning-hub-query.ts, lib/cms/staff-previ
       overrideAccess: false,
     });
     const draftGuide = recordingFind([]);
-    assert.equal(await findDraftGuide(draftGuide.payload, "id", "fixture-guide", staff), null);
+    assert.equal(await findDraftDetail(draftGuide.payload, "id", "fixture-guide", staff), null);
     assert.equal(draftGuide.calls[0]?.draft, true);
     assert.equal(draftGuide.calls[0]?.user, staff);
     assert.equal(draftGuide.calls[0]?.overrideAccess, false);
-    assert.deepEqual(draftGuide.calls[0]?.where, { and: [{ type: { equals: "guide" } }, { slug: { equals: "fixture-guide" } }] });
+    assert.deepEqual(draftGuide.calls[0]?.where, { and: [{ type: { in: ["guide", "toolkit"] } }, { slug: { equals: "fixture-guide" } }] });
   });
 
   test("LHU6 guide preview: Preview URL for guides only; ?resource= needs a locale and excludes id/about; exit targets", async () => {
     const preview = LearningResources.admin?.preview as (doc: unknown, options: unknown) => unknown;
     assert.equal(typeof preview, "function");
     assert.equal(await preview({ id: 4, type: "guide" }, { locale: "en", req: {}, token: null }), "/api/preview?resource=4&locale=en");
-    for (const type of ["video", "playlist", "toolkit", undefined]) {
+    assert.equal(await preview({ id: 4, type: "toolkit" }, { locale: "id", req: {}, token: null }), "/api/preview?resource=4&locale=id", "toolkit Preview (M3-13)");
+    for (const type of ["video", "playlist", undefined]) {
       assert.equal(await preview({ id: 4, type }, { locale: "id", req: {}, token: null }), null, `no Preview button for ${String(type)}`);
     }
     assert.equal(resourcePreviewUrl({ id: 0, type: "guide" }, "id"), null);

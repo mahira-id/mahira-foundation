@@ -2,7 +2,7 @@ import type { Payload } from "payload";
 
 import { isAboutVisible } from "@/lib/about/about-view";
 import { findPublicAbout, presentDoc, type FindGlobalPort } from "@/lib/cms/about-query";
-import { findPublicResource, GUIDE_SELECT, RESOURCE_POPULATE } from "@/lib/cms/learning-hub-query";
+import { DETAIL_TYPES, findPublicResource, GUIDE_SELECT, RESOURCE_POPULATE } from "@/lib/cms/learning-hub-query";
 import { DETAIL_POPULATE, DETAIL_SELECT, findPublicRef } from "@/lib/cms/publication-detail-query";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 import { isResourceVisible } from "@/lib/learning-hub/catalog-view";
@@ -108,7 +108,8 @@ export async function previewExitTarget(
     if (!staff) return fallback;
     if (!isLocale(form.locale)) return resourceAdminPath(form.resource);
     const live = await findPublicResource(payload, form.resource, form.locale);
-    const target = live && live.type === "guide" && isResourceVisible(live, form.locale) ? resourcePath(form.locale, live.slug) : null;
+    const hasPage = live !== null && (live.type === "guide" || live.type === "toolkit");
+    const target = hasPage && isResourceVisible(live, form.locale) ? resourcePath(form.locale, live.slug) : null;
     return target ?? resourceAdminPath(form.resource);
   }
   if (form.id === null) return fallback;
@@ -159,11 +160,16 @@ export async function findDraftResourceRef(payload: FindPort, id: number, locale
   return result.docs[0] ?? null;
 }
 
-/** The latest version (draft included) of the guide of this locale with this slug, with the page fields; or null. */
-export async function findDraftGuide(payload: FindPort, locale: Locale, slug: string, user: StaffUser) {
+/**
+ * The latest version (draft included) of the guide or (M3-13) toolkit of
+ * this locale with this slug, with the page fields; or null. A toolkit's
+ * files are populated as the staff user sees them (every file) and the page
+ * filters them like the public one (toolkitFileItems).
+ */
+export async function findDraftDetail(payload: FindPort, locale: Locale, slug: string, user: StaffUser) {
   const result = await payload.find({
     collection: "learning-resources",
-    where: { and: [{ type: { equals: "guide" } }, { slug: { equals: slug } }] },
+    where: { and: [{ type: { in: [...DETAIL_TYPES] } }, { slug: { equals: slug } }] },
     limit: 1,
     depth: 1,
     select: GUIDE_SELECT,
