@@ -4,6 +4,7 @@ import type { Payload } from "payload";
 
 import type { About } from "../../payload/payload-types";
 import { diffAbout, restoreAbout, snapshotAbout, summarizeAbout, type AboutSnapshot } from "../helpers/about-state";
+import { adminFormHasValue, adminFormLocale, adminLocaleLabel } from "../helpers/admin-form";
 import {
   areaEmail,
   areaLabel,
@@ -30,7 +31,8 @@ import { assertNotFoundPage, decodeAmp, robotsContent } from "../helpers/publica
  * also needs "Versi EN siap tayang" (`enReady`). Anonymous REST is denied;
  * the staff preview runs through `/api/preview?about=<locale>` + Draft Mode
  * and checks the staff session on every request; the sitemap lists a page
- * only while it exists.
+ * only while it exists. The admin edit view starts each locale's form with
+ * that locale's stored values (AB11, M3-12b; tests/helpers/admin-form.ts).
  *
  * The global is a singleton on the shared `mahira-cms`: `before` snapshots
  * every About row (tests/helpers/about-state.ts) before any write, a
@@ -636,5 +638,34 @@ describe("About page (M3-09: about global, /{locale}/about, preview, SEO, sitema
     assertAboutPage(preview, "preview GET /id/about", "id", "T4", true);
     assert.match(preview.body, /<main[^>]*\sid="main"[^>]*><aside[^>]*data-preview-banner/, "banner is the first element of main");
     assert.equal((preview.body.match(/<aside[^>]*data-preview-banner/g) ?? []).length, 1, "one banner element");
+  });
+
+  test("AB11 (M3-12b) the admin edit view starts each locale with its stored values (hero, CTAs, sections, lists, SEO), posts to that locale and shows its name", async () => {
+    await write("id", { ...aboutData("id", "F"), contactEmail: CONTACT }, "published");
+    // A pending EN draft: the EN form starts with it; the ID form keeps the published ID text.
+    await write("en", aboutData("en", "F"), "draft");
+    const paths: [string, string][] = [
+      ["hero.eyebrow", "eyebrow"],
+      ["hero.title", "title"],
+      ["hero.ctas.0.label", "cta anchor"],
+      ["sections.0.label", "s1 label"],
+      ["sections.0.heading", "s1 heading"],
+      ["sections.0.quote", "s1 quote"],
+      ["sections.1.lists.0.items.1.subtitle", "n2 subtitle"],
+      ["sections.1.lists.1.heading", "l2 heading"],
+      ["sections.1.outro", "s2 outro"],
+      ["seo.title", "seo title"],
+    ];
+    for (const [locale, other, name] of [["id", "en", "Bahasa Indonesia"], ["en", "id", "English"]] as const) {
+      const path = `/admin/globals/about?locale=${locale}`;
+      const result = await getPage(path, { Cookie: `payload-token=${editor()}` });
+      assert.equal(result.status, 200, `GET ${path} as the Editor: ${pageFact(result)}`);
+      assert.equal(adminLocaleLabel(result.body), name, `${path}: locale shown in the admin header`);
+      assert.equal(adminFormLocale(result.body), locale, `${path}: locale of the form action`);
+      for (const [field, part] of paths) {
+        assert.equal(adminFormHasValue(result.body, field, fx(locale, "F", part)), true, `${locale} form: ${field} starts with the stored value`);
+      }
+      assert.equal(result.body.includes(`${LABEL}${other} `), false, `${locale} form: text of ${other}`);
+    }
   });
 });

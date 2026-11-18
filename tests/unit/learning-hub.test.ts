@@ -27,6 +27,7 @@ import { About } from "../../payload/globals/About";
 import { LearningHub } from "../../payload/globals/LearningHub";
 import { denyPublicFallback, denyPublicFallbackForGlobal } from "../../payload/hooks/deny-public-fallback";
 import { normalizeYouTubeSource, setResourcePublishedAt } from "../../payload/hooks/learning-resources";
+import { adminFormActions, adminFormHasValue, adminFormLocale, adminLocaleLabel } from "../helpers/admin-form";
 import { fakeReq, fakeUser } from "../helpers/fake-req";
 import { diffGlobal, isGlobalTable, type GlobalSnapshot } from "../helpers/global-state";
 
@@ -671,5 +672,28 @@ describe("tests/helpers/global-state.ts", () => {
     for (const name of ["learning_hub", "learning_hub_locales", "_learning_hub_v", "_learning_hub_v_locales"]) assert.equal(isGlobalTable("learning-hub", name), true, name);
     for (const name of ["lh_resources", "about", "learning_hubs", "_learning_hub"]) assert.equal(isGlobalTable("learning-hub", name), false, name);
     assert.equal(isGlobalTable("about", "about_sections"), true);
+  });
+});
+describe("tests/helpers/admin-form.ts (M3-12b)", () => {
+  test("LHU9 admin edit view readers: form-state start value per path (escaped RSC payload), localizer label, form action locale", () => {
+    // Shape of a Payload 3.93.0 admin edit view: form state inside self.__next_f.push (quotes escaped), header and form as HTML.
+    const html = [
+      '<div class="localizer-button__current"><span class="localizer-button__current-label">Bahasa Indonesia</span></div>',
+      '<form class="collection-edit__form" action="/api/globals/learning-hub?depth=0&amp;fallback-locale=null&amp;locale=id" method="POST">',
+      '<script>self.__next_f.push([1,"{\\"initialState\\":{\\"hero.title\\":{\\"value\\":\\"[FIXTURE] id H1\\",\\"initialValue\\":\\"[FIXTURE] id H1\\"},',
+      '\\"sections.1.lists.0.items.0.title\\":{\\"value\\":\\"[FIXTURE] item\\"},\\"seo.title\\":{\\"initialValue\\":\\"$undefined\\"}}}"])</script>',
+    ].join("");
+    assert.equal(adminFormHasValue(html, "hero.title", "[FIXTURE] id H1"), true, "start value of hero.title");
+    assert.equal(adminFormHasValue(html, "sections.1.lists.0.items.0.title", "[FIXTURE] item"), true, "nested array path");
+    assert.equal(adminFormHasValue(html, "hero.title", "[FIXTURE] id H"), false, "a prefix is not the value");
+    assert.equal(adminFormHasValue(html, "seo.title", "[FIXTURE] id H1"), false, "another path's value");
+    assert.equal(adminFormHasValue(html, "hero.intro", "[FIXTURE] id H1"), false, "a path not in the form state");
+    assert.throws(() => adminFormHasValue(html, "hero.title", 'a "quoted" text'), /single-line/);
+    assert.throws(() => adminFormHasValue(html, "hero.title", "two\nlines"), /single-line/);
+    assert.equal(adminLocaleLabel(html), "Bahasa Indonesia");
+    assert.deepEqual(adminFormActions(html), ["/api/globals/learning-hub?depth=0&fallback-locale=null&locale=id"]);
+    assert.equal(adminFormLocale(html), "id");
+    assert.equal(adminFormLocale("<main></main>"), null, "no form");
+    assert.equal(adminLocaleLabel("<main></main>"), null, "no localizer");
   });
 });

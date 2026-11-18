@@ -244,4 +244,4 @@ Keputusan Owner 2026-11-17 (DECISIONS §2.15 keputusan 1–5, 7, 8, 10, 14). Sum
 - **Navigasi.** Header `LocaleHeader` (indeks, detail, dan About) mendapat tautan "Tentang"/"About" hanya bila About locale itu tampil (`data-header-about`; tautan menjadi `aria-current` di halaman About). Not-found dan error tidak membaca CMS sehingga tanpa tautan. Seksi `#tentang` di homepage tetap, ditambah tautan "Selengkapnya tentang Mahira" ke `/id/about` hanya bila About ID tampil (`data-home-about-link`).
 - **Pratinjau.** `/api/preview?about=<locale>` (EDITORIAL-WORKFLOW §9.5): draf tampil dengan banner "Keluar dari pratinjau", `noindex, nofollow`, `no-store`; sesi staf diperiksa lagi di setiap request Draft Mode. Tujuan keluar: staf + About locale itu tampil → halaman publiknya; staf tanpa About tampil → `/admin/globals/about`.
 - **SEO.** SEO-SPECIFICATION §12: title/description dari field SEO, canonical, hreflang hanya bila kedua locale tampil, sitemap, OG `/og/site`.
-- **Tes.** TEST-PLAN §12.2: AB1–AB10, ABUI1–ABUI3, ABU1–ABU8b, G5.5/G5.6, I5.
+- **Tes.** TEST-PLAN §12.2: AB1–AB11, ABUI1–ABUI3, ABU1–ABU8b, G5.5/G5.6, I5.
