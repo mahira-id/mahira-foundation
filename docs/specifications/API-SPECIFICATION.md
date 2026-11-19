@@ -133,6 +133,34 @@ Whether inaccessible assets return `403` or `404` must be decided from the threa
 
 File `public` (M3-08): 60 detik (DECISIONS §2.14 butir 2; pengukuran di §5.1). File terbatas: TTL is **TBD**. Choose the shortest practical period after testing download size, user experience, and provider constraints. Signed URLs are bearer credentials: anyone who obtains one may use it until expiry. Revoking an entitlement does not necessarily invalidate an already issued URL. If immediate revocation is required, use a proxy/stream or another revocation-capable design.
 
+### 5.3 Implementasi M3-13: `GET /api/learning-hub/files/{fileId}/download?locale=id|en` (file toolkit)
+
+Keputusan Owner 2026-11-18 (DECISIONS §2.17 keputusan 1–5). Kontrak ini mengikuti §5.1 dengan pemeriksaan toolkit sebagai pengganti pemeriksaan publikasi; tidak ada access level (semua materi Learning Hub publik, DEC-014).
+
+- **Method dan path.** `GET /api/learning-hub/files/{fileId}/download?locale=id|en` (route `app/api/learning-hub/files/[fileId]/download/route.ts`). `fileId` adalah id record `toolkit-files` (bilangan bulat positif tanpa nol di depan, ≤ 2147483647; `parseFileId` yang sama dengan §5.1). `locale` wajib karena toolkit dan labelnya berlokalisasi; tautan di panel file membawa locale halaman. Tidak ada body.
+- **Tidak bertabrakan.** Route statis ini lebih spesifik daripada `app/(payload)/api/[...slug]`; Payload REST tidak punya koleksi `learning-hub` (globalnya `/api/globals/learning-hub`) dan koleksi file ada di `/api/toolkit-files`. `/api/files/{id}/download` (§5.1) punya segmen pertama berbeda dan memeriksa tabel `publication-files`; id kedua koleksi dapat sama dan tidak pernah saling membuka (TK5, FA5/FA5b).
+- **Gerbang CMS mati.** `proxy.ts` tidak berubah: matcher `/api/:path*` menjawab 404 + `noindex` + `no-store` saat CMS mati atau Production; route mengulang `isCmsEnabled()` (G5.11).
+- **Pemeriksaan di server, setiap request** (`lib/cms/public-content.ts` `getPublicToolkitFileDownload`, sebagai pengunjung anonim lewat Local API dengan `overrideAccess: false`):
+  1. file terbaca anonim: `status = ready` dan PDF (`PUBLIC_TOOLKIT_FILE_READ`);
+  2. versi tayang (tabel utama, `draft: false`, locale yang diminta, tanpa fallback) sebuah toolkit mencantumkan file itu; file yang hanya ada di draf, toolkit yang belum pernah terbit, dan toolkit yang di-unpublish tidak lolos;
+  3. `isResourceVisible`: published, Topic aktif dan bernama di locale itu, EN juga "Versi EN siap tayang", minimal satu file;
+  4. file itu termasuk item toolkit di locale tersebut (`toolkitFileItems`: ready, PDF, berlabel di locale itu);
+  5. URL GET ditandatangani 60 detik dengan `signedFileUrl` (key `toolkits/<nama file>`, `response-content-disposition` = `attachment` dan nama file tersimpan, RFC 6266; sama dengan §5.1).
+- **Tanpa sesi.** Sesi staf tidak memberi bypass (DEC-009); staf membuka file di `/admin` lewat `/api/toolkit-files/file/<nama>`.
+
+| Kondisi | Respons |
+|---|---|
+| Semua pemeriksaan lolos | `307`, `Location` = signed URL 60 detik ke private bucket `publication-files` (key `toolkits/…`) yang membuat storage menjawab `Content-Disposition: attachment`; tanpa body |
+| CMS mati; id atau `locale` tidak valid, hilang, atau tidak dikenal; file tidak ada atau belum `ready`; file tidak terpasang atau hanya di draf; toolkit draf, belum pernah terbit, di-unpublish, atau tidak tampil di locale itu (termasuk EN tanpa "Versi EN siap tayang" atau tanpa label EN); Topic tidak aktif; id file publikasi | `404` `Not Found` yang sama untuk semua penolakan (tidak membocorkan keberadaan file) |
+| Galat baca database atau galat penandatanganan | `503` |
+
+- **Header setiap respons:** `Cache-Control: no-store` dan `X-Robots-Tag: noindex` (`downloadResponse` yang sama dengan §5.1).
+- **Log:** hanya nama galat (`[toolkit-download]` + `LearningHubReadError` atau `FileStorageError`), tidak pernah URL atau signed URL.
+- **TTL dan pencabutan:** sama dengan §5.1: URL baru ditolak setelah 60 detik; unpublish berlaku untuk request berikutnya, URL yang sudah diberikan berlaku sampai 60 detik.
+- **Tanpa audit, hitungan unduhan, atau rate limit** (butir M4, DECISIONS §2.14).
+- **Upload.** Staf mengunggah lewat `clientUploads` di `/admin` (endpoint `POST /api/storage-s3-generate-signed-url` hanya Editor/Admin; objek tersimpan di prefix `toolkits/`); `toolkit-files` hanya menerima PDF (cek isi `%PDF-`, 50 MB).
+- **Verifikasi:** TK1–TK11 di `tests/integration/toolkit-files.test.ts` (TK4 307 + attachment + nama tersimpan, TK5 semua penolakan, TK6 REST/GraphQL anonim, TK7 URL objek langsung), `downloads` untuk regresi §5.1, gerbang G4.8/G4.9/G5.11; TEST-PLAN §12.2.
+
 ## 6. Search/list contract
 
 Suggested query parameters: `q`, `locale`, `type`, `topic`, `year`, `sort`, `page`, `pageSize`.
