@@ -25,6 +25,7 @@ export type Area =
   | "about"
   | "access"
   | "admin"
+  | "auth-boundary"
   | "detail"
   | "downloads"
   | "guard"

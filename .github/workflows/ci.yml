@@ -36,7 +36,8 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run lint
       - run: bun run test
-      # Env gate: no CMS env, VERCEL_ENV=production, partial set (must fail
-      # with names only), each followed by HTTP gate checks. No `full` mode:
-      # it needs the CMS env.
-      - run: bun run test:build-matrix --modes absent,prodsim,partial
+      # Env gates: no CMS env, VERCEL_ENV=production, partial CMS set and
+      # the publishable key without APP_SUPABASE_URL (both must fail with
+      # names only), each building mode followed by HTTP gate checks. No
+      # `authoff` or `full` mode: they need the CMS env.
+      - run: bun run test:build-matrix --modes absent,prodsim,partial,authpartial
