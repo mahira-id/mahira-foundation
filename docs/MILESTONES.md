@@ -24,7 +24,7 @@
 | M1 | Rekonsiliasi dokumen & keputusan | Requirements | DONE (M1-08 ditunda ke M4-05) | — |
 | M2 | Validasi teknis (spike) | Design / arsitektur | DONE (2026-11-10) | — |
 | M3 | MVP — Platform publikasi + Learning Hub | Implementasi | DONE (2026-11-20; M3-00–M3-13, M3-05b, dan M3-12b selesai; daftar periksa keluar M3 di bawah terpenuhi; milestone berikutnya M5) | DEC-017 (DEC-013 dan DEC-024 Accepted; DEC-014 detail diputuskan 2026-11-17, DECISIONS §2.16) |
-| M5 | Akses pengguna publik (pra-launch) | Implementasi | TODO (berikutnya; M3 DONE 2026-11-20) | DEC-008, DEC-010–DEC-012, DEC-019, DEC-020 |
+| M5 | Akses pengguna publik (pra-launch) | Implementasi | DOING (2026-11-20; jawaban Owner DECISIONS §2.18; PR-1 = M5-01 + M5-02 di branch `feat/m5-01-02-auth`) | DEC-008, DEC-010–DEC-012, DEC-019, DEC-020 |
 | M4 | Launch hardening & rilis | Verifikasi / rilis | BLOCKED (M3, M5) | DEC-020, DEC-022, DEC-023 |
 | M6 | Expansion pasca-launch | Evolusi | BLOCKED (M4) | Kebutuhan nyata (DECISIONS §2.8 Q3 A) |
 | M7 | Phase 2 — Subscription (pasca-launch) | Evolusi | BLOCKED (M4) | PRD D-08, DEC-010 |
@@ -97,10 +97,11 @@ Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10,
 | AC 7 | Peran Admin dan Editor terpisah; registrasi publik tidak memberi hak staf | M3-02 (DEC-009, DEC-016) | CHANGELOG [M3-02]; area `access` 37, `guards` 23 | Preview M3-02 (login Admin, menu Users) | Terpenuhi untuk peran staf. Bagian "registrasi publik" baru bisa diuji setelah ada registrasi (M5; PRD §13 AC 10) |
 | AC 9 | Learning Hub: katalog per tema, video/playlist, panduan, toolkit unduhan publik, tanpa login | M3-11, M3-12, M3-12b, M3-13 | CHANGELOG [M3-11], [M3-12], [M3-12b], [M3-13]; area `learning-hub` 18, `toolkits` 16, `downloads` 18 | Learning Hub A–N (2026-11-18, form global diperbaiki di M3-12b) dan M3-12b A–F lulus; "Toolkit Learning Hub (M3-13)" A–N lulus (2026-11-20) | Terpenuhi |
 
-**M3 DONE (2026-11-20).** Cek Owner di Preview untuk M3-13 (ENVIRONMENTS §3.1 "Toolkit Learning Hub (M3-13)") lulus A–N, jadi PRD §13 AC 1–4, 7 dan 9 terpenuhi di staging (Vercel Preview); bukti per AC di tabel di atas. AC 5, 6, dan 10 ada di M5, AC 8 di M4 (bukan bagian exit M3). **Milestone berikutnya: M5** (akses pengguna publik; M5-01 SPIKE-002 dahulu).
+**M3 DONE (2026-11-20).** Cek Owner di Preview untuk M3-13 (ENVIRONMENTS §3.1 "Toolkit Learning Hub (M3-13)") lulus A–N, jadi PRD §13 AC 1–4, 7 dan 9 terpenuhi di staging (Vercel Preview); bukti per AC di tabel di atas. AC 5, 6, dan 10 ada di M5, AC 8 di M4 (bukan bagian exit M3). **Milestone berikutnya: M5** (akses pengguna publik; M5-01 SPIKE-002 dahulu). Penutupan M3 dan label kartu File toolkit di admin (`b3ed422`, `0f50659`; dicek Owner di Preview sebelum merge) masuk lewat PR #26 (`docs/m3-close-out`, merge `2bd114f`, 2026-11-20T08:40:09Z); bukti deploy: CHANGELOG [M3-13] di Docs.
 
 ### M5 — Akses pengguna publik (pra-launch)
 Dipindah ke sebelum M4 (DECISIONS §2.8 Q1 A). Bagian khusus subscriber pindah ke M7-02 dan M7-03.
+Jawaban Owner 2026-11-20: DECISIONS §2.18 ("Setuju semua", keputusan 1–16). Dua PR: PR-1 = M5-01 + M5-02 (branch `feat/m5-01-02-auth`, basis `origin/master` `2bd114f`), PR-2 = M5-03 + M5-04. Akun hanya hidup di Preview dan lokal sampai M4 (keputusan 5). Butir yang pindah ke M4 tercatat di M4.
 - [ ] M5-01 SPIKE-002 auth boundary (Supabase Auth publik vs staf Payload)
 - [ ] M5-02 Registrasi/login/logout/reset + verifikasi email, email transaksional (DEC-019), area akun minimal
 - [ ] M5-03 Evaluator akses server-side untuk level `registered` (DEC-010/011); entitlement manual subscriber pindah ke M7-02
@@ -117,6 +118,7 @@ Dipindah ke sebelum M4 (DECISIONS §2.8 Q1 A). Bagian khusus subscriber pindah k
 - [ ] Daftar periksa pra-publikasi halaman About (bagian M4-05; DECISIONS §2.15 keputusan 17; sumber: dokumen Owner 2026-11-17). Tugas organisasi, bukan kode; selesai sebelum About ID diterbitkan di Production: (1) nama legal dan status pendirian; (2) domain dan akun media sosial; (3) kontak yang aktif; (4) kata "dirancang" untuk program; (5) asal-usul nama dipertahankan sebagai filosofi Mahira.
 - [ ] Item dari M3-08 (belum diberi nomor task; DECISIONS §2.14): rate limiting unduhan publik; kunci S3 per environment; `noindex` untuk respons storage 200 (review L2); bucket `media` (`spike-m2-public` + prefiks `spike-m2`) diganti saat DEC-017/020
 
+- [ ] Item dari M5 (belum diberi nomor task; DECISIONS §2.18): provider email transaksional dan domain pengirim `mahira.id` (DEC-019, keputusan 6); kebijakan privasi final, tinjauan hukum, dan aturan hapus akun (DEC-020, M4-02, keputusan 9); audit unduhan FR-026 (keputusan 10); CAPTCHA registrasi/login (keputusan 14a); MFA staf (keputusan 14b); E2E Playwright (keputusan 15b); `https://mahira.id/**` di redirect allow-list Supabase Auth dan akun publik di Production (keputusan 5, 7)
 **Exit:** PRD §13 AC 8 lulus; AC 1–5, 6 (file `registered`), 7, 9, 10 tetap lulus (bagian subscriber AC 6 di M7, DECISIONS §2.8); rilis produksi tercatat di CHANGELOG sebagai versi `1.0.0`.
 
 ### M6 — Expansion pasca-launch
