@@ -44,6 +44,8 @@ Menetapkan sitemap konseptual, route ownership, locale behavior, URL invariants,
 
 Fase (DECISIONS §2.8 Q1 A, 2026-11-12): permukaan akun pra-launch (M5), kecuali Subscription (Phase 2, M7). Halaman akun mana yang masuk area akun minimal M5 diputuskan di M5-02.
 
+**Diputuskan 2026-11-20 (DECISIONS §2.18 keputusan 13; dibangun di M5-02):** halaman akun minimal = `/{locale}/login`, `/{locale}/register`, `/{locale}/forgot-password`, `/{locale}/reset-password`, dan `/{locale}/account` (email, status verifikasi, status akses "Terdaftar", ganti password, keluar), plus route handler `/{locale}/auth/*` (API-SPECIFICATION §4.1). Segmen Inggris di kedua locale. Semuanya `noindex`, tidak masuk sitemap, dan 404 saat akun mati (tanpa `APP_SUPABASE_PUBLISHABLE_KEY` atau `VERCEL_ENV=production`). `GET /{locale}/account` tanpa sesi → 307 ke `/{locale}/login` dari `proxy.ts`. Header memuat satu tautan netral "Akun"/"Account" ke `/{locale}/account` bila akun hidup, tanpa status login. `/account/profile`, `/account/library`, `/account/downloads`, dan `/account/subscription` tidak dibangun di PR-1 (profil: keputusan 8, tanpa tabel aplikasi).
+
 ### 3.3 Internal surface
 
 | Page | Route candidate | Access |

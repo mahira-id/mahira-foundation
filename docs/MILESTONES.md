@@ -102,11 +102,12 @@ Dasar kode: kode spike sudah ada di `master` sejak PR #3 (`e7f6876`, 2026-11-10,
 ### M5 — Akses pengguna publik (pra-launch)
 Dipindah ke sebelum M4 (DECISIONS §2.8 Q1 A). Bagian khusus subscriber pindah ke M7-02 dan M7-03.
 Jawaban Owner 2026-11-20: DECISIONS §2.18 ("Setuju semua", keputusan 1–16). Dua PR: PR-1 = M5-01 + M5-02 (branch `feat/m5-01-02-auth`, basis `origin/master` `2bd114f`), PR-2 = M5-03 + M5-04. Akun hanya hidup di Preview dan lokal sampai M4 (keputusan 5). Butir yang pindah ke M4 tercatat di M4.
-- [ ] M5-01 SPIKE-002 auth boundary (Supabase Auth publik vs staf Payload)
-- [ ] M5-02 Registrasi/login/logout/reset + verifikasi email, email transaksional (DEC-019), area akun minimal
+- [x] M5-01 SPIKE-002 auth boundary (Supabase Auth publik vs staf Payload) — selesai di kode 2026-11-20 (commit `3bfe97e`, `e1db8c3`, `b71a397`; unit 244/244; matriks build 6 mode; integrasi `auth-boundary` 5/5, `auth` 10/10; rusak-sengaja B1–B8; bukti per kriteria di SPIKE-002 "Hasil M5-01"). DEC-008 dan ADR-0003 diajukan Accepted, menunggu persetujuan Owner. Bukti di domain Preview menunggu cek Owner (ENVIRONMENTS §3.1 "Akun publik", butir F dan I)
+- [x] M5-02 Registrasi/login/logout/reset + verifikasi email, email transaksional (DEC-019), area akun minimal — selesai di kode 2026-11-20 (commit `3bfe97e` inti, `e1db8c3` halaman, `b71a397`; integrasi `account-pages` 8/8; lint 0, tsc 0). Email lewat SMTP bawaan Supabase hanya untuk uji (DEC-019 tetap Open, provider ke M4). Cek Owner di Preview (A–K) belum dijalankan; AC 10 di staging menunggu cek itu. Catatan jujur: run integrasi penuh pertama 18 dari 21 area lulus (DT13 dan LH5 infra pooler, ABUI1/ABUI2 kode, diperbaiki di `b71a397`); area yang gagal diulang lulus, suite penuh tidak diulang. Evidensi: TEST-PLAN §12.2 "Hasil M5 PR-1"
 - [ ] M5-03 Evaluator akses server-side untuk level `registered` (DEC-010/011); entitlement manual subscriber pindah ke M7-02
 - [ ] M5-04 File `registered`: private bucket + cek sesi di server + signed URL; tes matriks akses SRS §12.1 kolom Visitor/Registered/Editor/Admin (kolom subscriber pindah ke M7-03)
 
+Status 2026-11-20: PR-1 (M5-01 + M5-02) selesai di kode di branch `feat/m5-01-02-auth`, menunggu push, PR, dan cek Owner di Preview (ENVIRONMENTS §3.1 "Akun publik", langkah A–E dan cek A–K). PR-2 (M5-03 + M5-04) belum dimulai.
 **Exit:** PRD §13 AC 5, 6 (file `registered`) dan 10 lulus di staging.
 
 ### M4 — Launch hardening (Verifikasi & Rilis)

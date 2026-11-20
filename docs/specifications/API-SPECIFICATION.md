@@ -61,6 +61,29 @@ Semua path berikut adalah kandidat. Sesuaikan dengan Next.js Route Handler conve
 
 Payload admin APIs remain governed by Payload auth and access control. Do not expose service credentials or create a browser path that bypasses Payload access control.
 
+### 4.1 Implementasi M5-02: route handler auth akun publik
+Keputusan Owner 2026-11-20 (DECISIONS §2.18 keputusan 3, 5, 7, 13, 14). Kandidat `/api/account/*` di tabel di atas **tidak dibangun** di PR-1; akun memakai route handler form di bawah `/{locale}/auth/*` (kode: `app/[locale]/auth/*/route.ts`, `lib/auth/`). Semua respons `Cache-Control: private, no-store` dan `X-Robots-Tag: noindex`.
+
+| Method | Path | Fungsi | Hasil (303 ke) |
+|---|---|---|---|
+| POST | `/{locale}/auth/login` | Login email + password | `/{locale}/account`; gagal `/{locale}/login?status=…` |
+| POST | `/{locale}/auth/register` | Daftar; Supabase mengirim email konfirmasi | `/{locale}/register?status=check-email` |
+| POST | `/{locale}/auth/logout` | Keluar (`signOut` lokal, hapus cookie `sb-*`) | `/{locale}/login?status=signed-out` |
+| POST | `/{locale}/auth/forgot-password` | Minta tautan reset | `/{locale}/forgot-password?status=check-email` |
+| POST | `/{locale}/auth/reset-password` | Password baru; hanya dari sesi tautan email (`amr` `otp`/`recovery` ≤ 3600 detik) | `/{locale}/account?status=password-changed` |
+| POST | `/{locale}/auth/change-password` | Ganti password (password lama, baru, konfirmasi); identitas dari `getUser()` | `/{locale}/account?status=…` |
+| GET | `/{locale}/auth/confirm?token_hash=…&type=email\|recovery` | Tautan email; menukar `token_hash` jadi sesi | `email` → `/{locale}/account?status=email-confirmed`; `recovery` → `/{locale}/reset-password`; gagal `/{locale}/login?status=link-invalid` |
+
+Aturan:
+- Gerbang env: tanpa `APP_SUPABASE_PUBLISHABLE_KEY` atau `VERCEL_ENV=production` semua path ini 404 (termasuk POST), juga saat CMS hidup.
+- Setiap POST wajib header `Origin` dengan host sama dengan `x-forwarded-host ?? host`; selain itu 403 tanpa cookie. Method lain 405.
+- Tujuan redirect dibangun dari locale dan segmen tetap; tidak ada parameter `next`. Nilai `?status=` di luar daftar tertutup (`lib/auth/routes.ts`) diabaikan dan input pengguna tidak pernah ditampilkan kembali.
+- Pesan galat generik: login gagal (password salah, email tak dikenal, belum terverifikasi) memakai status `invalid`; register dan forgot-password menjawab `check-email` ada atau tidaknya akun; yang berbeda hanya validasi lokal, `weak-password` (register), rate limit (429), dan galat server atau jaringan (`error`). Hanya rate limit bawaan Supabase Auth; CAPTCHA dan rate limit sendiri ke M4.
+- Input: email dipangkas, ≤ 254 karakter; password 8–72 karakter dan konfirmasi harus sama; field lain diabaikan.
+- Sesi: cookie `sb-<ref>-auth-token`, `HttpOnly`, `SameSite=Lax`, `Path=/`, host-only, `Secure` di https. Refresh hanya di `proxy.ts` untuk `GET /{locale}/account` dan di handler.
+- Link email: template Supabase memakai `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email` (daftar) atau `type=recovery` (reset); `RedirectTo` = `{origin}/{locale}/auth/confirm`, sehingga locale ikut dalam tautan (ENVIRONMENTS §3.1).
+- Kontrak unduhan §5.2 untuk file `registered` (401/303 ke login) belum berubah; itu PR-2 (M5-04).
+
 ## 5. Download contract
 
 ### 5.1 Implementasi M3-08: `GET /api/files/{fileId}/download` (file `public`)

@@ -63,7 +63,7 @@ Saat CMS mati, `proxy.ts` menjawab 404 (`X-Robots-Tag: noindex`, `Cache-Control:
 
 TLS ke database: CA Supabase Root 2021 di-pin di `payload/db/supabase-root-ca.ts` (sertifikat publik, bukan secret). Tidak ada variabel `CMS_SUPABASE_DB_CA_CERT`. `CMS_SUPABASE_DATABASE_URI` tidak boleh berisi parameter `sslmode`, karena `pg` akan mengganti objek `ssl` yang memuat CA tersebut.
 
-Key lain di `.env.local` (`CMS_SUPABASE_URL`, `*_PUBLISHABLE_KEY`, `*_SECRET_KEY`, `APP_SUPABASE_SERVICE_ROLE_KEY`, `OPENALEX_API_KEY`) tidak dipakai kode dan tidak di-set di Vercel.
+Key lain di `.env.local` (`CMS_SUPABASE_URL`, `*_PUBLISHABLE_KEY`, `*_SECRET_KEY`, `APP_SUPABASE_SERVICE_ROLE_KEY`, `OPENALEX_API_KEY`) tidak dipakai kode dan tidak di-set di Vercel. Pengecualian sejak M5-02: `APP_SUPABASE_PUBLISHABLE_KEY` dipakai kode (gerbang akun publik, bagian "Akun publik" di bawah) dan `APP_SUPABASE_SECRET_KEY` dipakai hanya oleh helper tes lokal `tests/helpers/supabase-admin.ts` (tidak di Vercel dan tidak di CI).
 
 Sejak M3-02, saat CMS hidup (Preview, lokal), REST anonim ditolak (403) di semua koleksi dan GraphQL tetap mati; halaman publik membaca lewat Local API di server (DECISIONS §2.4 P1).
 
@@ -298,6 +298,49 @@ Persiapan dan langkah (A–N). `<URL>` = alamat Preview tanpa `/` di akhir.
 Bila ada langkah yang gagal: catat waktu (UTC), URL tanpa query string, langkah, Locale admin yang tertulis di pojok kanan atas, dan status dari **Network** (tanpa header `Cookie` dan tanpa signed URL); lalu Vercel → **Logs**, Environment `preview`, rentang waktu yang sama (log aplikasi hanya memuat nama galat, mis. `[toolkit-download] signing failed: FileStorageError`), dan kirim ke orchestrator.
 
 **Status 2026-11-19:** belum dijalankan; menunggu Owner mem-push dan membuka PR. Hasilnya dicatat di PR berikutnya (CHANGELOG dan MILESTONES, daftar periksa keluar M3).
+
+#### Akun publik (M5-01/M5-02): gerbang env dan langkah Owner di Supabase, Vercel, dan Preview
+
+Dasar: DECISIONS §2.18 keputusan 3–7, 13–15; API-SPECIFICATION §4.1; SPIKE-002. Akun publik memakai Supabase Auth di project APP `mahira.id` (bukan `mahira-cms`). Tanpa tabel aplikasi, migrasi, atau RLS di project APP (keputusan 8).
+
+| Variable | Server-only / secret | Vercel Preview | Vercel Production | Lokal |
+|---|---|---|---|---|
+| `APP_SUPABASE_PUBLISHABLE_KEY` | Server-only; bukan secret service-role (kunci publishable project `mahira.id`, tetap tidak masuk `NEXT_PUBLIC_*`, client, atau log) | Ya (langkah E) | Tidak | Opsional |
+| `APP_SUPABASE_URL` | Sudah ada (set CMS di atas) | Ya (sudah) | Tidak | Opsional |
+| `APP_SUPABASE_SECRET_KEY` | Secret; hanya helper tes lokal | **Tidak** | Tidak | Hanya untuk tes integrasi `auth*` |
+
+Aturan gerbang (`lib/auth/env.ts`, dipisah dari gerbang CMS):
+- `APP_SUPABASE_PUBLISHABLE_KEY` kosong: akun mati; route akun dan `/{locale}/auth/*` 404 (`noindex`, `no-store`), juga untuk POST dan saat CMS hidup; build tetap lulus; header tanpa tautan "Akun".
+- Kunci terisi tanpa `APP_SUPABASE_URL`: build dan start gagal; pesan hanya menyebut nama `APP_SUPABASE_URL`, tidak pernah nilai.
+- `VERCEL_ENV=production`: akun selalu mati (keputusan 5); dibuka di M4 lewat PR yang di-review.
+- Karena `APP_SUPABASE_URL` sudah ada di Preview, Preview yang hanya punya lima variabel CMS tetap build dengan akun mati.
+- Tidak ada secret atau service-role key di Vercel, dan tidak ada client Supabase di browser.
+
+Langkah Owner (Anda menerapkannya sendiri; agen tidak mengubah setelan Supabase atau Vercel). Nama menu dashboard dapat berbeda sedikit dari tulisan di bawah; bila beda, catat nama yang Anda lihat.
+- **A. Setelan Supabase Auth** (project `mahira.id`, Authentication → Sign In / Providers dan Attack Protection). Provider **Email** saja aktif (matikan OAuth, magic link, telepon). **Confirm email** ON. **Secure email change** ON. Panjang password minimal **8**, tanpa syarat huruf besar, angka, atau simbol. **Leaked password protection** ON bila plan Anda menyediakannya (catat bila tidak). ✅ lulus bila tidak ada provider lain yang aktif dan semua setelan di atas tersimpan.
+- **B. URL.** Authentication → URL Configuration. **Site URL**: `http://localhost:3000`. **Redirect URLs** (tepat dua): `http://localhost:3000/**` dan `https://mahira-foundation-*-mahiraindodev-2070.vercel.app/**`. Jangan menambah `https://mahira.id/**` (M4). ✅ lulus bila daftar memuat tepat dua pola itu.
+- **C. Template email** (Authentication → Email Templates; bahasa Indonesia lalu Inggris dalam satu isi). Template **Confirm signup**: subjek `Konfirmasi email Mahira / Confirm your Mahira email`; isi:
+  `<p>Klik tautan berikut untuk mengonfirmasi email akun Mahira Anda.</p><p><a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Konfirmasi email</a></p><p>Abaikan email ini bila Anda tidak mendaftar.</p><hr><p>Click the link below to confirm the email of your Mahira account.</p><p><a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Confirm email</a></p><p>Ignore this email if you did not sign up.</p>`
+  Template **Reset password**: subjek `Atur ulang password Mahira / Reset your Mahira password`; isi sama, tetapi `type=recovery`, teks ID "Klik tautan berikut untuk mengatur ulang password akun Mahira Anda." dan tombol "Atur ulang password", teks EN "Click the link below to reset the password of your Mahira account." dan tombol "Reset password", serta kalimat abaikan bila Anda tidak memintanya. Jangan mengubah template lain. `{{ .RedirectTo }}` sudah memuat locale (`{origin}/{locale}/auth/confirm`). ✅ lulus bila kedua template tersimpan dan tautan memakai `{{ .RedirectTo }}` serta `{{ .TokenHash }}` (bukan `{{ .ConfirmationURL }}`).
+- **D. Kunci tanda tangan JWT.** Project Settings → JWT Keys (atau JWT Signing Keys). Laporkan apakah kunci aktif **asimetris** (ES256 atau RS256) atau legacy HS256. Pengukuran lokal 2026-11-20: ES256. Jangan menempel kunci atau token. ✅ lulus bila Anda melaporkan jenis kuncinya.
+- **E. Variabel Vercel Preview.** Vercel → project → Settings → Environment Variables. Tambah `APP_SUPABASE_PUBLISHABLE_KEY` dengan nilai kunci **publishable** project `mahira.id` (sama dengan di `.env.local`; bukan secret key, bukan service-role), **hanya** untuk environment **Preview**; jangan Production dan jangan variabel `NEXT_PUBLIC_*`. Lalu **Redeploy** Preview PR ini (variabel baru hanya terbaca deployment baru). ✅ lulus bila variabel tercatat hanya di Preview dan deployment Preview baru berstatus Ready.
+
+SMTP bawaan Supabase hanya mengirim ke email anggota tim org Supabase "Mahira Dev" (±2 email per jam, tanpa SLA). Pakai alamat anggota tim untuk pendaftaran uji; jangan mencoba alamat lain. Provider email dan domain pengirim `mahira.id` ditentukan di M4 (DEC-019).
+
+Cek Owner di Preview (huruf A–J). Anda sendiri yang mem-push: `git push -u origin feat/m5-01-02-auth`, lalu buka PR. `<URL>` = alamat Preview dari komentar bot Vercel di PR (tabel deployment; tunggu **Ready**), tanpa `/` di akhir. Jangan menempel password, cookie, atau tautan email ke laporan; cukup tulis lulus atau gagal per huruf, plus waktu UTC, URL tanpa query, dan status dari Network bila gagal.
+- **A. Tautan header.** Buka `<URL>/` di jendela private. ✅ lulus bila ada satu tautan "Akun" di header (desktop dan menu mobile) yang menuju `/id/account`.
+- **B. Akun tanpa sesi.** Klik "Akun". ✅ lulus bila Anda sampai di `<URL>/id/login` (formulir email dan password, tautan ke daftar dan lupa password), tanpa kedipan atau pengulangan pengalihan.
+- **C. Daftar.** Buka `<URL>/id/register`, daftar dengan email anggota tim Mahira Dev dan password ≥ 8 karakter; perhatikan catatan privasi berlabel draf. ✅ lulus bila Anda dialihkan ke `/id/register?status=check-email` dengan pesan "cek email" dan email konfirmasi tiba (dua bahasa, ID lalu EN).
+- **D. Konfirmasi email.** Klik tautan di email. ✅ lulus bila Anda sampai di `<URL>/id/account?status=email-confirmed`, halaman menampilkan email Anda, status "Terverifikasi", dan akses "Terdaftar".
+- **E. Keluar.** Tekan "Keluar", lalu buka `<URL>/id/account`. ✅ lulus bila setelah keluar halaman login menampilkan pesan sudah keluar, dan `/id/account` langsung mengarah ke `/id/login` (tanpa menampilkan email Anda).
+- **F. Masuk, tanpa bounce (butir untuk router Next 16.4.4).** Di `/id/login` masuk dengan akun C. Muat ulang halaman akun dan buka `/id/account` lewat tautan "Akun" beberapa kali. ✅ lulus bila Anda sampai di `/id/account` dan tetap di sana, tanpa berpindah-pindah ke `/id/login`, dan tidak ada loop saat tombol Back.
+- **G. Ganti password.** Di halaman akun isi password lama, password baru (≥ 8), dan konfirmasi; setelah itu keluar dan masuk lagi dengan password baru. ✅ lulus bila muncul pesan password berubah, dan password baru berhasil dipakai masuk (password lama tidak lagi berlaku).
+- **H. Lupa password.** Tunggu ≥ 30 menit sejak C (batas ±2 email per jam), buka `<URL>/id/forgot-password`, kirim email akun C, klik tautan di email. ✅ lulus bila Anda sampai di `/id/reset-password`, password baru tersimpan, dan Anda dapat masuk dengan password itu.
+- **I. Admin staf tetap berfungsi.** Di jendela biasa, ikuti "Login admin" langkah 2–5 (bagian "Login admin dan langkah Owner butir 1c" di atas) dengan akun staf Anda, **sementara** sesi akun publik dari F masih aktif di browser yang sama. Lalu di jendela private yang hanya login staf buka `<URL>/id/account`. ✅ lulus bila `/admin` terbuka tanpa loop `/admin` ↔ `/admin/login`, sesi publik tidak membuka admin, dan sesi staf saja di `/id/account` dialihkan ke `/id/login`.
+- **J. English (opsional).** Ulangi B dan F di `<URL>/en/...`. ✅ lulus bila semua halaman dan pesan berbahasa Inggris dan tautan header menuju `/en/account`.
+- **K. Bersihkan.** Supabase → Authentication → Users: hapus akun uji dari C. Jangan menghapus akun lain. ✅ lulus bila akun uji tidak ada lagi di daftar.
+
+Bila ada langkah yang gagal: catat huruf, waktu (UTC), URL tanpa query string, dan status dari **Network** (tanpa header `Cookie`, `Set-Cookie`, dan tanpa tautan email). **Status 2026-11-20:** belum dijalankan; menunggu Owner mem-push dan membuka PR. Hasil dicatat di PR berikutnya (CHANGELOG, MILESTONES, SPIKE-002 "Perilaku di domain Preview").
 
 #### Langkah Owner dari jawaban 2026-11-10 (M3-02)
 
