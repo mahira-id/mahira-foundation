@@ -1,4 +1,8 @@
+import type { AuthPage, AuthStatus } from "@/lib/auth/routes";
 import type { Locale } from "./locales";
+
+/** Status messages of one account page: one text for every status of lib/auth/routes.ts. */
+type AccountStatusTexts<P extends AuthPage> = Record<AuthStatus<P>, string>;
 
 /** UI strings of the locale-prefixed pages. Both locales are complete. */
 export type Dictionary = {
@@ -106,6 +110,65 @@ export type Dictionary = {
     viewAll: string;
   };
   /**
+   * Public accounts (M5-02, DECISIONS §2.18 decisions 9, 13, 14): the pages
+   * `/{locale}/{login,register,forgot-password,reset-password,account}`.
+   * Messages are generic: none says whether an email has an account.
+   */
+  account: {
+    /** Header link label (decision 13: one neutral link, no login state). */
+    navLabel: string;
+    titles: Record<AuthPage, string>;
+    intros: Record<AuthPage, string>;
+    fields: {
+      email: string;
+      password: string;
+      passwordConfirm: string;
+      currentPassword: string;
+      newPassword: string;
+      newPasswordConfirm: string;
+      /** Hint under every new-password field. */
+      passwordHint: string;
+    };
+    buttons: {
+      login: string;
+      register: string;
+      forgotPassword: string;
+      resetPassword: string;
+      changePassword: string;
+      logout: string;
+    };
+    links: {
+      toRegister: string;
+      toLogin: string;
+      toForgotPassword: string;
+    };
+    /** Privacy note of the registration form (decision 9); a draft, not yet reviewed by legal. */
+    privacy: { heading: string; body: string; draft: string };
+    /** Account page: facts and sections. */
+    details: {
+      heading: string;
+      email: string;
+      verification: string;
+      verified: string;
+      notVerified: string;
+      access: string;
+      accessRegistered: string;
+      changePasswordHeading: string;
+      logoutHeading: string;
+    };
+    /** Account page without a valid session. */
+    sessionEnded: { title: string; body: string; login: string };
+    /** Fallback of the account page while the session is read. */
+    loading: string;
+    statuses: {
+      login: AccountStatusTexts<"login">;
+      register: AccountStatusTexts<"register">;
+      "forgot-password": AccountStatusTexts<"forgot-password">;
+      "reset-password": AccountStatusTexts<"reset-password">;
+      account: AccountStatusTexts<"account">;
+    };
+  };
+  /**
    * Not-found page of the locale-prefixed pages (app/[locale]/not-found.tsx,
    * M3-05b); both locales also on the global 404 page (app/global-not-found.tsx, M3-07).
    */
@@ -203,6 +266,111 @@ export const dictionaries: Record<Locale, Dictionary> = {
       backToCatalog: "Learning Hub",
       viewAll: "Lihat semua materi",
     },
+    account: {
+      navLabel: "Akun",
+      titles: {
+        login: "Masuk",
+        register: "Daftar akun",
+        "forgot-password": "Lupa password",
+        "reset-password": "Atur password baru",
+        account: "Akun Anda",
+      },
+      intros: {
+        login: "Masuk dengan email dan password akun Anda.",
+        register: "Buat akun dengan email dan password. Kami mengirim tautan verifikasi ke email itu.",
+        "forgot-password": "Masukkan email akun Anda. Kami mengirim tautan untuk mengatur ulang password.",
+        "reset-password": "Pilih password baru untuk akun Anda.",
+        account: "Data akun dan pengaturan dasar.",
+      },
+      fields: {
+        email: "Email",
+        password: "Password",
+        passwordConfirm: "Ulangi password",
+        currentPassword: "Password saat ini",
+        newPassword: "Password baru",
+        newPasswordConfirm: "Ulangi password baru",
+        passwordHint: "8 sampai 72 karakter.",
+      },
+      buttons: {
+        login: "Masuk",
+        register: "Daftar akun",
+        forgotPassword: "Kirim tautan atur ulang",
+        resetPassword: "Simpan password baru",
+        changePassword: "Ganti password",
+        logout: "Keluar",
+      },
+      links: {
+        toRegister: "Belum punya akun? Daftar akun",
+        toLogin: "Sudah punya akun? Masuk",
+        toForgotPassword: "Lupa password?",
+      },
+      privacy: {
+        heading: "Data yang kami kumpulkan",
+        body: "Kami mengumpulkan alamat email Anda. Data ini dipakai untuk akun dan untuk mengunduh dokumen yang memerlukan akun.",
+        draft: "Teks ini draf dan belum ditinjau hukum.",
+      },
+      details: {
+        heading: "Data akun",
+        email: "Email",
+        verification: "Verifikasi email",
+        verified: "Terverifikasi",
+        notVerified: "Belum terverifikasi",
+        access: "Tingkat akses",
+        accessRegistered: "Terdaftar",
+        changePasswordHeading: "Ganti password",
+        logoutHeading: "Keluar dari akun",
+      },
+      sessionEnded: {
+        title: "Sesi Anda berakhir",
+        body: "Masuk kembali untuk melihat akun Anda.",
+        login: "Masuk",
+      },
+      loading: "Memuat akun…",
+      statuses: {
+        login: {
+          invalid: "Email atau password tidak cocok, atau email belum diverifikasi. Periksa kembali lalu coba lagi.",
+          "rate-limited": "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
+          error: "Layanan akun belum dapat dihubungi. Coba lagi beberapa saat lagi.",
+          "signed-out": "Anda sudah keluar.",
+          "session-ended": "Sesi Anda berakhir. Masuk kembali untuk melanjutkan.",
+          "link-invalid": "Tautan tidak valid atau sudah kedaluwarsa. Masuk, atau minta tautan baru lewat \"Lupa password\".",
+          "invalid-input": "Isi email yang valid dan password 8 sampai 72 karakter.",
+        },
+        register: {
+          "check-email":
+            "Periksa kotak masuk email Anda. Bila email itu dapat didaftarkan, kami mengirim tautan verifikasi; klik tautan itu untuk mengaktifkan akun.",
+          "invalid-input": "Isi email yang valid dan password 8 sampai 72 karakter.",
+          "password-mismatch": "Password dan ulangan password tidak sama.",
+          "weak-password": "Password terlalu lemah. Pilih password lain yang lebih sulit ditebak.",
+          "rate-limited": "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
+          error: "Layanan akun belum dapat dihubungi. Coba lagi beberapa saat lagi.",
+        },
+        "forgot-password": {
+          "check-email": "Periksa kotak masuk email Anda. Bila email itu terdaftar, kami mengirim tautan untuk mengatur ulang password.",
+          "invalid-input": "Isi alamat email yang valid.",
+          "rate-limited": "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
+          error: "Layanan akun belum dapat dihubungi. Coba lagi beberapa saat lagi.",
+          "link-invalid": "Tautan atur ulang password tidak valid atau sudah kedaluwarsa. Minta tautan baru di bawah ini.",
+        },
+        "reset-password": {
+          "invalid-input": "Password baru harus 8 sampai 72 karakter.",
+          "password-mismatch": "Password dan ulangan password tidak sama.",
+          "weak-password": "Password terlalu lemah. Pilih password lain yang lebih sulit ditebak.",
+          "same-password": "Password baru harus berbeda dari password lama.",
+          error: "Password belum dapat disimpan. Coba lagi, atau minta tautan baru lewat \"Lupa password\".",
+        },
+        account: {
+          "email-confirmed": "Email Anda terverifikasi. Akun Anda aktif.",
+          "password-changed": "Password sudah diganti.",
+          "invalid-current": "Password saat ini tidak cocok.",
+          "invalid-input": "Isi password saat ini dan password baru 8 sampai 72 karakter.",
+          "password-mismatch": "Password baru dan ulangannya tidak sama.",
+          "weak-password": "Password baru terlalu lemah. Pilih password lain yang lebih sulit ditebak.",
+          "same-password": "Password baru harus berbeda dari password lama.",
+          error: "Password belum dapat diganti. Coba lagi beberapa saat lagi.",
+        },
+      },
+    },
     notFound: {
       title: "Halaman tidak ditemukan",
       body: "Halaman yang Anda cari tidak ada atau tidak lagi tersedia.",
@@ -293,6 +461,111 @@ export const dictionaries: Record<Locale, Dictionary> = {
       filesPreviewNote: "Downloads become active once published.",
       backToCatalog: "Learning Hub",
       viewAll: "View all resources",
+    },
+    account: {
+      navLabel: "Account",
+      titles: {
+        login: "Sign in",
+        register: "Create an account",
+        "forgot-password": "Forgot password",
+        "reset-password": "Set a new password",
+        account: "Your account",
+      },
+      intros: {
+        login: "Sign in with the email and password of your account.",
+        register: "Create an account with an email and a password. We send a verification link to that email.",
+        "forgot-password": "Enter the email of your account. We send a link to reset your password.",
+        "reset-password": "Choose a new password for your account.",
+        account: "Your account details and basic settings.",
+      },
+      fields: {
+        email: "Email",
+        password: "Password",
+        passwordConfirm: "Repeat password",
+        currentPassword: "Current password",
+        newPassword: "New password",
+        newPasswordConfirm: "Repeat new password",
+        passwordHint: "8 to 72 characters.",
+      },
+      buttons: {
+        login: "Sign in",
+        register: "Create account",
+        forgotPassword: "Send reset link",
+        resetPassword: "Save new password",
+        changePassword: "Change password",
+        logout: "Sign out",
+      },
+      links: {
+        toRegister: "No account yet? Create an account",
+        toLogin: "Already have an account? Sign in",
+        toForgotPassword: "Forgot password?",
+      },
+      privacy: {
+        heading: "Data we collect",
+        body: "We collect your email address. We use it for your account and for downloading documents that need an account.",
+        draft: "This text is a draft and has not been reviewed by legal.",
+      },
+      details: {
+        heading: "Account details",
+        email: "Email",
+        verification: "Email verification",
+        verified: "Verified",
+        notVerified: "Not verified",
+        access: "Access level",
+        accessRegistered: "Registered",
+        changePasswordHeading: "Change password",
+        logoutHeading: "Sign out",
+      },
+      sessionEnded: {
+        title: "Your session has ended",
+        body: "Sign in again to see your account.",
+        login: "Sign in",
+      },
+      loading: "Loading your account…",
+      statuses: {
+        login: {
+          invalid: "The email and password do not match, or the email is not verified. Check them and try again.",
+          "rate-limited": "Too many attempts. Wait a few minutes and try again.",
+          error: "The account service cannot be reached. Please try again in a moment.",
+          "signed-out": "You have signed out.",
+          "session-ended": "Your session has ended. Sign in again to continue.",
+          "link-invalid": "The link is invalid or has expired. Sign in, or ask for a new link with \"Forgot password\".",
+          "invalid-input": "Enter a valid email and a password of 8 to 72 characters.",
+        },
+        register: {
+          "check-email":
+            "Check your inbox. If that email can be registered, we have sent a verification link; click it to activate the account.",
+          "invalid-input": "Enter a valid email and a password of 8 to 72 characters.",
+          "password-mismatch": "The password and its repeat do not match.",
+          "weak-password": "That password is too weak. Choose one that is harder to guess.",
+          "rate-limited": "Too many attempts. Wait a few minutes and try again.",
+          error: "The account service cannot be reached. Please try again in a moment.",
+        },
+        "forgot-password": {
+          "check-email": "Check your inbox. If that email has an account, we have sent a link to reset the password.",
+          "invalid-input": "Enter a valid email address.",
+          "rate-limited": "Too many attempts. Wait a few minutes and try again.",
+          error: "The account service cannot be reached. Please try again in a moment.",
+          "link-invalid": "The reset link is invalid or has expired. Ask for a new link below.",
+        },
+        "reset-password": {
+          "invalid-input": "The new password must be 8 to 72 characters.",
+          "password-mismatch": "The password and its repeat do not match.",
+          "weak-password": "That password is too weak. Choose one that is harder to guess.",
+          "same-password": "The new password must differ from the old one.",
+          error: "The password could not be saved. Try again, or ask for a new link with \"Forgot password\".",
+        },
+        account: {
+          "email-confirmed": "Your email is verified. Your account is active.",
+          "password-changed": "Your password has been changed.",
+          "invalid-current": "The current password does not match.",
+          "invalid-input": "Enter your current password and a new password of 8 to 72 characters.",
+          "password-mismatch": "The new password and its repeat do not match.",
+          "weak-password": "The new password is too weak. Choose one that is harder to guess.",
+          "same-password": "The new password must differ from the old one.",
+          error: "The password could not be changed. Please try again in a moment.",
+        },
+      },
     },
     notFound: {
       title: "Page not found",

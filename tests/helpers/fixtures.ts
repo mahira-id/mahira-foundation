@@ -24,6 +24,7 @@ export const EMAIL_DOMAIN = "@example.invalid";
 export type Area =
   | "about"
   | "access"
+  | "account-pages"
   | "admin"
   | "auth-boundary"
   | "detail"

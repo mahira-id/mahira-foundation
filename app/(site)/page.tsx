@@ -13,7 +13,10 @@ import { TopicIndex } from "@/components/home/topic-index";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
 import { ArrowIcon } from "@/components/ui/icons";
+import { isAuthEnabled } from "@/lib/auth/env";
+import { authPagePath } from "@/lib/auth/routes";
 import { getHomepageData } from "@/lib/cms/public-content";
+import { getDictionary } from "@/lib/i18n/dictionaries";
 import { planHomepage, type HomepagePlan } from "@/lib/home/homepage-view";
 import { principles } from "@/lib/landing-content";
 import { homeMetadata } from "@/lib/seo/metadata";
@@ -30,12 +33,14 @@ export const metadata: Metadata = homeMetadata();
  */
 export default function Home() {
   const cmsOn = isCmsEnabled();
+  const accountsOn = isAuthEnabled();
 
   return (
     <>
       <Header
         learningHubDesktop={cmsOn ? <HomeNavLearningHub variant="desktop" /> : undefined}
         learningHubMobile={cmsOn ? <HomeNavLearningHub variant="mobile" /> : undefined}
+        account={accountsOn ? { href: authPagePath("id", "account"), label: getDictionary("id").account.navLabel } : undefined}
       />
       <main id="main">
         <section

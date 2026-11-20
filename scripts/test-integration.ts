@@ -47,10 +47,13 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *   auth-boundary public and staff identity apart: no Payload access for a public account or
  *                 forged role metadata, a staff session is no public session, both side by
  *                 side, public PDF download unchanged (M5-01, SPIKE-002)
+ *   account-pages the account pages (login, register, forgot-password, reset-password, account):
+ *                 forms and their actions, noindex, status messages, the session on the
+ *                 account page, staff cookie ignored, header link (M5-02)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left, no fixture
  *                 text in the About and Learning Hub globals (always last)
  *
- * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,toolkits,auth,auth-boundary,db-invariants]
+ * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,toolkits,auth,auth-boundary,account-pages,db-invariants]
  * Never run two at once: the files share one database and one port.
  */
 const FILES = {
@@ -73,6 +76,7 @@ const FILES = {
   toolkits: "tests/integration/toolkit-files.test.ts",
   auth: "tests/integration/auth.test.ts",
   "auth-boundary": "tests/integration/auth-boundary.test.ts",
+  "account-pages": "tests/integration/account-pages.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;

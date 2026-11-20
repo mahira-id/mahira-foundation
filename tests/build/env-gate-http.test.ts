@@ -37,7 +37,8 @@ import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publica
  * Toolkit files (M3-13, DECISIONS §2.17): `/api/learning-hub/files/1/download?locale=id`
  * closed in off and prod (G5.11); an invalid id or no locale 404 in on (G4.8, G4.9).
  * Accounts (M5-02, DECISIONS §2.18), G11, by AUTH_GATE_MODE (off or on;
- * the build matrix sets it per mode): see the describe block below.
+ * the build matrix sets it per mode): see the describe block below. G12
+ * (account UI): the account pages and the header link, on and off.
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
@@ -146,6 +147,62 @@ describe(`account env gate over HTTP (AUTH_GATE_MODE=${AUTH_MODE || "unset"})`, 
     test("G11.5 GET /id/auth/login (a POST-only handler): 405", async () => {
       assert.equal((await request("GET", "/id/auth/login")).status, 405);
     });
+  }
+});
+
+// M5-02 account UI (DECISIONS §2.18 decision 13), G12, by AUTH_GATE_MODE. On:
+// the four public account pages answer 200 with robots noindex and a form
+// that posts to its handler, and the header links "Akun" / "Account" to the
+// account page from `/` and the publication index. Off (also with the CMS on,
+// and in production): no page shows an account link.
+describe(`account pages over HTTP (AUTH_GATE_MODE=${AUTH_MODE || "unset"})`, () => {
+  const ACCOUNT_LINK = /data-header-account|href="\/(?:id|en)\/account"/;
+
+  if (AUTH_MODE === "on") {
+    const forms: Array<[string, string, string[]]> = [
+      ["login", "login", ["email", "password"]],
+      ["register", "register", ["email", "password", "password_confirm"]],
+      ["forgot-password", "forgot-password", ["email"]],
+      ["reset-password", "reset-password", ["password", "password_confirm"]],
+    ];
+    let index = 0;
+    for (const locale of ["id", "en"]) {
+      for (const [page, handler, fields] of forms) {
+        index += 1;
+        test(`G12.${index} GET /${locale}/${page}: 200, noindex, form to /${locale}/auth/${handler}`, async () => {
+          const result = await request("GET", `/${locale}/${page}`);
+          assert.equal(result.status, 200, `GET /${locale}/${page}`);
+          assert.match(result.body, /<meta name="robots" content="noindex[^"]*"/, "robots noindex");
+          assert.equal(result.body.includes(`<html lang="${locale}"`), true, "html lang");
+          assert.equal(result.body.includes(`action="/${locale}/auth/${handler}"`), true, "form action");
+          for (const field of fields) assert.equal(result.body.includes(`name="${field}"`), true, `field ${field}`);
+          assert.equal(result.body.includes("supabase.co"), false, "no Supabase host in the HTML");
+        });
+      }
+    }
+    for (const [offset, [path, href]] of [
+      ["/", "/id/account"],
+      ["/id/publications", "/id/account"],
+      ["/en/publications", "/en/account"],
+    ].entries()) {
+      test(`G12.${index + offset + 1} GET ${path}: header link to ${href}`, async () => {
+        const result = await request("GET", path);
+        assert.equal(result.status, 200, `GET ${path}`);
+        assert.equal(result.body.includes(`href="${href}"`), true, `link to ${href}`);
+        assert.equal(result.body.includes("data-header-account"), true, "header account link marker");
+      });
+    }
+  }
+
+  if (AUTH_MODE === "off") {
+    const paths = MODE === "on" ? ["/", "/id/publications", "/en/publications"] : ["/"];
+    for (const [offset, path] of paths.entries()) {
+      test(`G12.${offset + 1} GET ${path} with accounts off: no account link`, async () => {
+        const result = await request("GET", path);
+        assert.equal(result.status, 200, `GET ${path}`);
+        assert.equal(ACCOUNT_LINK.test(result.body), false, "an account link");
+      });
+    }
   }
 });
 

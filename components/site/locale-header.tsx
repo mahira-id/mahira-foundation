@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/mahira";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
+import { isAuthEnabled } from "@/lib/auth/env";
+import { authPagePath } from "@/lib/auth/routes";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { languageSwitchHref, otherLocale, type Locale } from "@/lib/i18n/locales";
 
@@ -27,14 +29,21 @@ type LocaleHeaderProps = {
    * none.
    */
   learningHubLink?: ReactNode;
+  /** True on the account page itself: marks the "Akun" link as the current page. */
+  accountCurrent?: boolean;
 };
 
 /**
  * Header bar of the locale-prefixed pages; same styling as the homepage
  * header. The logo goes to `/`, which is Indonesian, so English pages mark
  * it with `hrefLang="id"` (P8 A).
+ *
+ * M5-02 (DECISIONS §2.18 decision 13): one neutral "Akun" / "Account" link
+ * to `/{locale}/account`, after the other links, only while accounts are on
+ * (lib/auth/env.ts). It shows no login state. A plain `<a>`: the client
+ * router must not store a redirect of the account gate (plan D2, §2.10).
  */
-export function LocaleHeader({ locale, switcher, aboutLink, learningHubLink }: LocaleHeaderProps) {
+export function LocaleHeader({ locale, switcher, aboutLink, learningHubLink, accountCurrent = false }: LocaleHeaderProps) {
   const dictionary = getDictionary(locale);
 
   return (
@@ -50,6 +59,16 @@ export function LocaleHeader({ locale, switcher, aboutLink, learningHubLink }: L
         </Link>
         {learningHubLink}
         {aboutLink}
+        {isAuthEnabled() ? (
+          <a
+            aria-current={accountCurrent ? "page" : undefined}
+            className={`ml-auto [[data-header-learning-hub]+&]:ml-0 [[data-header-about]+&]:ml-0 pb-0.5 text-[0.8125rem] font-semibold text-white underline-offset-4 hover:underline${accountCurrent ? " border-b border-orange" : ""}`}
+            data-header-account
+            href={authPagePath(locale, "account")}
+          >
+            {dictionary.account.navLabel}
+          </a>
+        ) : null}
         <LanguageSwitcher
           locale={locale}
           otherHref={switcher?.href ?? languageSwitchHref(otherLocale(locale))}
