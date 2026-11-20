@@ -7,6 +7,7 @@ import {
   refuseOversizedFile,
   setFileStatus,
 } from "../hooks/publication-files";
+import { showLabelInAdminFileCard } from "../hooks/toolkit-files";
 
 /**
  * Toolkit files (M3-13, DECISIONS §2.16 decision 9, §2.17 decisions 1A–5A;
@@ -58,6 +59,7 @@ export const ToolkitFiles: CollectionConfig = {
   hooks: {
     beforeChange: [setFileStatus, refuseOversizedFile, refuseLiveToolkitFileReplacement],
     beforeDelete: [refuseLiveToolkitFileDelete],
+    afterRead: [showLabelInAdminFileCard],
   },
   fields: [
     {
