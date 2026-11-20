@@ -37,10 +37,13 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *                 global: published + public types only (no toolkit before M3-13), EN checkbox,
  *                 YouTube ID at the save boundary, closed REST/GraphQL, guide preview
  *                 (?resource=), SEO, sitemap; snapshot + restore of the global (M3-11/12)
+ *   toolkits      toolkit files: private bucket under toolkits/, publish needs a ready file, one
+ *                 toolkit per file, /api/learning-hub/files/{id}/download?locale= checks and 60 s
+ *                 attachment URL, live-file rule, closed REST/GraphQL, client uploads (M3-13)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left, no fixture
  *                 text in the About and Learning Hub globals (always last)
  *
- * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,db-invariants]
+ * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,toolkits,db-invariants]
  * Never run two at once: the files share one database and one port.
  */
 const FILES = {
@@ -60,6 +63,7 @@ const FILES = {
   downloads: "tests/integration/publication-files.test.ts",
   about: "tests/integration/about.test.ts",
   "learning-hub": "tests/integration/learning-hub.test.ts",
+  toolkits: "tests/integration/toolkit-files.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;

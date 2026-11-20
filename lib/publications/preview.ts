@@ -90,12 +90,12 @@ export function resourcePath(locale: unknown, slug: unknown): string | null {
  * Staff draft preview of a Learning Hub guide (M3-11, DECISIONS §2.16
  * decision 12A): the admin Preview button of a `learning-resources` record
  * opens `/api/preview?resource=<id>&locale=<locale>` for the locale being
- * edited; only guides have a detail page (videos and playlists play in the
- * catalog; toolkit preview comes with M3-13), so other types get no button.
+ * edited; only guides and (since M3-13) toolkits have a detail page
+ * (videos and playlists play in the catalog), so other types get no button.
  */
 export function resourcePreviewUrl(doc: { id?: unknown; type?: unknown }, locale: unknown): string | null {
   const { id } = doc;
-  if (doc.type !== "guide") return null;
+  if (doc.type !== "guide" && doc.type !== "toolkit") return null;
   if (typeof id !== "number" || !Number.isInteger(id) || id < 1 || id > MAX_ID) return null;
   if (typeof locale !== "string" || !isLocale(locale)) return null;
   return `${PREVIEW_PATH}?resource=${id}&locale=${locale}`;

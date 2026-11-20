@@ -22,6 +22,7 @@ import { adminFormHasValue, adminFormLocale, adminLocaleLabel } from "../helpers
 import { diffGlobal, restoreGlobal, snapshotGlobal, summarizeGlobal, type GlobalSnapshot } from "../helpers/global-state";
 import { BASE_URL, assertServerUp, getPage, login, pageFact, postForm, rest, restFact, type PageResult } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
+import { fixturePdf } from "../helpers/pdf";
 import { assertNotFoundPage, decodeAmp, robotsContent } from "../helpers/publication-pages";
 
 /**
@@ -30,8 +31,9 @@ import { assertNotFoundPage, decodeAmp, robotsContent } from "../helpers/publica
  * `learning-hub` global, `/{locale}/learning-hub` and
  * `/{locale}/learning-hub/{slug}`. A locale's catalog exists only with at
  * least one visible resource (published, public type, that locale's title
- * and summary, an active Topic; EN also "Versi EN siap tayang"); toolkits
- * never show before M3-13; the YouTube source is reduced to its ID at the
+ * and summary, an active Topic; EN also "Versi EN siap tayang"); a toolkit
+ * without a ready file never shows (M3-13, LH5; the toolkit download itself
+ * is tests/integration/toolkit-files.test.ts); the YouTube source is reduced to its ID at the
  * save boundary; anonymous REST/GraphQL is denied; the guide preview runs
  * through `/api/preview?resource=<id>&locale=<l>` + Draft Mode and checks
  * the staff session on every request. M3-12b (LH12, LH13): each admin save
@@ -663,7 +665,21 @@ describe("Learning Hub (M3-11/12: resources, catalog, guide pages, YouTube IDs, 
     assert.deepEqual(guideRow.map((row) => row.youtube_id), [null], "a guide stores no YouTube value");
   });
 
-  test("LH5 a published toolkit is never public: no anonymous read, not in the catalog, no page, not in the sitemap or the homepage data", async () => {
+  test("LH5 a published toolkit without a ready file is never public (M3-13 decision 2A, second layer): not in the catalog, no page, not in the sitemap or the homepage data; the Editor's preview opens", async () => {
+    // Publishing needs a ready file (decision 2A, TK2), so the toolkit is
+    // published with one; then the file's status is set to `pending`
+    // (overrideAccess bypasses the read-only field, as a future processing
+    // step would) to prove the public site fails closed on its own.
+    const pdf = fixturePdf("learning-hub toolkit");
+    const file = await p().create({
+      collection: "toolkit-files",
+      data: { label: fx("id", "T", "file"), language: "id", status: "ready" },
+      file: { data: pdf, mimetype: "application/pdf", name: `${PREFIX}toolkit.pdf`, size: pdf.length },
+      locale: "id",
+      depth: 0,
+      overrideAccess: true,
+    });
+    await p().update({ collection: "toolkit-files", id: file.id, locale: "en", data: { label: fx("en", "T", "file") }, depth: 0, overrideAccess: true });
     ids.toolkit = await createResource(
       "id",
       {
@@ -673,20 +689,21 @@ describe("Learning Hub (M3-11/12: resources, catalog, guide pages, YouTube IDs, 
         summary: fx("id", "T", "summary"),
         slug: TOOLKIT_SLUG,
         enReady: true,
+        files: [file.id],
         sections: [{ label: fx("id", "T", "s1") }],
       },
       "published",
     );
     await updateResource(id("toolkit"), "en", { title: fx("en", "T", "title"), summary: fx("en", "T", "summary"), slug: TOOLKIT_SLUG }, "published");
+    await p().update({ collection: "toolkit-files", id: file.id, data: { status: "pending" }, depth: 0, overrideAccess: true });
     for (const locale of ["id", "en"] as const) {
-      for (const draft of [false, true]) {
-        assert.equal((await anonymousIds(locale, draft)).includes(id("toolkit")), false, `anonymous Local API read (${locale}, draft: ${draft}) of a toolkit`);
-      }
+      assert.equal((await anonymousIds(locale, false)).includes(id("toolkit")), true, `anonymous Local API read (${locale}) returns the published toolkit (a public type since M3-13)`);
+      assert.equal((await visibleIn(locale)).some((doc) => doc.id === id("toolkit")), false, `${locale}: a toolkit without a ready file is not visible`);
       const page = await catalog(locale);
       assert.equal(page.status, 200, `GET /${locale}/learning-hub ${pageFact(page)}`);
       assert.equal(page.body.includes(fx(locale, "T", "title")), false, `${locale}: toolkit title in the catalog`);
       assert.equal(cardTypes(page.body).includes("toolkit"), false, `${locale}: toolkit card`);
-      assert.equal(page.body.includes("data-lh-toolkits"), false, `${locale}: toolkit section (empty until M3-13)`);
+      assert.equal(page.body.includes("data-lh-toolkits"), false, `${locale}: no toolkit section without a visible toolkit`);
       assertAbsent(await guidePage(locale, TOOLKIT_SLUG), `GET /${locale}/learning-hub/${TOOLKIT_SLUG}`, locale);
       const crawler = await guidePage(locale, TOOLKIT_SLUG, { "User-Agent": GOOGLEBOT });
       assert.equal(crawler.status, 404, `Googlebot toolkit page (${locale}): ${pageFact(crawler)}`);
@@ -696,8 +713,10 @@ describe("Learning Hub (M3-11/12: resources, catalog, guide pages, YouTube IDs, 
     assert.equal(home.some((card) => card.id === id("toolkit")), false, "toolkit in the homepage data");
     const root = await getPage("/");
     assert.equal(root.body.includes(fx("id", "T", "title")), false, "toolkit title on /");
+    // M3-13: toolkits have a detail page, so the Editor's preview entry opens it (307 to the toolkit path).
     const previewEntry = await getPage(`/api/preview?resource=${id("toolkit")}&locale=id`, { Cookie: `payload-token=${editor()}` });
-    assertPreviewDenied(previewEntry, "Editor preview of a toolkit (M3-13)");
+    assert.equal(previewEntry.status, 307, `Editor preview of a toolkit (M3-13): ${pageFact(previewEntry)}`);
+    assert.equal(target(previewEntry), `/id/learning-hub/${TOOLKIT_SLUG}`, "preview target: the toolkit page");
   });
 
   test("LH6 anonymous REST and GraphQL are denied without content; the Editor reads through REST", async () => {

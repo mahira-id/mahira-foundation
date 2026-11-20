@@ -203,7 +203,8 @@ export function guideMetadata(guide: GuidePage, alternates: Partial<Record<Local
  * locale where it exists (M3-09 decision 8, with the global's `updatedAt`),
  * every published + public detail page with its `updatedAt` (Owner M3-07
  * decision 4) and, since M3-12 (DECISIONS §2.16 decision 13A), the Learning
- * Hub catalog of every locale where it exists and every visible guide.
+ * Hub catalog of every locale where it exists and every visible guide and,
+ * since M3-13 (§2.17 decision 7A), every visible toolkit (never a PDF file).
  */
 export function sitemapEntries(
   publications: SitemapPublication[] | null,

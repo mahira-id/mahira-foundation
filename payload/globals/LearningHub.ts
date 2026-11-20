@@ -19,7 +19,7 @@ export const LearningHub: GlobalConfig = {
   label: "Learning Hub",
   admin: {
     description:
-      "Judul (H1), pengantar, dan SEO halaman /{locale}/learning-hub. Katalog suatu bahasa hanya tayang bila ada minimal satu materi yang tampil dalam bahasa itu.",
+      "Judul (H1), pengantar, dan SEO halaman /{locale}/learning-hub. Katalog suatu bahasa hanya tayang bila ada minimal satu materi yang tampil dalam bahasa itu. Periksa Locale di pojok kanan atas sebelum mengetik.",
   },
   versions: {
     drafts: true,

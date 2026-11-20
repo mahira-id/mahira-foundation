@@ -16,7 +16,9 @@ import type { LearningCard as LearningCardModel } from "@/lib/learning-hub/catal
  * with an H3 title, the summary, the "Bahasa materi" label
  * `data-lh-language`, and for a video or playlist the "Tonton di YouTube"
  * link `a[data-lh-watch]` (URL built from the validated ID), for a guide the
- * link `a[data-lh-read]` to its page. Every text is plain (no markup from the
+ * link `a[data-lh-read]` to its page, and for a toolkit (M3-13, DECISIONS
+ * §2.17 decision 6A) the same link plus `p[data-lh-files]` ("PDF · N file");
+ * a card never links to a file (downloads live on the detail page). Every text is plain (no markup from the
  * CMS); existing classes and tokens only.
  */
 export function LearningCard({ card, locale }: { card: LearningCardModel; locale: Locale }) {
@@ -46,6 +48,11 @@ export function LearningCard({ card, locale }: { card: LearningCardModel; locale
               {labels.materialLanguage[card.materialLanguage]}
             </p>
           ) : null}
+          {card.fileCount !== null ? (
+            <p className="mt-3 text-sm text-muted" data-lh-files={card.fileCount}>
+              {labels.fileCount(card.fileCount)}
+            </p>
+          ) : null}
           {card.youtube ? (
             <a
               className="mt-4 inline-flex text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900"
@@ -59,7 +66,7 @@ export function LearningCard({ card, locale }: { card: LearningCardModel; locale
           ) : null}
           {card.href ? (
             <Link className="mt-4 inline-flex text-sm font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-900" data-lh-read href={card.href}>
-              {labels.read}
+              {card.type === "toolkit" ? labels.readToolkit : labels.read}
             </Link>
           ) : null}
         </div>

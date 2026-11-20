@@ -20,7 +20,7 @@ import { isCmsEnabled } from "@/payload/env";
  * `payload-token` cookie) gets Draft Mode, and only after the check; the
  * redirect goes to the stored draft's detail URL, to `/{locale}/about`
  * built from the validated locale, or to the latest version's guide path
- * `/{locale}/learning-hub/{slug}` (a guide only), never to a URL from the
+ * `/{locale}/learning-hub/{slug}` (a guide or, since M3-13, a toolkit), never to a URL from the
  * query. Every
  * other request (CMS off, bad or both parameters, no or invalid session,
  * unknown record, no valid locale/slug) gets the same 404, and the Draft
@@ -47,9 +47,9 @@ export async function GET(request: NextRequest) {
       // The page reads the latest version for this staff session (getAboutPage).
       target = aboutPath(preview.locale);
     } else if (preview.kind === "resource") {
-      // Guides only (videos and playlists have no page; toolkit preview is M3-13).
+      // Guides and (M3-13) toolkits only; videos and playlists have no page.
       const doc = await findDraftResourceRef(payload, preview.id, preview.locale, staff);
-      target = doc && doc.type === "guide" ? resourcePath(preview.locale, doc.slug) : null;
+      target = doc && (doc.type === "guide" || doc.type === "toolkit") ? resourcePath(preview.locale, doc.slug) : null;
     } else {
       const doc = await findDraftRef(payload, preview.id, staff);
       target = doc ? previewTarget(doc) : null;

@@ -117,6 +117,7 @@ Rekomendasi saja; status tidak diubah. Lihat `decisions/DECISIONS.md` §2.3.
 | Blokir atau dokumentasikan `/api/media/file/*` | Engineering | M3-08 | Selesai: route statis menjawab 404 + `noindex` + `no-store` (butir 10; DL10, G3.9, G4.5). |
 | Jalankan bagian privat: private bucket, signed URL + TTL, matriks akses, audit, file besar | Engineering | M5-04 | Sebagian maju ke M3-08 (deviasi tercatat butir 2): private bucket, signed URL 60 detik, cek akses server untuk file `public`, tanpa login (§11). Tetap M5-04: sesi pengguna, file `registered`, audit, matriks akses lengkap. |
 | Ulangi spike bila adapter, `@aws-sdk/client-s3`, atau provider berubah | Engineering | — | Tetap; ditambah: route unduhan memakai `staticHandler` adapter 3.93.0 (butir upgrade DEC-006, `lib/cms/publication-file-storage.ts`). Sejak 2026-11-16 route unduhan publik menandatangani sendiri dengan `@aws-sdk/s3-request-presigner` dan mengulang tata letak kunci objek adapter; `staticHandler` tinggal dipakai route staf (ENVIRONMENTS §3.1, butir upgrade DEC-006). |
+| Pakai bucket privat yang sama untuk file toolkit Learning Hub | Engineering | M3-13 (DECISIONS §2.17) | Selesai: instance `s3Storage` kedua untuk `toolkit-files` (prefix `toolkits/`, `signedDownloads` 60 detik, `clientUploads` bersama), route `GET /api/learning-hub/files/{id}/download?locale=` memakai `signedFileUrl` yang sama (§12). Menambah butir upgrade DEC-006 (tata letak key `toolkits/`, `clientUploads` bersama). |
 
 ## 11. Hasil M3-08 (2026-11-16, lokal, bucket `publication-files`)
 
@@ -135,3 +136,18 @@ Diukur dengan objek `fixture-test-downloads-*` yang dihapus sesudahnya (listing 
 | `/api/media/file/*` | Tanpa route baru (uji rusak-sengaja M3-08): REST anonim 403 dari Payload, karena read `media` menolak REST anonim sejak M3-02; HTTP 500 di §8 diukur di M2-03 sebelum aturan itu; sesi staf tidak diukur. Dengan route baru: 404 + `noindex` + `no-store` untuk semua pemanggil. |
 
 Batasan yang tersisa: objek yatim dari client upload yang record-nya ditolak; unggah 50 MB di Vercel membaca ulang seluruh objek ke `/tmp` untuk cek isi (waktu dan ruang `/tmp` diukur Owner di Preview); key S3 satu set untuk semua environment (M4).
+
+## 12. Hasil M3-13 (2026-11-19, lokal, bucket `publication-files`, prefix `toolkits/`)
+
+Diukur lewat tes `tests/integration/toolkit-files.test.ts` dengan objek `fixture-test-toolkits-*` yang dihapus sesudahnya (listing bucket sesudah semua run: 0 objek `fixture-test-`, 3 objek lain tidak berubah, 0 objek di `toolkits/`). Tanpa pengukuran Preview baru; cek Owner di Preview menyusul (ENVIRONMENTS §3.1 "Toolkit Learning Hub (M3-13)").
+
+| Pertanyaan | Hasil |
+|---|---|
+| Prefix dan key | Upload Editor lewat admin menyimpan `prefix = toolkits` dengan `_objectKey` kosong; upload klien (`clientUploads`) menyimpan `prefix = toolkits` dengan `_objectKey` terisi. Tidak ada id `toolkit-files` yang bertabrakan dengan id `publication-files` di data uji (TK1, TK9). |
+| Signed URL | Route menjawab 307 ke URL S3 bertanda tangan 60 detik di bawah `toolkits/…` dengan `response-content-disposition` `attachment`; GET ke URL itu menjawab PDF yang sama dengan `Content-Disposition: attachment` dan nama tersimpan (TK4). |
+| URL langsung objek privat | URL objek publik, URL objek tanpa auth, dan URL S3 tanpa tanda tangan tidak terbaca (TK7; uji rusak-sengaja FA12). |
+| REST | `/api/toolkit-files`, `/api/toolkit-files/<id>`, dan `/api/toolkit-files/file/<nama>` anonim ditolak, GraphQL juga; Editor mendapat 302 bertanda tangan di bawah `toolkits/` (TK6; FA9). |
+| Presign | Hanya Editor/Admin; PUT PDF lalu create menghasilkan file `ready` yang dapat ditandatangani route unduhan (TK9). |
+| Bukan PDF | Byte non-PDF dan `text/plain` ditolak (TK1). |
+
+Batasan yang tersisa sama dengan §11: key S3 satu set untuk semua environment (M4), objek yatim dari client upload yang record-nya ditolak, dan waktu simpan file besar di Vercel (diukur Owner di Preview).

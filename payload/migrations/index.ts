@@ -6,6 +6,7 @@ import * as migration_20261115_054138_m3_07_publication_slugs from './20261115_0
 import * as migration_20261115_181459_m3_08_publication_files from './20261115_181459_m3_08_publication_files';
 import * as migration_20261117_055203_m3_09_about from './20261117_055203_m3_09_about';
 import * as migration_20261117_182752_m3_11_learning_hub from './20261117_182752_m3_11_learning_hub';
+import * as migration_20261118_143352_m3_13_toolkit_files from './20261118_143352_m3_13_toolkit_files';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20261117_182752_m3_11_learning_hub.up,
     down: migration_20261117_182752_m3_11_learning_hub.down,
-    name: '20261117_182752_m3_11_learning_hub'
+    name: '20261117_182752_m3_11_learning_hub',
+  },
+  {
+    up: migration_20261118_143352_m3_13_toolkit_files.up,
+    down: migration_20261118_143352_m3_13_toolkit_files.down,
+    name: '20261118_143352_m3_13_toolkit_files'
   },
 ];

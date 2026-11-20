@@ -54,6 +54,15 @@ Example: publication `registered`, asset `subscriber` → subscriber required. P
 - **File `registered`/`subscriber` (sementara sampai M5/M7):** boleh diunggah ke private bucket tetapi tidak tampil di situs publik sama sekali: tidak ada baris di panel, tidak ada URL, dan route unduhan menjawab 404. Ini deviasi tercatat dari DEC-002 ("aset terbatas pada publikasi publik ditampilkan terkunci tanpa URL") dan konsisten dengan §2.11 P7 A. Unduhannya M5 (`registered`) dan M7 (`subscriber`).
 - **Staf:** membuka semua file di `/admin` di bawah access control Payload (`/api/publication-files/file/<nama>`, signed 302). Route publik tidak membaca sesi, jadi sesi staf tidak memberi akses di sana (DEC-009).
 
+### 4.3 Toolkit Learning Hub (M3-13, DECISIONS §2.17 keputusan 1–5)
+
+- **Resource:** record koleksi Payload `toolkit-files` (file PDF) di private bucket `publication-files`, prefix `toolkits/`. Satu file milik tepat satu materi `toolkit` (hook `refuseFileOfAnotherToolkit`); materi mencantumkan file-nya berurutan di field `files`, satu daftar untuk ID dan EN.
+- **Tanpa access level:** semua materi Learning Hub publik (DEC-014), jadi tidak ada level per file. Syarat unduhan publik: toolkit tayang (`published`, tabel utama, `draft: false`) di locale yang diminta, Topic aktif dan bernama di locale itu, EN juga "Versi EN siap tayang", file `ready`, PDF, dan file ada di daftar toolkit itu dengan label di locale itu. Diperiksa ulang di server pada setiap request (`getPublicToolkitFileDownload`, API-SPECIFICATION §5.3).
+- **Gagal tertutup:** toolkit tanpa file ready tidak tampil dan tidak dapat diterbitkan; file yang tidak ready, draf, atau milik toolkit yang tidak tampil menjawab 404 tanpa URL.
+- **Staf:** membuka semua file di `/admin` lewat `/api/toolkit-files/file/<nama>` (302 bertanda tangan) di bawah access control Payload. Route publik tidak membaca sesi, jadi sesi staf tidak memberi akses di sana (DEC-009). REST dan GraphQL anonim ke `toolkit-files` ditolak.
+- **File tayang dilindungi:** mengganti isi atau menghapus file yang dipakai versi tayang sebuah toolkit ditolak untuk semua pemanggil, termasuk Admin (keputusan 4A).
+- **Yang tidak dicakup:** level `registered`/`subscriber` untuk toolkit (tidak ada; M5/M7 hanya untuk file publikasi), audit unduhan, dan rate limit (butir M4, DECISIONS §2.14).
+
 ## 5. Entitlement semantics
 
 An entitlement is valid only if:

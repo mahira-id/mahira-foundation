@@ -12,9 +12,16 @@ import { FileStorageError, signedFileUrl, type StoredFile } from "@/lib/cms/publ
 import { findIndexPage, findIndexRefs, findIndexTerms } from "@/lib/cms/publication-index-query";
 import { findSearchRanks } from "@/lib/cms/publication-search-query";
 import { findSlugOwner } from "@/lib/cms/publication-slug-query";
-import { findPublicGuide, findPublicLearningHub, findPublicResource, findPublicResources } from "@/lib/cms/learning-hub-query";
+import {
+  findLiveToolkitOfFile,
+  findPublicDetail,
+  findPublicLearningHub,
+  findPublicResource,
+  findPublicResources,
+} from "@/lib/cms/learning-hub-query";
 import { findSitemapPublications, type SitemapPublication } from "@/lib/cms/sitemap-query";
-import { findDraftAbout, findDraftGuide, findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
+import { findDraftAbout, findDraftDetail, findDraftPublication, staffFromHeaders } from "@/lib/cms/staff-preview";
+import { findPublicToolkitFile } from "@/lib/cms/toolkit-file-query";
 import { readErrorLabel, toHomePublication, toHomeTopics, type HomepageData } from "@/lib/home/homepage-view";
 import { LOCALES, otherLocale, type Locale } from "@/lib/i18n/locales";
 import {
@@ -33,6 +40,7 @@ import {
   type LearningHubSitemap,
   type ResourceDoc,
 } from "@/lib/learning-hub/catalog-view";
+import { toolkitFileItems } from "@/lib/learning-hub/toolkit-files";
 import { getPublicationAlternates } from "@/lib/publications/alternates";
 import { toPublicationDetail, type PublicationDetail } from "@/lib/publications/detail-view";
 import { isPublicDownload } from "@/lib/publications/file-access";
@@ -94,11 +102,14 @@ export type { LearningHubSitemap, SitemapPublication };
  *
  * Learning Hub (M3-11/12, DECISIONS §2.16): `learning-resources` and the
  * `learning-hub` global are read anonymously too (published only, public
- * types only: never a toolkit before M3-13, this locale only); a resource
- * shows in a locale only when isResourceVisible, and a locale's catalog,
- * menu item, homepage block and sitemap entries exist only with at least
- * one visible resource. The catalog, the link, the homepage block and the
- * sitemap share one cached read per locale and request.
+ * types only, this locale only); a resource shows in a locale only when
+ * isResourceVisible, and a locale's catalog, menu item, homepage block and
+ * sitemap entries exist only with at least one visible resource. The
+ * catalog, the link, the homepage block and the sitemap share one cached
+ * read per locale and request. Toolkits (M3-13, DECISIONS §2.17): their
+ * files reach pages without any storage location (toolkitFileItems), and
+ * the toolkit download route asks getPublicToolkitFileDownload, which reads
+ * the file and its toolkit anonymously and only then signs a 60 s URL.
  *
  * Returns `{ status: "off" }` (detail, redirect, title: `null`; sitemap:
  * `[]`) when the CMS is off (see payload/env.ts).
@@ -413,8 +424,9 @@ export const getAboutHref = cache(async (locale: Locale): Promise<string | null>
 });
 
 /**
- * Thrown by getLearningHubCatalog, getLearningResource and
- * getLearningHubSitemap when the CMS read fails (M3-11/12). Fixed message
+ * Thrown by getLearningHubCatalog, getLearningResource,
+ * getLearningHubSitemap and (M3-13) getPublicToolkitFileDownload when the
+ * CMS read fails (M3-11/12). Fixed message
  * and no cause, as PublicationReadError.
  */
 export class LearningHubReadError extends Error {
@@ -485,19 +497,20 @@ export type LearningResourceResult = {
 };
 
 /**
- * A guide's detail page `/{locale}/learning-hub/{slug}` (M3-12, decisions
- * 6A, 7A, 13A): the published guide of this locale with this slug when it
- * is visible, or null (the page calls notFound()). Videos and playlists
- * have no detail page; toolkits are never public before M3-13. Deduplicated
- * per request by React `cache`. A failed read is logged with the error name
+ * A guide's or (M3-13) a toolkit's detail page `/{locale}/learning-hub/{slug}`
+ * (M3-12, decisions 6A, 7A, 13A; §2.17 decision 6A): the published guide or
+ * toolkit of this locale with this slug when it is visible (a toolkit needs
+ * a ready file with a label in this locale), or null (the page calls
+ * notFound()). Videos and playlists have no detail page. Deduplicated per
+ * request by React `cache`. A failed read is logged with the error name
  * only and throws LearningHubReadError.
  *
  * Staff preview (decision 12A): only in Draft Mode, and only when the
  * request's Payload session is an Editor or Admin (checked on every
- * request), the latest version of the guide with this slug in this locale
- * is read through lib/cms/staff-preview.ts and `mode` is "preview" (also
- * without the EN checkbox; null without a title). A Draft Mode cookie
- * without a staff session gets exactly the public result.
+ * request), the latest version of the guide or toolkit with this slug in
+ * this locale is read through lib/cms/staff-preview.ts and `mode` is
+ * "preview" (also without the EN checkbox; null without a title). A Draft
+ * Mode cookie without a staff session gets exactly the public result.
  */
 export const getLearningResource = cache(async (locale: Locale, slug: string): Promise<LearningResourceResult | null> => {
   if (!isCmsEnabled() || !SLUG_PATTERN.test(slug)) return null;
@@ -508,11 +521,11 @@ export const getLearningResource = cache(async (locale: Locale, slug: string): P
     const payload = await getPayload({ config });
     const staff = requestHeaders ? await staffFromHeaders(payload, requestHeaders) : null;
     if (staff) {
-      const draft = (await findDraftGuide(payload, locale, slug, staff)) as ResourceDoc | null;
+      const draft = (await findDraftDetail(payload, locale, slug, staff)) as ResourceDoc | null;
       const guide = draft ? toGuidePage(draft, locale) : null;
       return guide ? { mode: "preview", guide, alternates: {} } : null;
     }
-    const doc = (await findPublicGuide(payload, locale, slug)) as ResourceDoc | null;
+    const doc = (await findPublicDetail(payload, locale, slug)) as ResourceDoc | null;
     const guide = doc && isResourceVisible(doc, locale) ? toGuidePage(doc, locale) : null;
     if (!doc || !guide) return null;
     const other = otherLocale(locale);
@@ -525,6 +538,51 @@ export const getLearningResource = cache(async (locale: Locale, slug: string): P
     throw new LearningHubReadError();
   }
 });
+
+/**
+ * Signed download URL of a toolkit file in a locale, or null (M3-13,
+ * DECISIONS §2.16 decision 9, §2.17 decisions 2A–5A; route
+ * app/api/learning-hub/files/[fileId]/download). Checks on the server, as
+ * an anonymous visitor, on every request:
+ * 1. the file is readable anonymously (ready, PUBLIC_TOOLKIT_FILE_READ) and
+ *    is a ready PDF;
+ * 2. the live version of a toolkit lists it (`draft: false`, published, a
+ *    public type: a file only in a draft finds nothing and an unpublish
+ *    applies at once), read in this locale without fallback;
+ * 3. that toolkit is visible in this locale (isResourceVisible: title,
+ *    summary, slug, active Topic, EN "Versi EN siap tayang", a ready file),
+ *    and this file is one of its downloadable files there (toolkitFileItems:
+ *    populated as ready, PDF, a label in this locale);
+ * then signs a GET URL valid for 60 s that makes storage answer
+ * `Content-Disposition: attachment` (lib/cms/publication-file-storage.ts).
+ * Null for every denial. A failed read is logged with the error name only
+ * and throws LearningHubReadError; a failed signing throws
+ * FileStorageError. The URL is never logged. Not cached: every request runs
+ * the checks.
+ */
+export async function getPublicToolkitFileDownload(fileId: number, locale: Locale): Promise<string | null> {
+  if (!isCmsEnabled()) return null;
+  let checked: StoredFile | null;
+  try {
+    const payload = await getPayload({ config });
+    const found = await findPublicToolkitFile(payload, fileId);
+    const file = found && found.status === "ready" && found.mimeType === "application/pdf" ? found : null;
+    const toolkit = file ? ((await findLiveToolkitOfFile(payload, fileId, locale)) as ResourceDoc | null) : null;
+    const listed =
+      toolkit !== null && isResourceVisible(toolkit, locale) && toolkitFileItems(toolkit.files, locale).some((item) => item.id === fileId);
+    checked = file && listed ? file : null;
+  } catch (error) {
+    console.error("[toolkit-download] CMS read failed:", readErrorLabel(error));
+    throw new LearningHubReadError();
+  }
+  if (!checked) return null;
+  try {
+    return await signedFileUrl(checked);
+  } catch (error) {
+    console.error("[toolkit-download] signing failed:", readErrorLabel(error));
+    throw new FileStorageError();
+  }
+}
 
 /**
  * Path of this locale's Learning Hub catalog when it exists (at least one
@@ -577,7 +635,8 @@ export const getHomepageLearningHub = cache(async (): Promise<HomeLearningHub | 
  * The Learning Hub entries of the sitemap (decision 13A): the catalog of
  * each locale that exists, with the latest `updatedAt` of its visible
  * resources and published texts, and every visible guide with its
- * `updatedAt`. With the CMS off empty. A failed read is logged with the
+ * `updatedAt`; since M3-13 `guides` also lists visible toolkits (their
+ * detail pages; no PDF URL). With the CMS off empty. A failed read is logged with the
  * error name only and throws LearningHubReadError.
  */
 export const getLearningHubSitemap = cache(async (): Promise<LearningHubSitemap> => {
@@ -590,7 +649,7 @@ export const getLearningHubSitemap = cache(async (): Promise<LearningHubSitemap>
       const texts = await readLearningHubTexts(locale);
       sitemap.catalogs.push({ locale, lastModified: latestTimestamp([...visible.map((doc) => doc.updatedAt), texts?.updatedAt]) });
       for (const doc of visible) {
-        if (doc.type !== "guide" || typeof doc.slug !== "string") continue;
+        if ((doc.type !== "guide" && doc.type !== "toolkit") || typeof doc.slug !== "string") continue;
         sitemap.guides.push({ locale, slug: doc.slug, lastModified: typeof doc.updatedAt === "string" ? doc.updatedAt : null });
       }
     }

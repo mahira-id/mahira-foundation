@@ -10,7 +10,7 @@ import type { CatalogPlan } from "@/lib/learning-hub/catalog-view";
  * (asserted by tests/integration/learning-hub.test.ts): `<main id="main"
  * data-lh-page="catalog">`, one H1 (the global's title, else "Learning
  * Hub") with the intro, the toolkit section `section[data-lh-toolkits]`
- * only when it has cards (never before M3-13), then one
+ * only when it has cards (M3-13, DECISIONS §2.17 decision 6A: before the themes), then one
  * `section[data-lh-theme="<topic id>"]` per theme with an H2 (the Topic
  * name), the Topic description and its cards.
  */
@@ -42,9 +42,11 @@ export function LearningHubCatalog({ plan }: { plan: CatalogPlan }) {
         <section className="section-space bg-silver" data-lh-toolkits>
           <div className="container-editorial">
             <h2 className="text-[clamp(1.75rem,3.4vw,2.875rem)] font-bold leading-[1.06] tracking-[-0.03em] text-ink">{labels.toolkitHeading}</h2>
-            {plan.toolkits.map((card) => (
-              <LearningCard card={card} key={card.id} locale={plan.locale} />
-            ))}
+            <div className="mt-8">
+              {plan.toolkits.map((card) => (
+                <LearningCard card={card} key={card.id} locale={plan.locale} />
+              ))}
+            </div>
           </div>
         </section>
       ) : null}

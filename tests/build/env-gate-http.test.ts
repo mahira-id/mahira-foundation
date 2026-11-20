@@ -34,6 +34,8 @@ import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publica
  * Files (M3-08, DECISIONS §2.14): `/api/files/1/download` and
  * `/api/media/file/x` 404 in off/prod (G3.8, G3.9); `/api/media/file/x` and
  * `/api/files/abc/download` 404 + noindex + no-store in on (G4.5, G4.6).
+ * Toolkit files (M3-13, DECISIONS §2.17): `/api/learning-hub/files/1/download?locale=id`
+ * closed in off and prod (G5.11); an invalid id or no locale 404 in on (G4.8, G4.9).
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
@@ -180,6 +182,8 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
       "/en/learning-hub",
       "/id/learning-hub/gate-check",
       "/en/learning-hub/gate-check",
+      // G5.11 (M3-13, DECISIONS §2.17 decision 5A): the toolkit file download.
+      "/api/learning-hub/files/1/download?locale=id",
     ];
     for (const [index, path] of closedPages.entries()) {
       test(`G5.${index + 1} GET ${path}: 404, noindex, no-store`, async () => {
@@ -312,6 +316,17 @@ describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {
     // file path answer 404 + noindex + no-store with the CMS on as well.
     for (const [index, path] of ["/api/media/file/x", "/api/files/abc/download"].entries()) {
       test(`G4.${index + 5} GET ${path} with the CMS on: 404, noindex, no-store`, async () => {
+        const result = await request("GET", path);
+        assert.equal(result.status, 404, `GET ${path}`);
+        assert.equal(result.headers?.get("x-robots-tag"), "noindex", `${path}: X-Robots-Tag`);
+        assert.equal(result.headers?.get("cache-control"), "no-store", `${path}: Cache-Control`);
+        assert.equal(result.location, "", `${path}: Location`);
+      });
+    }
+    // M3-13 (DECISIONS §2.17 decision 5A): the toolkit download with an invalid id
+    // or without a locale answers the same 404 with the CMS on (no database read).
+    for (const [index, path] of ["/api/learning-hub/files/abc/download?locale=id", "/api/learning-hub/files/1/download"].entries()) {
+      test(`G4.${index + 8} GET ${path} with the CMS on: 404, noindex, no-store`, async () => {
         const result = await request("GET", path);
         assert.equal(result.status, 404, `GET ${path}`);
         assert.equal(result.headers?.get("x-robots-tag"), "noindex", `${path}: X-Robots-Tag`);

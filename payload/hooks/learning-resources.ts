@@ -1,6 +1,7 @@
 import { ValidationError } from "payload";
 import type { CollectionBeforeChangeHook } from "payload";
 import { parseYouTubeSource, type YouTubeKind } from "../../lib/learning-hub/youtube";
+import { fileIdsOf } from "./one-publication-per-file";
 
 const COLLECTION = "learning-resources";
 
@@ -57,5 +58,39 @@ export const setResourcePublishedAt: CollectionBeforeChangeHook = ({ data, origi
   const status = data._status ?? originalDoc?._status;
   const publishedAt = data.publishedAt !== undefined ? data.publishedAt : originalDoc?.publishedAt;
   if (status === "published" && !publishedAt) return { ...data, publishedAt: new Date().toISOString() };
+  return data;
+};
+
+export const TOOLKIT_NEEDS_READY_FILE = "Toolkit hanya dapat diterbitkan dengan minimal satu file berstatus ready.";
+
+/**
+ * M3-13 decision 2A (DECISIONS §2.17): a toolkit is published only with at
+ * least one `ready` file. A hook, not a field `validate`, because Payload
+ * skips field validation on draft saves and runs it only for the fields a
+ * save sends; this runs on every save that leaves the record published
+ * (`_status` sent as published, or not sent on a published record), with
+ * the type and files the save leaves (`data`, else the stored latest
+ * version). A draft save passes. Counts in the save's transaction (`req`),
+ * without access control. The public site hides a toolkit without a ready
+ * file as a second layer (isResourceVisible).
+ */
+export const requireReadyToolkitFile: CollectionBeforeChangeHook = async ({ data, originalDoc, req }) => {
+  if ((data._status ?? originalDoc?._status) !== "published") return data;
+  if ((data.type ?? originalDoc?.type) !== "toolkit") return data;
+  const ids = fileIdsOf("files" in data ? data.files : originalDoc?.files);
+  const ready =
+    ids.length === 0
+      ? 0
+      : (
+        await req.payload.count({
+          collection: "toolkit-files",
+          where: { and: [{ id: { in: ids } }, { status: { equals: "ready" } }] },
+          overrideAccess: true,
+          req,
+        })
+      ).totalDocs;
+  if (ready === 0) {
+    throw new ValidationError({ collection: COLLECTION, errors: [{ path: "files", message: TOOLKIT_NEEDS_READY_FILE }], req });
+  }
   return data;
 };

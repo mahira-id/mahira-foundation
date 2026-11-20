@@ -19,6 +19,13 @@ import type { CmsEnv } from "./env";
 export const FILES_BUCKET = "publication-files";
 
 /**
+ * Folder of the `toolkit-files` objects in FILES_BUCKET (M3-13, DECISIONS
+ * §2.16 decision 9). It becomes the column default of `toolkit_files.prefix`
+ * in the M3-13 migration, so a rename needs a new migration.
+ */
+export const TOOLKIT_FILES_PREFIX = "toolkits";
+
+/**
  * TTL of a signed download URL (item 2): an unpublish or an access change
  * takes effect for new downloads at once, and within 60 s for a URL
  * already handed out.

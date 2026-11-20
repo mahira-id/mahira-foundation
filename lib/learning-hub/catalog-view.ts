@@ -1,6 +1,7 @@
 import { paragraphs, text, toStructuredSections, type SectionDoc, type StructuredSection, type Text } from "@/lib/content/structured-sections";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 import { embedUrl, isYouTubeId, videoThumbnailUrl, watchUrl, type YouTubeKind } from "@/lib/learning-hub/youtube";
+import { toolkitFileItems, type ToolkitFileItem, type ToolkitFileRelation } from "@/lib/learning-hub/toolkit-files";
 import { learningHubPath, resourcePath } from "@/lib/publications/preview";
 import { PUBLIC_LEARNING_RESOURCE_TYPES } from "@/payload/access/public-read";
 import { SLUG_PATTERN } from "@/payload/fields/slug";
@@ -16,14 +17,17 @@ export { learningHubPath, resourcePath };
  *
  * - A resource shows in a locale only when isResourceVisible (published, a
  *   public type, that locale's title and summary, a valid slug for a guide
- *   or a valid YouTube ID for a video/playlist, an active Topic with a name
- *   in that locale; EN also "Versi EN siap tayang").
+ *   or toolkit or a valid YouTube ID for a video/playlist, an active Topic
+ *   with a name in that locale; EN also "Versi EN siap tayang"; a toolkit
+ *   also at least one downloadable file in that locale, M3-13 decision 2A:
+ *   fail closed).
  * - A locale's catalog exists only with at least one visible resource
  *   (decision 11A): planCatalog returns null otherwise.
  * - Catalog order (decision 10A): one theme per Topic, themes by Topic name
  *   (Intl.Collator of the locale); cards by `sortOrder` (numbered first,
  *   ascending), then newest first (`publishedAt`, `createdAt`, `id`).
- * - Toolkits: an empty list until M3-13 (decision 9A).
+ * - Toolkits (M3-13, DECISIONS §2.17 decision 6A): their own section at
+ *   the top of the catalog, never inside a theme; same card order.
  * - Every YouTube URL is built from the validated ID (lib/learning-hub/
  *   youtube.ts), never from a stored URL.
  */
@@ -54,6 +58,8 @@ export type ResourceDoc = {
   youtubeId?: Text;
   coverImage?: MediaRelation;
   sections?: SectionDoc[] | null;
+  /** Toolkit files (M3-13), populated with the panel fields only (RESOURCE_POPULATE). */
+  files?: ToolkitFileRelation[] | null;
   sortOrder?: number | null;
   publishedAt?: string | null;
   createdAt?: string | null;
@@ -92,8 +98,10 @@ export type LearningCard = {
   summary: string;
   /** "Bahasa materi": the language of the material itself, shown as a label; null when not set. */
   materialLanguage: Locale | null;
-  /** Detail page of a guide; null for a video or playlist (they play in the catalog). */
+  /** Detail page of a guide or toolkit; null for a video or playlist (they play in the catalog). */
   href: string | null;
+  /** Number of downloadable files of a toolkit in this locale ("PDF · N file"); null for other types. */
+  fileCount: number | null;
   youtube: ResourceYouTube | null;
   /** Uploaded image cover of a playlist; null otherwise (thumbnail or typographic cover). */
   cover: ResourceCover | null;
@@ -115,14 +123,17 @@ export type CatalogTexts = {
 
 export type CatalogPlan = CatalogTexts & {
   locale: Locale;
-  /** Toolkit cards (decision 10A): always empty until M3-13; the section is hidden while empty. */
+  /** Toolkit cards (decision 10A, M3-13 decision 6A) in catalog order; the section is hidden while empty. */
   toolkits: LearningCard[];
+  /** Themes of the videos, playlists and guides; toolkits are only in `toolkits`. */
   themes: CatalogTheme[];
   cardCount: number;
 };
 
 export type GuidePage = {
   id: number;
+  /** A guide, or since M3-13 a toolkit (the same page plus its file panel). */
+  type: "guide" | "toolkit";
   locale: Locale;
   slug: string;
   title: string;
@@ -133,6 +144,8 @@ export type GuidePage = {
   /** Name of the resource's Topic in this locale, or null. */
   themeName: string | null;
   sections: StructuredSection[];
+  /** A toolkit's downloadable files in this locale (toolkitFileItems); [] for a guide. */
+  files: ToolkitFileItem[];
   publishedAt: string | null;
 };
 
@@ -158,6 +171,10 @@ function languageOf(value: unknown): Locale | null {
   return typeof value === "string" && isLocale(value) ? value : null;
 }
 
+function hasDetailPage(type: unknown): type is "guide" | "toolkit" {
+  return type === "guide" || type === "toolkit";
+}
+
 function isSlug(value: unknown): value is string {
   return typeof value === "string" && SLUG_PATTERN.test(value);
 }
@@ -166,7 +183,8 @@ function isSlug(value: unknown): value is string {
 export function isResourceVisible(doc: ResourceDoc | null | undefined, locale: Locale): boolean {
   if (!doc || doc._status !== "published" || !isPublicType(doc.type)) return false;
   if (!text(doc.title) || !text(doc.summary) || !activeTopic(doc.topic)) return false;
-  if (doc.type === "guide" ? !isSlug(doc.slug) : !isYouTubeId(doc.type, doc.youtubeId)) return false;
+  if (hasDetailPage(doc.type) ? !isSlug(doc.slug) : !isYouTubeId(doc.type, doc.youtubeId)) return false;
+  if (doc.type === "toolkit" && toolkitFileItems(doc.files, locale).length === 0) return false;
   return locale === "id" || doc.enReady === true;
 }
 
@@ -198,7 +216,8 @@ export function toCard(doc: ResourceDoc, locale: Locale): LearningCard {
     title: text(doc.title) ?? "",
     summary: paragraphs(doc.summary).join(" "),
     materialLanguage: languageOf(doc.materialLanguage),
-    href: type === "guide" ? resourcePath(locale, doc.slug) : null,
+    href: hasDetailPage(type) ? resourcePath(locale, doc.slug) : null,
+    fileCount: type === "toolkit" ? toolkitFileItems(doc.files, locale).length : null,
     youtube: youtubeOf(type, doc.youtubeId),
     cover: type === "playlist" ? coverOf(doc.coverImage) : null,
     publishedAt: text(doc.publishedAt),
@@ -246,8 +265,10 @@ export function catalogTexts(global: LearningHubDoc | null | undefined): Catalog
 export function planCatalog(docs: ResourceDoc[], locale: Locale, global: LearningHubDoc | null | undefined): CatalogPlan | null {
   const visible = docs.filter((doc) => isResourceVisible(doc, locale));
   if (visible.length === 0) return null;
+  // M3-13 decision 6A: toolkits only in their own section, never repeated in a theme.
+  const toolkits = visible.filter((doc) => doc.type === "toolkit");
   const themes = new Map<number, { topic: ActiveTopic; docs: ResourceDoc[] }>();
-  for (const doc of visible) {
+  for (const doc of visible.filter((candidate) => candidate.type !== "toolkit")) {
     const topic = activeTopic(doc.topic) as ActiveTopic;
     const theme = themes.get(topic.id) ?? { topic, docs: [] };
     theme.docs.push(doc);
@@ -258,7 +279,7 @@ export function planCatalog(docs: ResourceDoc[], locale: Locale, global: Learnin
   return {
     ...catalogTexts(global),
     locale,
-    toolkits: [],
+    toolkits: [...toolkits].sort(compareResources).map((doc) => toCard(doc, locale)),
     themes: ordered.map(({ topic, docs: themeDocs }) => ({
       topicId: topic.id,
       name: topic.name,
@@ -279,16 +300,20 @@ export function newestCards(docs: ResourceDoc[], locale: Locale, limit: number =
 }
 
 /**
- * A guide as its detail page renders it, or null when it is not a guide or
- * has no title or valid slug in this locale. Visibility is a separate check
- * (isResourceVisible): the staff preview renders a draft visitors cannot see.
+ * A guide or (M3-13) a toolkit as its detail page renders it, or null when
+ * it is neither or has no title or valid slug in this locale. Visibility is
+ * a separate check (isResourceVisible): the staff preview renders a draft
+ * visitors cannot see. A toolkit's files go through the same filter as on
+ * the public page (toolkitFileItems), so the preview shows exactly the
+ * files visitors will get.
  */
 export function toGuidePage(doc: ResourceDoc, locale: Locale): GuidePage | null {
   const title = text(doc.title);
-  if (doc.type !== "guide" || !title || !isSlug(doc.slug)) return null;
+  if (!hasDetailPage(doc.type) || !title || !isSlug(doc.slug)) return null;
   const summary = paragraphs(doc.summary);
   return {
     id: doc.id,
+    type: doc.type,
     locale,
     slug: doc.slug,
     title,
@@ -297,11 +322,16 @@ export function toGuidePage(doc: ResourceDoc, locale: Locale): GuidePage | null 
     materialLanguage: languageOf(doc.materialLanguage),
     themeName: namedTopic(doc.topic),
     sections: toStructuredSections(doc.sections, null).sections,
+    files: doc.type === "toolkit" ? toolkitFileItems(doc.files, locale) : [],
     publishedAt: text(doc.publishedAt),
   };
 }
 
-/** Learning Hub entries of /sitemap.xml (decision 13A): existing catalogs and visible guides. */
+/**
+ * Learning Hub entries of /sitemap.xml (decision 13A; M3-13, DECISIONS §2.17
+ * decision 7A): existing catalogs and visible guides and toolkits (`guides`
+ * lists every resource with a detail page). Never a PDF.
+ */
 export type LearningHubSitemap = {
   catalogs: { locale: Locale; lastModified: string | null }[];
   guides: { locale: Locale; slug: string; lastModified: string | null }[];

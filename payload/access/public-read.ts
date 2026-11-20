@@ -37,23 +37,33 @@ export const PUBLIC_ABOUT_READ: Where = { _status: { equals: "published" } };
 
 /**
  * Resource types visitors may see (M3-11/12, DECISIONS §2.16 decisions 2A,
- * 9A): videos, playlists and guides. Toolkits are created in the admin but
- * stay off the public site until their file download is built (M3-13),
- * which then adds "toolkit" here.
+ * 9A): videos, playlists and guides, and since M3-13 (DECISIONS §2.17)
+ * toolkits, now that their PDF download exists.
  */
-export const PUBLIC_LEARNING_RESOURCE_TYPES = ["video", "playlist", "guide"] as const;
+export const PUBLIC_LEARNING_RESOURCE_TYPES = ["video", "playlist", "guide", "toolkit"] as const;
 
 /**
  * What an anonymous Local API read of `learning-resources` may see: the
  * published version of a record of a public type. All Learning Hub material
  * is public (DEC-014), so there is no access level. Whether a locale shows
- * the record also needs that locale's required fields, an active Topic and,
- * for EN, "Versi EN siap tayang" (lib/learning-hub/catalog-view.ts
- * `isResourceVisible`).
+ * the record also needs that locale's required fields, an active Topic,
+ * for EN "Versi EN siap tayang", and for a toolkit at least one ready file
+ * with a label in that locale (lib/learning-hub/catalog-view.ts
+ * `isResourceVisible`, §2.17 decision 2A: fail closed).
  */
 export const PUBLIC_LEARNING_RESOURCE_READ: Where = {
   and: [{ _status: { equals: "published" } }, { type: { in: [...PUBLIC_LEARNING_RESOURCE_TYPES] } }],
 };
+
+/**
+ * What an anonymous Local API read of `toolkit-files` may see (M3-13,
+ * DECISIONS §2.16 decision 9, §2.17): ready files. No access level: all
+ * Learning Hub material is public (DEC-014). Whether a file may be
+ * downloaded also needs the live version of its toolkit to be visible in
+ * the requested locale (lib/cms/public-content.ts
+ * `getPublicToolkitFileDownload`).
+ */
+export const PUBLIC_TOOLKIT_FILE_READ: Where = { status: { equals: "ready" } };
 
 /**
  * What an anonymous Local API read of the `learning-hub` global (catalog H1,
