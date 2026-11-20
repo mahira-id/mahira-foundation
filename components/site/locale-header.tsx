@@ -59,10 +59,11 @@ export function LocaleHeader({ locale, switcher, aboutLink, learningHubLink, acc
         </Link>
         {learningHubLink}
         {aboutLink}
+        {/* After the About link it matches by href: its class list must not name `data-header-about` (ABUI1 counts that token). */}
         {isAuthEnabled() ? (
           <a
             aria-current={accountCurrent ? "page" : undefined}
-            className={`ml-auto [[data-header-learning-hub]+&]:ml-0 [[data-header-about]+&]:ml-0 pb-0.5 text-[0.8125rem] font-semibold text-white underline-offset-4 hover:underline${accountCurrent ? " border-b border-orange" : ""}`}
+            className={`ml-auto [[data-header-learning-hub]+&]:ml-0 [a[href$='/about']+&]:ml-0 pb-0.5 text-[0.8125rem] font-semibold text-white underline-offset-4 hover:underline${accountCurrent ? " border-b border-orange" : ""}`}
             data-header-account
             href={authPagePath(locale, "account")}
           >
@@ -75,6 +76,6 @@ export function LocaleHeader({ locale, switcher, aboutLink, learningHubLink, acc
           otherTitle={switcher?.unavailable ? dictionary.detail.unavailable : undefined}
         />
       </div>
-    </header>
+    </header >
   );
 }
