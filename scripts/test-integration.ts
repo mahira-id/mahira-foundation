@@ -40,10 +40,20 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *   toolkits      toolkit files: private bucket under toolkits/, publish needs a ready file, one
  *                 toolkit per file, /api/learning-hub/files/{id}/download?locale= checks and 60 s
  *                 attachment URL, live-file rule, closed REST/GraphQL, client uploads (M3-13)
+ *   auth          public accounts against the APP project's Supabase Auth: Origin check of the
+ *                 form handlers, login, logout, session refresh and bad cookies on
+ *                 /{locale}/account, email link, reset and change of password, input checks;
+ *                 fixture users through the Admin API, no email sent (M5-01/M5-02)
+ *   auth-boundary public and staff identity apart: no Payload access for a public account or
+ *                 forged role metadata, a staff session is no public session, both side by
+ *                 side, public PDF download unchanged (M5-01, SPIKE-002)
+ *   account-pages the account pages (login, register, forgot-password, reset-password, account):
+ *                 forms and their actions, noindex, status messages, the session on the
+ *                 account page, staff cookie ignored, header link (M5-02)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left, no fixture
  *                 text in the About and Learning Hub globals (always last)
  *
- * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,toolkits,db-invariants]
+ * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,toolkits,auth,auth-boundary,account-pages,db-invariants]
  * Never run two at once: the files share one database and one port.
  */
 const FILES = {
@@ -64,6 +74,9 @@ const FILES = {
   about: "tests/integration/about.test.ts",
   "learning-hub": "tests/integration/learning-hub.test.ts",
   toolkits: "tests/integration/toolkit-files.test.ts",
+  auth: "tests/integration/auth.test.ts",
+  "auth-boundary": "tests/integration/auth-boundary.test.ts",
+  "account-pages": "tests/integration/account-pages.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;

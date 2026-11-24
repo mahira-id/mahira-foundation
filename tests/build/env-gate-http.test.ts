@@ -36,9 +36,13 @@ import { globalNotFoundProblems, notFoundPageProblems } from "../helpers/publica
  * `/api/files/abc/download` 404 + noindex + no-store in on (G4.5, G4.6).
  * Toolkit files (M3-13, DECISIONS §2.17): `/api/learning-hub/files/1/download?locale=id`
  * closed in off and prod (G5.11); an invalid id or no locale 404 in on (G4.8, G4.9).
+ * Accounts (M5-02, DECISIONS §2.18), G11, by AUTH_GATE_MODE (off or on;
+ * the build matrix sets it per mode): see the describe block below. G12
+ * (account UI): the account pages and the header link, on and off.
  * TEST_BASE_URL defaults to http://localhost:3100.
  */
 const MODE = process.env.GATE_MODE ?? "";
+const AUTH_MODE = process.env.AUTH_GATE_MODE ?? "";
 const BASE_URL = (process.env.TEST_BASE_URL ?? "http://localhost:3100").replace(/\/+$/, "");
 
 /** Texts of the removed sample homepage content (M3-04); none may appear on `/`. */
@@ -61,9 +65,9 @@ const NOT_FOUND_DIGEST = "NEXT_HTTP_ERROR_FALLBACK;404";
 
 type Page = { status: number; location: string; body: string; headers: Headers | null };
 
-async function request(method: string, path: string): Promise<Page> {
+async function request(method: string, path: string, headers: Record<string, string> = {}): Promise<Page> {
   try {
-    const response = await fetch(`${BASE_URL}${path}`, { method, redirect: "manual" });
+    const response = await fetch(`${BASE_URL}${path}`, { method, headers, redirect: "manual" });
     return {
       status: response.status,
       location: response.headers.get("location") ?? "",
@@ -81,8 +85,125 @@ function assertClosed(result: Page, label: string): void {
   assert.equal(result.headers?.get("cache-control"), "no-store", `${label}: Cache-Control`);
 }
 
-test("GATE_MODE is off, on or prod", () => {
+test("GATE_MODE is off, on or prod; AUTH_GATE_MODE is off or on", () => {
   assert.equal(["off", "on", "prod"].includes(MODE), true, "set GATE_MODE to off, on or prod");
+  assert.equal(["off", "on"].includes(AUTH_MODE), true, "set AUTH_GATE_MODE to off or on");
+});
+
+// M5-02 (DECISIONS §2.18 decisions 4, 5, 13): the account env gate. Off
+// (no publishable key, or VERCEL_ENV=production): every account page and
+// handler answers the closed 404 of proxy.ts, also for POST. On: the
+// account page without a session goes to the login page (307, private
+// no-store), a handler POST without an Origin is 403, a bare email link
+// goes to login `link-invalid`, and a GET to a POST handler is 405. The
+// pages themselves are checked in G12 (account UI).
+describe(`account env gate over HTTP (AUTH_GATE_MODE=${AUTH_MODE || "unset"})`, () => {
+  if (AUTH_MODE === "off") {
+    const rows: Array<[string, string]> = [
+      ["GET", "/id/login"],
+      ["GET", "/en/register"],
+      ["GET", "/id/forgot-password"],
+      ["GET", "/en/reset-password"],
+      ["GET", "/id/account"],
+      ["GET", "/en/account"],
+      ["GET", "/id/auth/confirm?token_hash=gate-check-hash&type=email"],
+      ["POST", "/id/auth/login"],
+      ["POST", "/en/auth/logout"],
+    ];
+    for (const [index, [method, path]] of rows.entries()) {
+      test(`G11.${index + 1} ${method} ${path} with accounts off: 404, noindex, no-store`, async () => {
+        const result = await request(method, path, method === "POST" ? { Origin: BASE_URL } : {});
+        assertClosed(result, `${method} ${path}`);
+        assert.deepEqual(result.headers?.getSetCookie() ?? [], [], `${method} ${path}: Set-Cookie`);
+      });
+    }
+  }
+
+  if (AUTH_MODE === "on") {
+    for (const [index, locale] of ["id", "en"].entries()) {
+      test(`G11.${index + 1} GET /${locale}/account without a session: 307 to /${locale}/login, private no-store, noindex`, async () => {
+        const result = await request("GET", `/${locale}/account`);
+        assert.equal(result.status, 307, `GET /${locale}/account`);
+        assert.equal(new URL(result.location, BASE_URL).pathname, `/${locale}/login`, "Location");
+        assert.equal(new URL(result.location, BASE_URL).search, "", "no query in the login target");
+        assert.match(result.headers?.get("cache-control") ?? "", /private/, "Cache-Control private");
+        assert.match(result.headers?.get("cache-control") ?? "", /no-store/, "Cache-Control no-store");
+        assert.equal(result.headers?.get("x-robots-tag"), "noindex", "X-Robots-Tag");
+      });
+    }
+    test("G11.3 POST /id/auth/login without an Origin header: 403, no cookie", async () => {
+      const result = await request("POST", "/id/auth/login", { "Content-Type": "application/x-www-form-urlencoded" });
+      assert.equal(result.status, 403);
+      assert.deepEqual(result.headers?.getSetCookie() ?? [], [], "Set-Cookie");
+      assert.equal(result.headers?.get("x-robots-tag"), "noindex", "X-Robots-Tag");
+    });
+    test("G11.4 GET /id/auth/confirm without a token: 303 to /id/login?status=link-invalid, private no-store", async () => {
+      const result = await request("GET", "/id/auth/confirm");
+      assert.equal(result.status, 303);
+      const target = new URL(result.location, BASE_URL);
+      assert.equal(`${target.pathname}${target.search}`, "/id/login?status=link-invalid", "Location");
+      assert.match(result.headers?.get("cache-control") ?? "", /no-store/, "Cache-Control");
+    });
+    test("G11.5 GET /id/auth/login (a POST-only handler): 405", async () => {
+      assert.equal((await request("GET", "/id/auth/login")).status, 405);
+    });
+  }
+});
+
+// M5-02 account UI (DECISIONS §2.18 decision 13), G12, by AUTH_GATE_MODE. On:
+// the four public account pages answer 200 with robots noindex and a form
+// that posts to its handler, and the header links "Akun" / "Account" to the
+// account page from `/` and the publication index. Off (also with the CMS on,
+// and in production): no page shows an account link.
+describe(`account pages over HTTP (AUTH_GATE_MODE=${AUTH_MODE || "unset"})`, () => {
+  const ACCOUNT_LINK = /data-header-account|href="\/(?:id|en)\/account"/;
+
+  if (AUTH_MODE === "on") {
+    const forms: Array<[string, string, string[]]> = [
+      ["login", "login", ["email", "password"]],
+      ["register", "register", ["email", "password", "password_confirm"]],
+      ["forgot-password", "forgot-password", ["email"]],
+      ["reset-password", "reset-password", ["password", "password_confirm"]],
+    ];
+    let index = 0;
+    for (const locale of ["id", "en"]) {
+      for (const [page, handler, fields] of forms) {
+        index += 1;
+        test(`G12.${index} GET /${locale}/${page}: 200, noindex, form to /${locale}/auth/${handler}`, async () => {
+          const result = await request("GET", `/${locale}/${page}`);
+          assert.equal(result.status, 200, `GET /${locale}/${page}`);
+          assert.match(result.body, /<meta name="robots" content="noindex[^"]*"/, "robots noindex");
+          assert.equal(result.body.includes(`<html lang="${locale}"`), true, "html lang");
+          assert.equal(result.body.includes(`action="/${locale}/auth/${handler}"`), true, "form action");
+          for (const field of fields) assert.equal(result.body.includes(`name="${field}"`), true, `field ${field}`);
+          assert.equal(result.body.includes("supabase.co"), false, "no Supabase host in the HTML");
+        });
+      }
+    }
+    for (const [offset, [path, href]] of [
+      ["/", "/id/account"],
+      ["/id/publications", "/id/account"],
+      ["/en/publications", "/en/account"],
+    ].entries()) {
+      test(`G12.${index + offset + 1} GET ${path}: header link to ${href}`, async () => {
+        const result = await request("GET", path);
+        assert.equal(result.status, 200, `GET ${path}`);
+        assert.equal(result.body.includes(`href="${href}"`), true, `link to ${href}`);
+        assert.equal(result.body.includes("data-header-account"), true, "header account link marker");
+      });
+    }
+  }
+
+  if (AUTH_MODE === "off") {
+    const paths = MODE === "on" ? ["/", "/id/publications", "/en/publications"] : ["/"];
+    for (const [offset, path] of paths.entries()) {
+      test(`G12.${offset + 1} GET ${path} with accounts off: no account link`, async () => {
+        const result = await request("GET", path);
+        assert.equal(result.status, 200, `GET ${path}`);
+        assert.equal(ACCOUNT_LINK.test(result.body), false, "an account link");
+      });
+    }
+  }
 });
 
 describe(`env gate over HTTP (GATE_MODE=${MODE || "unset"})`, () => {

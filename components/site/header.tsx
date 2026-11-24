@@ -37,13 +37,20 @@ function LanguageSwitcher() {
  * decision 11A): the "Learning Hub" menu item before "Tentang", from
  * `HomeNavLearningHub` (server components, rendered only while the
  * Indonesian catalog exists). The homepage passes them only with the CMS on.
+ *
+ * `account` (M5-02, DECISIONS §2.18 decision 13): the neutral "Akun" link to
+ * `/id/account`, passed by the homepage only while accounts are on
+ * (lib/auth/env.ts). Plain text and href so this client component imports
+ * nothing from lib/auth; the link is a plain `<a>` (plan D2, §2.10).
  */
 export function Header({
   learningHubDesktop,
   learningHubMobile,
+  account,
 }: {
   learningHubDesktop?: ReactNode;
   learningHubMobile?: ReactNode;
+  account?: { href: string; label: string };
 } = {}) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -99,6 +106,15 @@ export function Header({
         </nav>
 
         <div className="hidden items-center gap-6 lg:flex">
+          {account ? (
+            <a
+              className="text-[0.8125rem] font-semibold text-white underline-offset-4 transition-colors hover:underline"
+              data-header-account
+              href={account.href}
+            >
+              {account.label}
+            </a>
+          ) : null}
           <LanguageSwitcher />
           <a className="btn btn-light" href="#publikasi">
             Jelajahi publikasi
@@ -147,6 +163,19 @@ export function Header({
                     </li>
                   </Fragment>
                 ))}
+                {account ? (
+                  <li>
+                    <a
+                      className="flex items-center justify-between py-4 text-base font-semibold text-white"
+                      data-header-account
+                      href={account.href}
+                      onClick={closeMenu}
+                    >
+                      {account.label}
+                      <ArrowIcon className="h-4 w-4 text-white/60" />
+                    </a>
+                  </li>
+                ) : null}
               </ul>
             </nav>
             <div className="mt-5 flex items-center justify-between gap-4">

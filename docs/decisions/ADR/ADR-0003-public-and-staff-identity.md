@@ -1,6 +1,6 @@
 # ADR-0003 — Public User and Staff Identity Boundary
 
-- **Status:** Proposed
+- **Status:** Proposed. **Diajukan Accepted (2026-11-20, akhir M5 PR-1; DECISIONS §2.18 keputusan 16), menunggu persetujuan Owner.** Status belum diubah; Owner menyetujui sebagai PO karena Security owner belum ada (B-03).
 - **Related decisions:** DEC-008, DEC-009, DEC-016
 - **Decision owner / approver:** Product Owner + Security owner — TBD
 
@@ -35,3 +35,6 @@ SRS menetapkan Supabase Auth untuk pengguna umum dan Payload Auth untuk staf. Pu
 ## Validation
 
 Spike auth membuktikan public user tidak bisa mengakses Payload admin, public account tidak dapat mengubah role, staff session tidak otomatis dianggap public subscriber, dan logout/session invalidation berfungsi pada tiap surface.
+
+## Validasi M5-01 (2026-11-20)
+SPIKE-002 membuktikan di lokal (bukti per kriteria: SPIKE-002 "Hasil M5-01"): pengguna publik tidak dapat masuk ke Payload admin (AB1), metadata `user_metadata` tidak mengubah role (AB2), sesi staf tidak dianggap sesi publik (AB3, AP4), setiap operasi memeriksa penyedia identitasnya sendiri (AB4, AUU5, AUU7), logout dan cookie rusak aman (AU5, AU6). Bukti di domain Preview menunggu cek Owner (ENVIRONMENTS §3.1 butir F dan I). Implementasi: `lib/auth/`, `proxy.ts`. Staf yang perlu file `registered` memakai akun publik biasa tanpa tautan ke akun staf (DECISIONS §2.18 keputusan 14b). MFA staf dialihkan ke M4.

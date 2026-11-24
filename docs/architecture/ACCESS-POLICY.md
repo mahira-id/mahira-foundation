@@ -34,6 +34,13 @@ Dokumen ini menetapkan bagaimana identitas, role, access level, entitlement, dan
 
 Staff is not a public-user entitlement class. DEC-009 decides whether staff use a separate public account or receive a specific audited operational grant.
 
+### 3.1 Implementasi batas identitas (M5-01/M5-02, DECISIONS §2.18; SPIKE-002)
+- Identitas publik = sesi Supabase Auth (cookie `sb-<ref>-auth-token`, `HttpOnly`, `SameSite=Lax`, host-only); identitas staf = `payload-token`. Keduanya tidak saling dibaca: sesi staf saja di `/{locale}/account` dialihkan ke login, dan sesi publik di `/admin` tidak lolos (AB1–AB4).
+- Pada PR-1 satu-satunya status akses publik adalah "Terdaftar" (akun dengan email terverifikasi, ditampilkan di halaman akun). Evaluator akses, file `registered`, dan perubahan visibilitas ada di PR-2 (M5-03/M5-04); aturan §6–§9 untuk unduhan belum diimplementasikan di PR-1.
+- Server memverifikasi identitas per operasi: halaman akun dan ganti password memakai `getUser()` (ke server Auth), reset password memakai klaim terverifikasi dengan `amr` tautan email tidak lebih tua dari 3600 detik, `proxy.ts` hanya gerbang kasar dan refresh (`getClaims()`).
+- Pendaftaran tidak pernah mengirim `options.data` ke `signUp`, sehingga metadata dari klien tidak ada; role JWT tetap `authenticated` dan tidak memberi akses Payload (invarian 4).
+- Secret key APP (`APP_SUPABASE_SECRET_KEY`) hanya di helper tes lokal; tidak ada di app, Vercel, atau CI (invarian 5).
+
 ## 4. Resource model
 
 Protected resource is a Publication Asset, not just a page button. Each asset resolves to parent publication and publication-state, asset processing-state, publication default access level, optional asset access override, storage visibility and opaque object reference, locale and rights metadata.
@@ -228,6 +235,8 @@ Each event should contain event ID, timestamp, actor type/ID, action, target typ
 - Editor cannot change staff role or grant entitlement unless explicitly permitted.
 - Unpublished/draft content never appears in public query/search/sitemap.
 - Cached pages cannot leak personalized locked/unlocked decisions.
+
+Status M5 PR-1 (2026-11-20): butir "Public signup cannot create staff identity/role" dan "Staff session cannot be confused with public subscriber session" tercakup oleh `auth-boundary` AB1–AB4, `account-pages` AP4, dan unit AUU3, AUU7 (TEST-PLAN §12.2). Butir lain di daftar ini menunggu PR-2 (M5-03/M5-04) atau M7.
 
 ## 15. Open policy decisions
 

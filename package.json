@@ -23,6 +23,8 @@
     "@payloadcms/next": "3.93.0",
     "@payloadcms/storage-s3": "3.93.0",
     "@payloadcms/ui": "3.93.0",
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.119.2",
     "graphql": "^16.8.1",
     "next": "16.4.4",
     "payload": "3.93.0",
