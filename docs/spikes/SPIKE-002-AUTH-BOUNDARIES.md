@@ -1,5 +1,5 @@
 # SPIKE-002 — Public and Staff Authentication Boundaries
-**Status:** Selesai di lokal (M5-01, 2026-11-20); bukti di domain Preview menunggu cek Owner (ENVIRONMENTS §3.1 "Akun publik (M5-01/M5-02)", butir F dan I) · **Decision links:** DEC-008, DEC-009, DEC-016 · **ADR:** 0003 · **Owner:** Haidar (Product Owner)
+**Status:** Selesai (M5-01; lokal 2026-11-20, domain Preview 2026-11-24, cek Owner A–K lulus; DEC-008 dan ADR-0003 Accepted 2026-11-24) · **Decision links:** DEC-008, DEC-009, DEC-016 · **ADR:** 0003 · **Owner:** Haidar (Product Owner)
 ## Question
 Can Supabase Auth for public users and Payload Auth for staff coexist in one Next.js application with distinct cookies/sessions, route guards, and server-side authorization, without accidental privilege crossover?
 ## Hypothesis
@@ -49,7 +49,7 @@ Pertahanan tambahan yang diuji: setiap POST wajib `Origin` yang sama dengan host
 ### Bukti rusak-sengaja
 Unit B1–B8 dan matriks (B2 pada mode `authoff` → tepat G11.1–G11.9) dan integrasi (B1 → AU1, B3 → AU8, B6 → AU3), semuanya dikembalikan dengan SHA-256 identik; BB1 pada UI (APU3). Rincian ada di CHANGELOG [M5-01] dan `breaks.md` di folder tugas (tidak dilacak git).
 ### Perilaku di domain Preview
-Belum diukur. Run browser lokal (Playwright MCP, langkah 5 gate di rencana) tidak tercatat; bukti lokal hanya tes HTTP. Preview untuk akun belum ada sebelum Owner menerapkan langkah A–E di ENVIRONMENTS §3.1 "Akun publik (M5-01/M5-02)". Item yang harus dibuktikan Owner: F (login → akun tanpa bounce di Preview; router Next 16.4.4 dengan `partialPrefetching`) dan I (admin staf tetap berfungsi; sesi staf saja di `/id/account` → login). Hasil dicatat di PR berikutnya.
+Diukur oleh Owner di Vercel Preview PR #27 (branch `feat/m5-01-02-auth`, head `de0e68e`), laporan Owner 2026-11-24: langkah Supabase/Vercel A–E diterapkan dan cek Preview A–K semua lulus, sesuai skenario ENVIRONMENTS §3.1 "Akun publik (M5-01/M5-02)". Termasuk F (login → `/id/account` tanpa bounce dan tanpa loop saat Back; router Next 16.4.4 dengan `partialPrefetching`) dan I (`/admin` tanpa loop `/admin` ↔ `/admin/login` saat sesi publik aktif di browser yang sama; sesi publik tidak membuka admin; sesi staf saja di `/id/account` → `/id/login`). Akun uji dihapus Owner (K). Email konfirmasi dan reset terkirim lewat Resend sebagai custom SMTP Supabase (DEC-019 Accepted 2026-11-24), bukan SMTP bawaan. Run browser lokal tetap tidak tercatat; bukti browser hanya cek Owner ini.
 ## Open questions
 - Will any staff member need a separate public user account to access exclusive publications? **Dijawab** (DECISIONS §2.18 keputusan 14b): staf yang perlu file `registered` mendaftar akun publik biasa tanpa tautan ke akun staf.
 - What is the staff MFA policy? **Dialihkan ke M4** (keputusan 14b); belum dicek apakah Payload 3.93.0 punya MFA bawaan.
