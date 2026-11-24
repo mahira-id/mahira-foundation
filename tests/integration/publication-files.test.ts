@@ -683,6 +683,12 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     assert.ok(row.includes('<span lang="id">Bahasa Indonesia</span>'), "document language name carries lang=id");
     assert.ok(html.includes('id="publication-files-heading"') && html.includes(">Dokumen</h2>"), "heading");
     assert.equal(linkText(html, file("a").id), `Unduh PDF: ${LABEL}a`, "link name has the action and the label");
+    // M5-04: the registered row is locked (badge, data attribute, own label); the public row is not.
+    const regRow = rowOf(html, file("reg").id);
+    assert.ok(regRow.includes("Terdaftar"), "registered row: badge");
+    assert.ok(new RegExp(`<li[^>]*data-file-access="registered"[^>]*data-publication-file="${file("reg").id}"`).test(html), "registered row: data-file-access");
+    assert.equal(linkText(html, file("reg").id), `Unduh PDF (perlu akun): ${LABEL}reg`, "registered link name");
+    assert.equal(row.includes("Terdaftar") || row.includes("perlu akun"), false, "public row: no badge, no locked label");
     assert.equal(html.includes("data-files-preview-note"), false, "no preview note on the public page");
 
     // English page: English copy, the document language is its own (Indonesian), the kind in English.

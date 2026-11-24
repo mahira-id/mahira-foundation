@@ -62,6 +62,8 @@ export type Dictionary = {
     /** Prefix of the document language ("Bahasa dokumen", read by screen readers). */
     documentLanguage: string;
     download: string;
+    /** Link text of a `registered` file row (M5-04, DECISIONS §2.19 decision 4); the same for every visitor. */
+    downloadRegistered: string;
     /** Note of the staff draft preview, where files have no link. */
     previewNote: string;
   };
@@ -241,6 +243,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
       documentLanguage: "Bahasa dokumen",
       download: "Unduh PDF",
+      downloadRegistered: "Unduh PDF (perlu akun)",
       previewNote: "Unduhan aktif setelah publikasi diterbitkan.",
     },
     preview: {
@@ -437,6 +440,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
       documentLanguage: "Document language",
       download: "Download PDF",
+      downloadRegistered: "Download PDF (account required)",
       previewNote: "Downloads become active once the publication is published.",
     },
     preview: {

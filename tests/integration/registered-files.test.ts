@@ -421,6 +421,17 @@ describe("registered files and visibility (M5-03 + M5-04: SRS §12.1 Visitor/Reg
     for (const key of ["pubfile", "regfile"]) assert.equal(panel.includes(`href="/api/files/${file(key).id}/download"`), true, `link of ${key}`);
     assert.equal(panel.includes(`/api/files/${file("subfile").id}/`), false, "link of the subscriber file");
     assert.equal(panel.includes(`${LABEL}subfile`), false, "label of the subscriber file");
+    // M5-04 UI: the registered row is locked in text and style; the public row is not (EN copy: unit test FL3).
+    const rowOf = (key: string) => new RegExp(`<li[^>]*data-publication-file="${file(key).id}"[^>]*>([\\s\\S]*?)</li>`).exec(panel)?.[0] ?? "";
+    const locked = rowOf("regfile");
+    assert.equal(locked.includes('data-file-access="registered"'), true, "registered row marked");
+    assert.equal(locked.includes("Terdaftar"), true, "registered row badge");
+    assert.equal(locked.includes("Unduh PDF (perlu akun)"), true, "registered row label");
+    assert.equal(locked.includes("btn-outline-dark"), true, "registered row outline button");
+    const open = rowOf("pubfile");
+    assert.equal(open.includes("data-file-access"), false, "public row not marked");
+    assert.equal(open.includes("Terdaftar") || open.includes("perlu akun"), false, "public row has no badge or locked label");
+    assert.equal(open.includes("Unduh PDF"), true, "public row label");
   });
 
   test("RF8 registered on detail, index, search, sitemap and /; subscriber nowhere; anonymous REST and GraphQL closed for both", async () => {
