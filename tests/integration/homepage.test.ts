@@ -24,7 +24,8 @@ import { inlineSegments } from "../helpers/publication-pages";
 /**
  * Homepage `/` from CMS data (M3-04, DECISIONS §2.7): lead = newest dated
  * published + public Indonesian publication, then up to 4 more (dated before
- * undated, undated by createdAt), no registered/draft/EN record, WIB dates,
+ * undated, undated by createdAt), since M5-03 also `registered` records
+ * (accounts on), no subscriber/draft/EN record, WIB dates,
  * active topics only sorted by name, read at request time.
  * Needs `next start` with the full env (bun run test:integration).
  *
@@ -81,7 +82,7 @@ function latestRows(html: string): { slug: string; dateTime?: string }[] {
 
 type Fixtures = {
   topics: { a: Topic; b: Topic; off: Topic };
-  pubs: Record<"new" | "old" | "undated1" | "undated2" | "registered" | "draft" | "en", Publication>;
+  pubs: Record<"new" | "old" | "undated1" | "undated2" | "registered" | "subscriber" | "draft" | "en", Publication>;
 };
 
 describe("homepage (M3-04 / from CMS data)", () => {
@@ -175,10 +176,13 @@ describe("homepage (M3-04 / from CMS data)", () => {
     const old = await createPub("old", { publishedAt: "2090-01-01T18:30:00.000Z" });
     const undated1 = await clearPublishedAt(await createPub("undated-1", {}));
     const undated2 = await clearPublishedAt(await createPub("undated-2", {}));
-    const registered = await createPub("registered", { publishedAt: "2090-02-01T03:00:00.000Z", accessLevel: "registered" });
+    // M5-03 (DECISIONS §2.18 decision 11): `registered` is listed on / (dated between "new" and "old",
+    // so the lead stays "new"); `subscriber`, newest of all, must never be the lead or a row.
+    const registered = await createPub("registered", { publishedAt: "2090-01-03T03:00:00.000Z", accessLevel: "registered" });
+    const subscriber = await createPub("subscriber", { publishedAt: "2090-02-01T03:00:00.000Z", accessLevel: "subscriber" });
     const draft = await createPub("draft", { publishedAt: "2090-03-01T03:00:00.000Z" }, "draft");
     const en = await createPub("en", { publishedAt: "2090-04-01T03:00:00.000Z", locale: "en" });
-    fx = { topics: { a, b, off }, pubs: { new: newest, old, undated1, undated2, registered, draft, en } };
+    fx = { topics: { a, b, off }, pubs: { new: newest, old, undated1, undated2, registered, subscriber, draft, en } };
   });
 
   after(async (t) => {
@@ -216,10 +220,13 @@ describe("homepage (M3-04 / from CMS data)", () => {
     assert.deepEqual(shown, expected.slice(0, shown.length), `fixture rows out of order: ${fact}`);
   });
 
-  test("HP2 registered, draft and EN fixtures are not on / (DEC-002, no draft, locale id only)", async () => {
+  test("HP2 registered is a row on / (M5-03); subscriber, draft and EN fixtures are not on / (DEC-002, no draft, locale id only)", async () => {
     const html = await home();
-    for (const name of ["registered", "draft", "en"]) {
+    const rows = latestRows(html).map((row) => row.slug);
+    assert.equal(rows.includes(slug("registered")), true, `registered row on / (rows: ${rows.join(", ")})`);
+    for (const name of ["subscriber", "draft", "en"]) {
       assert.equal(html.includes(slug(name)), false, `${slug(name)} on /`);
+      assert.equal(html.includes(`${LABEL}${name}`), false, `title of ${name} on /`);
     }
   });
 
@@ -269,7 +276,8 @@ describe("homepage (M3-04 / from CMS data)", () => {
     const html = await home();
     const leads = matches(html, "data-home-lead");
     const latest = matches(html, "data-home-latest");
-    assert.deepEqual(leads, [slug("old")], `lead after unpublish: ${leads.join(", ")}`);
+    // The next newest dated ID record is the registered fixture (2090-01-03, visible since M5-03).
+    assert.deepEqual(leads, [slug("registered")], `lead after unpublish: ${leads.join(", ")}`);
     assert.equal(latest.includes(slug("new")), false, `unpublished record in the index: ${latest.join(", ")}`);
   });
 

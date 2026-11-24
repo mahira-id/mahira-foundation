@@ -29,12 +29,14 @@ import { decodeAmp, fetchAllIndexPages, indexState, robotsContent, rowSlugs } fr
  * Needs `next start` with the full env (bun run test:integration).
  *
  * Fixtures (slugs fixture-test-index-*, names and labels "[FIXTURE] test
- * index *"): active type `type-a` and `type-reg` (used only by a registered
- * record), active topics `topic-a`, `topic-b`, `topic-c`, inactive
+ * index *"): active types `type-a`, `type-reg` (used only by a registered
+ * record, visible since M5-03) and `type-sub` (only a subscriber record),
+ * active topics `topic-a`, `topic-b`, `topic-c`, `topic-reg` (the registered and
+ * subscriber records), inactive
  * `topic-off`; 13 dated ID records d01–d13 (d06 and d07 share publishedAt,
  * d01 is 2089-12-31T18:00Z = 2090 in WIB), 2 undated ID records u1, u2 (date
  * cleared by a raw UPDATE restricted to the fixture id and slug prefix, as in
- * homepage.test.ts), one draft, one registered, two EN records. Filtering by
+ * homepage.test.ts), one draft, one registered, one subscriber, two EN records. Filtering by
  * the fixture type isolates them from other records in `mahira-cms`.
  * No user is created; the Owner guard runs before any fixture is written and
  * after cleanup.
@@ -50,10 +52,12 @@ const STAFF_FIELDS = ["liveOnSite", "everPublished", "translationGroup", "_statu
 const slug = (name: string) => `${PREFIX}${name}`;
 const TYPE_A = slug("type-a");
 const TYPE_REG = slug("type-reg");
+const TYPE_SUB = slug("type-sub");
 const TOPIC_A = slug("topic-a");
 const TOPIC_B = slug("topic-b");
 const TOPIC_C = slug("topic-c");
 const TOPIC_OFF = slug("topic-off");
+const TOPIC_REG = slug("topic-reg");
 
 const DATED = Array.from({ length: 13 }, (_, index) => `d${String(index + 1).padStart(2, "0")}`);
 /** Expected order of the type-a ID records: d13 … d01 (d07 before d06: same date, higher id), then u2, u1. */
@@ -90,8 +94,8 @@ function paginationHrefs(html: string): string[] {
 describe("publication index (M3-05 filters, pagination, URL state, noindex)", () => {
   let payload: Payload | undefined;
   let author: number | undefined;
-  let types: { a: PublicationType; reg: PublicationType } | undefined;
-  let topics: { a: Topic; b: Topic; c: Topic; off: Topic } | undefined;
+  let types: { a: PublicationType; reg: PublicationType; sub: PublicationType } | undefined;
+  let topics: { a: Topic; b: Topic; c: Topic; off: Topic; reg: Topic } | undefined;
 
   function p(): Payload {
     if (!payload) throw new Error("Payload not initialised (before hook failed)");
@@ -164,11 +168,13 @@ describe("publication index (M3-05 filters, pagination, URL state, noindex)", ()
     types = {
       a: await activeType("Jenis A", TYPE_A),
       reg: await activeType("Jenis Terdaftar", TYPE_REG),
+      sub: await activeType("Jenis Langganan", TYPE_SUB),
     };
     topics = {
       a: await activeTopic("Topik A", TOPIC_A),
       b: await activeTopic("Topik B", TOPIC_B),
       c: await activeTopic("Topik C", TOPIC_C),
+      reg: await activeTopic("Topik Terdaftar", TOPIC_REG),
       off: await p().create({ collection: "topics", data: { name: `${LABEL}Topik Nonaktif`, slug: TOPIC_OFF }, locale: "id", overrideAccess: true }),
     };
 
@@ -181,7 +187,9 @@ describe("publication index (M3-05 filters, pagination, URL state, noindex)", ()
     await clearPublishedAt(await createPub("u1", { topics: [topics.a.id, topics.c.id] }));
     await clearPublishedAt(await createPub("u2", {}));
     await createPub("draft", { publishedAt: "2090-03-02T03:00:00.000Z" }, "draft");
-    await createPub("registered", { publishedAt: "2090-03-01T03:00:00.000Z", accessLevel: "registered", publicationType: types.reg.id });
+    // M5-03: `registered` is listed (accounts on); `subscriber` never. Own topic, so the topic-a/b/c checks stay exact.
+    await createPub("registered", { publishedAt: "2090-03-01T03:00:00.000Z", accessLevel: "registered", publicationType: types.reg.id, topics: [topics.reg.id] });
+    await createPub("subscriber", { publishedAt: "2090-03-03T03:00:00.000Z", accessLevel: "subscriber", publicationType: types.sub.id, topics: [topics.reg.id] });
     await createPub("en-1", { publishedAt: "2090-02-01T03:00:00.000Z", locale: "en" });
     await createPub("en-2", { publishedAt: "2090-02-02T03:00:00.000Z", locale: "en" });
   });
@@ -244,7 +252,8 @@ describe("publication index (M3-05 filters, pagination, URL state, noindex)", ()
     const topicOptions = selectOptions(html, "topic");
     assert.equal(typeOptions[0], "", 'first option "Semua" has an empty value');
     assert.equal(typeOptions.includes(TYPE_A), true, `type options: ${typeOptions.join(", ")}`);
-    assert.equal(typeOptions.includes(TYPE_REG), false, "type-reg is used only by a registered record");
+    assert.equal(typeOptions.includes(TYPE_REG), true, "type-reg is used by a visible registered record (M5-03)");
+    assert.equal(typeOptions.includes(TYPE_SUB), false, "type-sub is used only by a subscriber record");
     for (const value of [TOPIC_A, TOPIC_B, TOPIC_C]) {
       assert.equal(topicOptions.includes(value), true, `${value} in topic options: ${topicOptions.join(", ")}`);
     }
@@ -258,7 +267,7 @@ describe("publication index (M3-05 filters, pagination, URL state, noindex)", ()
       [`type=${slug("nope")}`, "type"],
       [`topic=${TOPIC_OFF}`, "topic"],
       ["year=1999", "year"],
-      [`type=${TYPE_REG}`, "type"],
+      [`type=${TYPE_SUB}`, "type"],
     ];
     for (const [query, key] of cases) {
       const html = await page(`/id/publications?${query}`);
@@ -290,11 +299,11 @@ describe("publication index (M3-05 filters, pagination, URL state, noindex)", ()
     }
   });
 
-  test("IX8 draft, registered and EN records are never listed on /id/publications (all pages)", async () => {
+  test("IX8 the registered record is listed (M5-03); subscriber, draft and EN records are never listed on /id/publications (all pages)", async () => {
     const all = await fetchAllIndexPages("id");
     const fixtures = all.slugs.filter((rowSlug) => rowSlug.startsWith(PREFIX));
-    assert.deepEqual(fixtures, EXPECTED_ORDER, "the 15 public ID fixtures, in order");
-    for (const name of ["draft", "registered", "en-1", "en-2"]) {
+    assert.deepEqual(fixtures, [slug("registered"), ...EXPECTED_ORDER], "registered (newest visible) then the 15 public ID fixtures, in order");
+    for (const name of ["subscriber", "draft", "en-1", "en-2"]) {
       assert.equal(all.bodies.some((body) => body.includes(slug(name))), false, `${slug(name)} on /id/publications`);
     }
   });

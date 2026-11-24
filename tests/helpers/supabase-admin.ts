@@ -22,7 +22,7 @@ export const APP_AUTH_REF = "dmtbieetvgkvncadbkmd";
 const SECRET_NAME = "APP_SUPABASE_SECRET_KEY";
 const PREFIX = "Auth integration tests refused:";
 
-export type AuthArea = "core" | "boundary" | "pages";
+export type AuthArea = "core" | "boundary" | "pages" | "files";
 
 export function assertSafeAuthTarget(): { url: string; secret: string } {
   loadEnv();

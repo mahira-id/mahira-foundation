@@ -43,6 +43,9 @@ import { fileFormatLabel } from "../../lib/publications/file-labels";
  * pending draft revision of `live`; `never` public on the draft-only `never`;
  * `regpub` public on `regpub` (published, Access Level registered); `unpub`
  * public on `unpub` (published, unpublished in DL5); `free` on no record;
+ * `onlyreg` registered on `restricted`, `onlysub` subscriber on `subonly`
+ * (both published public records; M5-04: registered shows locked, the
+ * route asks for a login; subscriber stays hidden and 404);
  * `dengan spasi (v2)` public on `spaced` (published; a stored name with
  * spaces and parentheses, like real file names, for the attachment header).
  * Publications reuse the first existing author, topic and type; ID locale;
@@ -85,6 +88,22 @@ function download(id: number | string, headers: Record<string, string> = {}): Pr
 
 function assertPrivateHeaders(result: Raw, label: string): void {
   assert.equal(result.headers.get("cache-control"), "no-store", `${label}: Cache-Control`);
+  assert.equal(result.headers.get("x-robots-tag"), "noindex", `${label}: X-Robots-Tag`);
+}
+
+/**
+ * The answer to a `registered` file without a valid public session (M5-04,
+ * DECISIONS §2.18 decision 12): 303 to the ID login page with the detail
+ * path of `publicationSlug` as return path, on the test server's own host,
+ * no body, `private, no-store` + noindex.
+ */
+function assertToLogin(result: Raw, publicationSlug: string, label: string): void {
+  assert.equal(result.status, 303, `${label}: HTTP ${result.status}`);
+  const location = new URL(result.headers.get("location") ?? "", BASE_URL);
+  assert.equal(location.host, new URL(BASE_URL).host, `${label}: Location on the own host`);
+  assert.equal(`${location.pathname}${location.search}`, `/id/login?next=${encodeURIComponent(`/id/publications/${publicationSlug}`)}`, `${label}: Location`);
+  assert.equal(result.bytes.length, 0, `${label}: body`);
+  assert.equal(result.headers.get("cache-control"), "private, no-store", `${label}: Cache-Control`);
   assert.equal(result.headers.get("x-robots-tag"), "noindex", `${label}: X-Robots-Tag`);
 }
 
@@ -222,6 +241,7 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
       ["unpub", "public"],
       ["free", "public"],
       ["onlyreg", "registered"],
+      ["onlysub", "subscriber"],
       [SPACED, "public"],
     ] as const) {
       await upload(name, level);
@@ -243,6 +263,7 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     await createPub("unpub", ["unpub"], "published");
     await createPub("nofiles", [], "published");
     await createPub("restricted", ["onlyreg"], "published");
+    await createPub("subonly", ["onlysub"], "published");
     await createPub("spaced", [SPACED], "published");
     await createPub("enlive", ["enfile"], "published", "public", "en");
   });
@@ -345,23 +366,26 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     }
   });
 
-  test("DL5 every denial is the same 404: unknown/invalid id, draft-only, never published, registered record, restricted file, unattached, unpublished", async () => {
+  test("DL5 every denial is the same 404: unknown/invalid id, draft-only, never published, subscriber file, unattached, unpublished; a registered file asks an anonymous caller to log in (M5-04)", async () => {
     for (const id of [UNKNOWN_ID, "abc", "0", "01", "-1", "1.5", "2147483648", "1e3"]) {
       assertDenied(await download(id), `id ${id}`);
     }
     const denied: [string, string][] = [
       ["draft", "file only in a pending draft revision"],
       ["never", "record never published"],
-      ["regpub", "published record with Access Level registered"],
-      ["reg", "registered file on a public record"],
       ["sub", "subscriber file on a public record"],
       ["free", "file on no record"],
     ];
     for (const [name, label] of denied) {
       assertDenied(await download(file(name).id), label);
     }
-    // A staff session gives no bypass on the public route (DEC-009).
+    // M5-04 (DECISIONS §2.18 decision 12): registered is visible now; without a public session the answer is the login page.
+    assertToLogin(await download(file("regpub").id), slug("regpub"), "public file on a published registered record");
+    assertToLogin(await download(file("reg").id), slug("live"), "registered file on a public record");
+    // A staff session gives no bypass on the public route (DEC-009): staff are anonymous there.
     assertDenied(await download(file("draft").id, { Authorization: `JWT ${token()}` }), "Editor token, draft-only file");
+    assertDenied(await download(file("sub").id, { Cookie: `payload-token=${token()}` }), "Editor cookie, subscriber file");
+    assertToLogin(await download(file("reg").id, { Cookie: `payload-token=${token()}` }), slug("live"), "Editor cookie, registered file");
 
     assert.equal((await download(file("unpub").id)).status, 307, "unpub before unpublish");
     await p().update({ collection: "publications", id: pub("unpub").id, data: { _status: "draft" }, depth: 0, overrideAccess: true });
@@ -437,9 +461,11 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     // Label and Access Level edits apply at once (no versions).
     const setLevel = (accessLevel: Level) =>
       p().update({ collection: "publication-files", id: file("a").id, data: { accessLevel }, user: editorUser(), overrideAccess: false, depth: 0 });
-    await setLevel("registered");
+    await setLevel("subscriber");
     try {
-      assertDenied(await download(file("a").id), "accessLevel registered on a live file");
+      assertDenied(await download(file("a").id), "accessLevel subscriber on a live file");
+      await setLevel("registered");
+      assertToLogin(await download(file("a").id), slug("live"), "accessLevel registered on a live file (M5-04)");
     } finally {
       await setLevel("public");
     }
@@ -579,22 +605,27 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
   });
 
   // ------------------------------------------------------------ the public read path and the staff preview
-  test("DL13 detail read: anonymous gets only the public ready file, with panel fields and no storage keys; staff preview gets the draft list, filtered the same way", async (t) => {
+  test("DL13 detail read: anonymous gets the public and (M5-04) registered ready files, with panel fields and no storage keys, never the subscriber one; staff preview gets the draft list, filtered the same way", async (t) => {
     const doc = await findPublicPublication(p(), "id", slug("live"));
     assert.ok(doc, "live record readable anonymously");
     const raw = (doc.files ?? []) as unknown[];
     t.diagnostic(`OBSERVED anonymous files relation: ${raw.map((value) => (value === null ? "null" : typeof value === "object" ? "doc" : typeof value)).join(",")}`);
     const populated = raw.filter((value): value is Record<string, unknown> => value !== null && typeof value === "object");
-    assert.deepEqual(populated.map((value) => value.id), [file("a").id], "only the public ready file is populated");
+    assert.deepEqual(populated.map((value) => value.id), [file("a").id, file("reg").id], "only the public and registered ready files are populated");
     for (const value of populated) {
       assert.deepEqual(Object.keys(value).sort(), PANEL_FIELDS, "panel fields only");
       for (const key of STORAGE_KEYS) assert.equal(key in value, false, `${key} in the anonymous read`);
     }
     for (const value of raw) {
-      if (typeof value === "number") assert.notEqual(value, file("a").id);
+      if (typeof value === "number") assert.equal([file("a").id, file("reg").id].includes(value), false, "a visible file left as an id");
     }
+    assert.equal(populated.some((value) => value.id === file("sub").id), false, "subscriber file not populated");
     assert.equal(raw.includes(file("draft").id), false, "draft-only file not in the live version");
-    assert.deepEqual(toPublicationDetail(doc, "id").files.map((item) => item.id), [file("a").id], "view model");
+    assert.deepEqual(
+      toPublicationDetail(doc, "id").files.map((item) => [item.id, item.access]),
+      [[file("a").id, "public"], [file("reg").id, "registered"]],
+      "view model",
+    );
     const view = JSON.stringify(toPublicationDetail(doc, "id"));
     for (const name of ["a", "reg", "sub", "draft"]) {
       assert.equal(view.includes(fileName(name)), false, `file name of ${name} in the view model`);
@@ -605,7 +636,11 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     assert.ok(draft, "staff reads the latest version");
     const staffFiles = (draft.files ?? []) as unknown[];
     assert.equal(staffFiles.every((value) => value !== null && typeof value === "object"), true, "staff read populates every file");
-    assert.deepEqual(toPublicationDetail(draft, "id").files.map((item) => item.id), [file("a").id, file("draft").id], "preview: public files of the draft, in order");
+    assert.deepEqual(
+      toPublicationDetail(draft, "id").files.map((item) => item.id),
+      [file("a").id, file("reg").id, file("draft").id],
+      "preview: the visitors' files of the draft (public + registered, no subscriber), in order",
+    );
   });
 
   // ------------------------------------------------------------ the file panel on the detail page (M3-08 UI, DECISIONS §2.14 item 7)
@@ -634,12 +669,12 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     return (match[1] as string).replace(/<!-- -->/g, "");
   }
 
-  test("DLU1 panel: a published page lists only the public file with label, kind, document language, 'PDF · size' and a plain download link (ID and EN)", async () => {
+  test("DLU1 panel: a published page lists the public file (and since M5-04 the registered one, locked) with label, kind, document language, 'PDF · size' and a plain download link (ID and EN)", async () => {
     const html = await detailHtml(`/id/publications/${slug("live")}`);
     assert.ok(html.includes(`data-publication-detail="${slug("live")}"`), "detail page");
     assert.ok(html.includes('data-files-mode="live"'), "live mode");
-    assert.deepEqual(panelIds(html), [file("a").id], "panel rows");
-    assert.deepEqual(linkIds(html), [file("a").id], "download links");
+    assert.deepEqual(panelIds(html), [file("a").id, file("reg").id], "panel rows: public, then registered (stored order); no subscriber");
+    assert.deepEqual(linkIds(html), [file("a").id, file("reg").id], "download links: the same route for both");
     assert.ok(html.includes(`href="/api/files/${file("a").id}/download"`), "href of the download route");
     const row = rowOf(html, file("a").id);
     for (const text of [`${LABEL}a`, "Dokumen lengkap", "Bahasa Indonesia", fileFormatLabel(bytes.get("a")?.length ?? 0, "id")]) {
@@ -664,28 +699,35 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     assert.equal(enRow.includes("Lampiran"), false, "no Indonesian kind on the EN page");
   });
 
-  test("DLU2 no panel without public files: no files, and only a restricted file", async () => {
-    for (const name of ["nofiles", "restricted"]) {
+  test("DLU2 no panel without a visible file: no files, and only a subscriber file; only a registered file gives a panel with that row (M5-04)", async () => {
+    for (const [name, hidden] of [
+      ["nofiles", "onlysub"],
+      ["subonly", "onlysub"],
+    ] as const) {
       const html = await detailHtml(`/id/publications/${slug(name)}`);
       assert.ok(html.includes(`data-publication-detail="${slug(name)}"`), `${name}: detail page`);
       assert.equal(html.includes("data-publication-files"), false, `${name}: panel`);
       assert.equal(html.includes("publication-files-heading"), false, `${name}: heading`);
       assert.equal(html.includes("/api/files/"), false, `${name}: download link`);
-      assert.equal(hasLabel(html, "onlyreg"), false, `${name}: restricted label`);
+      assert.equal(hasLabel(html, hidden), false, `${name}: subscriber label`);
     }
+    const restricted = await detailHtml(`/id/publications/${slug("restricted")}`);
+    assert.deepEqual(panelIds(restricted), [file("onlyreg").id], "restricted: the registered file is a row");
+    assert.deepEqual(linkIds(restricted), [file("onlyreg").id], "restricted: its link is the download route");
   });
 
-  test("DLU3 nothing restricted or private reaches the HTML: no restricted label, no storage URL, object key or file name", async () => {
+  test("DLU3 nothing subscriber, draft-only or private reaches the HTML: no subscriber or draft label, no storage URL, object key or file name", async () => {
     const html = await detailHtml(`/id/publications/${slug("live")}`);
-    for (const name of ["reg", "sub", "draft"]) {
+    for (const name of ["sub", "draft"]) {
       assert.equal(hasLabel(html, name), false, `label of ${name}`);
+    }
+    for (const name of ["a", "reg", "sub", "draft"]) {
       assert.equal(html.includes(fileName(name)), false, `file name of ${name}`);
     }
-    assert.equal(html.includes(fileName("a")), false, "file name of the listed file");
+    assert.equal(hasLabel(html, "reg"), true, "the registered file is listed (M5-04)");
     for (const forbidden of [".storage.supabase.co", "storage/v1", "publication-files/file", "_objectKey", "X-Amz-", "signedDownloads"]) {
       assert.equal(html.includes(forbidden), false, `"${forbidden}" in the HTML`);
     }
-    assert.equal(html.includes(`/api/files/${file("reg").id}/`), false, "link of the registered file");
     assert.equal(html.includes(`/api/files/${file("sub").id}/`), false, "link of the subscriber file");
     assert.equal(html.includes(`/api/files/${file("draft").id}/`), false, "link of the draft-only file");
   });
@@ -702,16 +744,16 @@ describe("publication files and public downloads (M3-08: private bucket, signed 
     const html = await detailHtml(`/id/publications/${slug("live")}`, { Cookie: `${bypass}; payload-token=${token()}` });
     assert.ok(html.includes('data-preview="true"') && html.includes("data-preview-banner"), "preview page with banner");
     assert.ok(html.includes('data-files-mode="preview"'), "preview mode");
-    assert.deepEqual(panelIds(html), [file("a").id, file("draft").id], "public files of the draft, in order");
-    assert.equal(hasLabel(html, "a") && hasLabel(html, "draft"), true, "labels");
-    assert.equal(hasLabel(html, "reg") || hasLabel(html, "sub"), false, "restricted labels stay hidden");
+    assert.deepEqual(panelIds(html), [file("a").id, file("reg").id, file("draft").id], "visitors' files of the draft, in order");
+    assert.equal(hasLabel(html, "a") && hasLabel(html, "reg") && hasLabel(html, "draft"), true, "labels");
+    assert.equal(hasLabel(html, "sub"), false, "the subscriber label stays hidden");
     assert.deepEqual(linkIds(html), [], "no download link");
     assert.equal(html.includes("/api/files/"), false, "no download path in the HTML");
     assert.ok(html.includes("data-files-preview-note") && html.includes("Unduhan aktif setelah publikasi diterbitkan."), "note");
     assert.equal(html.includes("Unduh PDF"), false, "no download button");
 
     const live = await detailHtml(`/id/publications/${slug("live")}`);
-    assert.deepEqual(linkIds(live), [file("a").id], "the public page of the same record still has the link");
+    assert.deepEqual(linkIds(live), [file("a").id, file("reg").id], "the public page of the same record still has the links");
   });
 
   test("DLU5 index and homepage show no files: no panel and no download link", async () => {

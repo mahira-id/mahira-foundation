@@ -37,6 +37,7 @@ export type Area =
   | "preview"
   | "race"
   | "redirect"
+  | "registered"
   | "search"
   | "seo"
   | "toolkits"

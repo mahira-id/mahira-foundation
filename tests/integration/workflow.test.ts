@@ -338,10 +338,14 @@ describe("workflow (M3-03 draft, publish, revise, unpublish, public page, liveOn
   });
 
   // ------------------------------------------------------------ W9 liveOnSite in the staff list
-  test("W9 staff list: liveOnSite yes only for published + public records", async () => {
+  test("W9 staff list: liveOnSite yes only for published records visitors see (public, and registered with accounts on, M5-03); never subscriber", async () => {
     if (!w8) throw new Error("W8 did not create its records");
     const registered = await createPub(
       fullData("w9 registered", "w9-registered", await createGroup(p(), AREA, "w9 registered"), { accessLevel: "registered" }),
+      "published",
+    );
+    const subscriber = await createPub(
+      fullData("w9 subscriber", "w9-subscriber", await createGroup(p(), AREA, "w9 subscriber"), { accessLevel: "subscriber" }),
       "published",
     );
     const draftOnly = await createPub(fullData("w9 draft", "w9-draft", await createGroup(p(), AREA, "w9 draft")), "draft");
@@ -352,7 +356,8 @@ describe("workflow (M3-03 draft, publish, revise, unpublish, public page, liveOn
       [chained().slug, "yes"],
       [w8.en.slug, "yes"],
       [w8.id.slug, "no"],
-      [registered.slug, "no"],
+      [registered.slug, "yes"],
+      [subscriber.slug, "no"],
       [draftOnly.slug, "no"],
     ];
     const wrong = expected.filter(([slug, value]) => live.get(slug) !== value).map(([slug, value]) => `${slug}=${String(live.get(slug))} (expected ${value})`);
