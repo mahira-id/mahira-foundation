@@ -3,7 +3,7 @@ import { describe, test } from "node:test";
 import { ValidationError } from "payload";
 import type { CollectionBeforeChangeHook, CollectionBeforeOperationHook, FieldAccess, FieldHook, PayloadRequest } from "payload";
 
-import { PUBLIC_PUBLICATION_READ } from "../../payload/access/public-read";
+import { publicPublicationRead } from "../../payload/access/public-read";
 import { Publications } from "../../payload/collections/Publications";
 import { enforceSharedFields } from "../../payload/hooks/enforce-shared-fields";
 import { readLiveOnSite } from "../../payload/hooks/live-on-site";
@@ -61,13 +61,13 @@ describe("payload/hooks/live-on-site.ts â€” readLiveOnSite", () => {
     assert.equal(calls.length, 0, "no query for a caller without staff access");
   });
 
-  test("L2 editor, main record matches the public read filter: yes, one query with id + PUBLIC_PUBLICATION_READ", async () => {
+  test("L2 editor, main record matches the public read filter: yes, one query with id + publicPublicationRead()", async () => {
     const { calls, payload } = fakeDb({ id: 7 });
     const req = fakeReq({ user: fakeUser("editor", 2), payload });
     assert.equal(await runLiveOnSite(req, { id: 7, _status: "draft" }), "yes");
     assert.equal(calls.length, 1);
     assert.equal(calls[0]?.collection, "publications");
-    assert.deepEqual(calls[0]?.where, { and: [{ id: { equals: 7 } }, PUBLIC_PUBLICATION_READ] });
+    assert.deepEqual(calls[0]?.where, { and: [{ id: { equals: 7 } }, publicPublicationRead()] });
     assert.equal(calls[0]?.req, req, "query runs on the same req (transaction)");
   });
 

@@ -7,7 +7,7 @@ import { findPublicTitle } from "../../lib/cms/publication-detail-query";
 import { findSlugOwner } from "../../lib/cms/publication-slug-query";
 import { findSitemapPublications } from "../../lib/cms/sitemap-query";
 import { redirectPath } from "../../lib/publications/slug-redirect";
-import { PUBLIC_PUBLICATION_READ } from "../../payload/access/public-read";
+import { publicPublicationRead } from "../../payload/access/public-read";
 import { Publications } from "../../payload/collections/Publications";
 import { PublicationSlugs } from "../../payload/collections/PublicationSlugs";
 import { deletePublicationSlugs, recordPublicSlug } from "../../payload/hooks/publication-slugs";
@@ -71,14 +71,14 @@ describe("lib/publications/slug-redirect.ts", () => {
 });
 
 describe("payload/hooks/publication-slugs.ts", () => {
-  test("SLU2a recordPublicSlug reads the main-table record with PUBLIC_PUBLICATION_READ in the save's transaction; nothing visible → no write", async () => {
+  test("SLU2a recordPublicSlug reads the main-table record with publicPublicationRead() in the save's transaction; nothing visible → no write", async () => {
     const { req, calls, methods } = hookReq(null);
     const doc = { id: 7, slug: "baru", locale: "id", _status: "published", accessLevel: "public" };
     assert.equal(await afterChange(doc, req), doc, "returns the doc unchanged");
     assert.deepEqual(methods(), ["db.findOne"], "draft save, unpublish or registered/subscriber: only the read");
     const read = calls[0]?.args ?? {};
     assert.equal(read.collection, "publications");
-    assert.deepEqual(read.where, { and: [{ id: { equals: 7 } }, PUBLIC_PUBLICATION_READ] });
+    assert.deepEqual(read.where, { and: [{ id: { equals: 7 } }, publicPublicationRead()] });
     assert.deepEqual(read.select, { slug: true, locale: true });
     assert.equal(read.req, req, "same request = same transaction");
   });

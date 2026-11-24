@@ -7,6 +7,7 @@ import { NextRequest } from "next/server";
 import {
   changePassword,
   confirm,
+  FORM_ACTIONS,
   forgotPassword,
   login,
   logout,
@@ -16,6 +17,7 @@ import {
 } from "../../lib/auth/actions";
 import { AUTH_KEY_NAME, AUTH_URL_NAME } from "../../lib/auth/env";
 import { authConfirm, authPost } from "../../lib/auth/http";
+import { loginHref, statusHref } from "../../lib/auth/routes";
 import { AUTH_COOKIE_OPTIONS, AUTH_COOKIE_PATTERN, createAuthClient, logAuthError, type AuthClient, type CookieToSet } from "../../lib/auth/supabase";
 import {
   hasRecentRecovery,
@@ -25,6 +27,7 @@ import {
   parseLogin,
   parseRegister,
   parseResetPassword,
+  readReturnPath,
 } from "../../lib/auth/validation";
 
 /**
@@ -151,6 +154,80 @@ describe("lib/auth/actions.ts — operations with a fake client", () => {
     const none = fakeClient();
     assert.deepEqual(await login(form({ email: "x", password: PASSWORD }), none.client, CONTEXT), { location: "/id/login?status=invalid-input" });
     assert.deepEqual(none.calls, [], "no Supabase call on invalid input");
+  });
+
+  test("AUU13 login return path (M5-04): only a publication detail path; success goes there, every failure keeps it; anything else ends on the account page", async () => {
+    const detail = "/id/publications/laporan-energi-2026";
+    assert.equal(readReturnPath(detail), detail);
+    assert.equal(readReturnPath("/en/publications/a"), "/en/publications/a");
+    assert.equal(readReturnPath([detail, "https://evil.example"]), detail, "first value of a repeated parameter");
+    const hostile = [
+      "https://evil.example",
+      "http://evil.example/id/publications/a",
+      "//evil.example",
+      "//evil.example/id/publications/a",
+      "/\\evil.example",
+      "/\\/evil.example",
+      "\\\\evil.example",
+      "/id/account",
+      "/id/login",
+      "/api/files/1/download",
+      "/id/publications",
+      "/id/publications/",
+      "/id/publications/Bad",
+      "/id/publications/a_b",
+      "/id/publications/a/b",
+      "/id/publications/a?x=1",
+      "/id/publications/a#x",
+      "/id/publications/a%2F..",
+      "/id/publications/%2F%2Fevil",
+      "%2F%2Fevil.example",
+      "/xx/publications/a",
+      "/ID/publications/a",
+      " /id/publications/a",
+      "/id/publications/a ",
+      "javascript:alert(1)",
+      `/id/publications/${"a".repeat(200)}`,
+      "",
+      undefined,
+      null,
+      42,
+      ["https://evil.example", detail],
+    ];
+    for (const value of hostile) assert.equal(readReturnPath(value), null, JSON.stringify(value));
+
+    assert.equal(loginHref("id", detail), "/id/login?next=%2Fid%2Fpublications%2Flaporan-energi-2026");
+    assert.equal(loginHref("en", null), "/en/login");
+    assert.equal(statusHref("id", "login", "invalid", detail), "/id/login?status=invalid&next=%2Fid%2Fpublications%2Flaporan-energi-2026");
+    assert.equal(statusHref("id", "account", "error"), "/id/account?status=error", "unchanged without a return path");
+
+    const ok = fakeClient();
+    assert.deepEqual(await login(form({ ...CREDENTIALS, next: detail }), ok.client, CONTEXT), { location: detail }, "success: back to the detail page");
+    assert.deepEqual(ok.calls, [{ method: "signInWithPassword", args: [CREDENTIALS] }], "next is never sent to Supabase");
+    for (const value of hostile.filter((item): item is string => typeof item === "string")) {
+      const fake = fakeClient();
+      assert.deepEqual(await login(form({ ...CREDENTIALS, next: value }), fake.client, CONTEXT), { location: "/id/account" }, `success with next ${JSON.stringify(value)}`);
+    }
+    const kept = "next=%2Fid%2Fpublications%2Flaporan-energi-2026";
+    for (const [error, status] of [
+      [apiError(400, "invalid_credentials"), "invalid"],
+      [apiError(429, "over_request_rate_limit"), "rate-limited"],
+      [apiError(500, "unexpected_failure"), "error"],
+    ] as const) {
+      const fake = fakeClient({ signInWithPassword: { data: { session: null }, error } });
+      assert.deepEqual(await login(form({ ...CREDENTIALS, next: detail }), fake.client, CONTEXT), { location: `/id/login?status=${status}&${kept}` }, status);
+    }
+    assert.deepEqual(
+      await login(form({ email: "x", password: PASSWORD, next: detail }), fakeClient().client, CONTEXT),
+      { location: `/id/login?status=invalid-input&${kept}` },
+      "invalid input keeps it",
+    );
+    assert.deepEqual(
+      await login(form({ ...CREDENTIALS, next: "https://evil.example" }), fakeClient({ signInWithPassword: { data: {}, error: apiError(400, "invalid_credentials") } }).client, CONTEXT),
+      { location: "/id/login?status=invalid" },
+      "an invalid return path is dropped on failure",
+    );
+    assert.deepEqual(FORM_ACTIONS.login.failure(CONTEXT, form({ next: detail })), { location: `/id/login?status=error&${kept}` }, "a thrown login keeps it");
   });
 
   test("AUU3 register: signUp gets email, password and the confirm URL only (never options.data); check-email whatever the account state", async () => {

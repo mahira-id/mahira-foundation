@@ -8,7 +8,8 @@ import { LOCALES } from "../../lib/i18n/locales";
 import { SEARCH_MAX_LENGTH, hasFilter, indexHref, normalizeSearch, readIndexQuery } from "../../lib/publications/index-params";
 import { buildFacets, compareRefs, indexNoindex, planIndex, type IndexRef, type IndexTermDoc } from "../../lib/publications/index-view";
 import { SEARCH_CONFIG, searchTokens, toTsqueryText } from "../../lib/publications/search-terms";
-import { PUBLIC_PUBLICATION_READ } from "../../payload/access/public-read";
+import { publicPublicationRead } from "../../payload/access/public-read";
+import { withAccounts } from "../helpers/auth-env";
 
 /**
  * Publication index search (M3-06, DEC-013, DECISIONS §2.12 P1–P8): the `q`
@@ -149,12 +150,24 @@ describe("lib/publications/index-view.ts (ranked plan)", () => {
 });
 
 describe("lib/cms/publication-search-query.ts", () => {
-  test("SRU7 SQL: visitor text and locale only as parameters; public filter, locale, both _locale, weights A/B/C; no versions table", async () => {
-    assert.deepEqual(
-      PUBLIC_PUBLICATION_READ,
-      { and: [{ _status: { equals: "published" } }, { accessLevel: { equals: "public" } }] },
-      "the search WHERE repeats PUBLIC_PUBLICATION_READ: change both together",
-    );
+  test("SRU7 SQL: visitor text, locale and access levels only as parameters; public filter, locale, both _locale, weights A/B/C; no versions table", async () => {
+    for (const [on, levels] of [
+      [false, ["public"]],
+      [true, ["public", "registered"]],
+    ] as const) {
+      await withAccounts(on, () => {
+        assert.deepEqual(
+          publicPublicationRead(),
+          { and: [{ _status: { equals: "published" } }, { accessLevel: { in: levels } }] },
+          "the search WHERE repeats publicPublicationRead: change both together",
+        );
+        const compiled = compile("id", "kata");
+        const match = /p\."_status" = 'published' AND p\."access_level"::text IN \(([^)]*)\)/.exec(compiled.sql.replace(/\s+/g, " "));
+        assert.ok(match, `accounts ${on ? "on" : "off"}: published + access level list`);
+        const params = [...match[1].matchAll(/\$(\d+)/g)].map((found) => compiled.params[Number(found[1]) - 1]);
+        assert.deepEqual(params, levels, `accounts ${on ? "on" : "off"}: the levels are bound parameters, never subscriber`);
+      });
+    }
     const hostile = "x') OR 1=1 --";
     for (const locale of LOCALES) {
       const compiled = compile(locale, hostile);
@@ -169,7 +182,9 @@ describe("lib/cms/publication-search-query.ts", () => {
       );
       assert.deepEqual(paramsOf(compiled, /p\."locale"::text = \$(\d+)/g), [locale], `${locale}: record locale`);
       assert.deepEqual(paramsOf(compiled, /"_locale"::text = \$(\d+)/g), [locale, locale], `${locale}: topic and type names of the route locale`);
-      assert.match(text, /p\."_status" = 'published' AND p\."access_level" = 'public'/, `${locale}: published + public`);
+      assert.deepEqual(paramsOf(compiled, /p\."access_level"::text IN \(\$(\d+)\)/g), ["public"], `${locale}: published + public (accounts off in the unit env)`);
+      assert.match(text, /p\."_status" = 'published' AND p\."access_level"::text IN /, `${locale}: published`);
+      assert.equal(text.includes("subscriber"), false, `${locale}: never subscriber`);
       assert.match(text, /FROM "publications" p /, `${locale}: main table`);
       assert.equal(/_publications_v|version_/.test(text), false, `${locale}: never the versions table`);
       assert.match(text, /setweight\(to_tsvector\(\$\d+::regconfig, coalesce\(p\."title", ''\)\), 'A'\)/, `${locale}: title A`);

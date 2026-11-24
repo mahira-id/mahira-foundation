@@ -2,11 +2,13 @@ import type { Payload } from "payload";
 
 /**
  * Server-only. Local API queries of the public download route (M3-08,
- * DECISIONS §2.14 items 2 and 6). Anonymous reads, like
+ * DECISIONS §2.14 items 2 and 6; M5-04). Anonymous reads, like
  * lib/cms/public-content.ts: no `user`, `overrideAccess: false`, so Payload
- * access control limits files to ready + public (PUBLIC_FILE_READ) and
- * publications to published + public (PUBLIC_PUBLICATION_READ). `payload`
- * is only the `find` method, so unit tests pass a fake.
+ * access control limits files to ready ones of a public access level
+ * (publicFileRead) and publications to published ones of a public access
+ * level (publicPublicationRead): `public`, and `registered` while accounts
+ * are on; never `subscriber`. `payload` is only the `find` method, so unit
+ * tests pass a fake.
  */
 type FindPort = Pick<Payload, "find">;
 
@@ -31,10 +33,11 @@ export async function findPublicFile(payload: FindPort, id: number) {
 
 /**
  * The publication record whose live version lists the file, when visitors
- * can see it (published + public), or null. `draft: false` reads the main
- * table, so a file listed only in a draft (a never-published record or a
- * pending revision) finds nothing. A file belongs to one record only
- * (payload/hooks/one-publication-per-file.ts).
+ * can see it, or null: its Access Level, and its locale and slug for the
+ * login return path of a `registered` file (M5-04). `draft: false` reads
+ * the main table, so a file listed only in a draft (a never-published
+ * record or a pending revision) finds nothing. A file belongs to one record
+ * only (payload/hooks/one-publication-per-file.ts).
  */
 export async function findLivePublicationOfFile(payload: FindPort, id: number) {
   const result = await payload.find({
@@ -43,7 +46,7 @@ export async function findLivePublicationOfFile(payload: FindPort, id: number) {
     limit: 1,
     pagination: false,
     depth: 0,
-    select: { accessLevel: true },
+    select: { accessLevel: true, locale: true, slug: true },
     fallbackLocale: false,
     draft: false,
     overrideAccess: false,

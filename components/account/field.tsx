@@ -1,5 +1,5 @@
 import { AUTH_FIELDS } from "@/lib/auth/routes";
-import { EMAIL_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/lib/auth/validation";
+import { EMAIL_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, readReturnPath } from "@/lib/auth/validation";
 
 /**
  * Form fields of the account pages (M5-02). Plain server-rendered inputs
@@ -77,6 +77,25 @@ export function PasswordField({
       ) : null}
     </div>
   );
+}
+
+/**
+ * The login form's return path (M5-04): a hidden `next` field with the
+ * page's `?next=` when validation.readReturnPath accepts it, else nothing.
+ * Rendered inside a Suspense boundary (searchParams), so React streams it
+ * after the static shell; `form` ties it to the login form wherever it
+ * lands in the document, so it is also submitted without JavaScript.
+ */
+export async function ReturnPathField({
+  formId,
+  searchParams,
+}: {
+  formId: string;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const returnPath = readReturnPath((await searchParams)[AUTH_FIELDS.returnTo]);
+  if (returnPath === null) return null;
+  return <input form={formId} name={AUTH_FIELDS.returnTo} type="hidden" value={returnPath} />;
 }
 
 export function SubmitButton({ children, tone = "primary" }: { children: string; tone?: "primary" | "outline" }) {

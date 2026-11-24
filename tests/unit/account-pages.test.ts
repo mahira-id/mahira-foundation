@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
+import { ReturnPathField } from "../../components/account/field";
 import { AUTH_PAGES, AUTH_STATUSES, readStatus, type AuthPage } from "../../lib/auth/routes";
 import { dictionaries } from "../../lib/i18n/dictionaries";
 import { LOCALES } from "../../lib/i18n/locales";
@@ -77,5 +78,17 @@ describe("account pages: texts and statuses (M5-02)", () => {
   test("APU5 header label: one neutral word per locale, no login state", () => {
     assert.equal(dictionaries.id.account.navLabel, "Akun");
     assert.equal(dictionaries.en.account.navLabel, "Account");
+  });
+
+  test("APU6 login return path field (M5-04): a hidden `next` tied to the login form only for a publication detail path; nothing for anything else", async () => {
+    const render = (next: string | string[] | undefined) =>
+      ReturnPathField({ formId: "login-form", searchParams: Promise.resolve(next === undefined ? {} : { next }) });
+    const field = (await render("/en/publications/a-b")) as { type: unknown; props: Record<string, unknown> } | null;
+    assert.ok(field, "rendered for a valid path");
+    assert.equal(field.type, "input");
+    assert.deepEqual(field.props, { form: "login-form", name: "next", type: "hidden", value: "/en/publications/a-b" });
+    for (const next of [undefined, "", "https://evil.example", "//evil", "/\\evil", "/id/account", "/api/files/1/download", "/id/publications/Bad"]) {
+      assert.equal(await render(next), null, JSON.stringify(next));
+    }
   });
 });

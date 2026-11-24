@@ -7,8 +7,9 @@ import { isLocale, type Locale } from "@/lib/i18n/locales";
  * Form handlers: `/{locale}/auth/{login,register,logout,forgot-password,
  * reset-password,change-password}` (POST) and `/{locale}/auth/confirm` (GET,
  * the email link). Every redirect target is built here from the locale and
- * a fixed segment; nothing from the request is echoed, so there is no open
- * redirect.
+ * a fixed segment; the only request value that reaches one is the login
+ * return path (M5-04), and only after validation.readReturnPath accepted it
+ * as a publication detail path, so there is no open redirect.
  *
  * Statuses (`?status=`) are closed lists per page. readStatus() ignores any
  * other value, so the page never shows request input.
@@ -34,12 +35,18 @@ export type AuthHandler = (typeof AUTH_HANDLERS)[number];
 /** Path segment of the form handlers: `/{locale}/auth/...`. */
 export const AUTH_HANDLER_SEGMENT = "auth";
 
-/** Form field names shared by the pages and the handlers. */
+/**
+ * Form field names shared by the pages and the handlers. `returnTo` is also
+ * the login page's query parameter (`?next=`, M5-04): the detail page a
+ * locked file came from, checked by validation.readReturnPath wherever it
+ * is read.
+ */
 export const AUTH_FIELDS = {
   email: "email",
   password: "password",
   passwordConfirm: "password_confirm",
   currentPassword: "current_password",
+  returnTo: "next",
 } as const;
 
 /** Query parameters of the email link (Supabase email templates, ENVIRONMENTS §3.1). */
@@ -90,10 +97,26 @@ export function authHandlerPath(locale: Locale, handler: AuthHandler): string {
   return `/${locale}/${AUTH_HANDLER_SEGMENT}/${handler}`;
 }
 
-/** Page path with `?status=`; without a status, the plain page path. */
-export function statusHref<P extends AuthPage>(locale: Locale, page: P, status?: AuthStatus<P>): string {
+/**
+ * Page path with `?status=` and (login, M5-04) `&next=<encoded return
+ * path>`; without either, the plain page path. `returnPath` must come from
+ * validation.readReturnPath (an internal detail path) or be null.
+ */
+export function statusHref<P extends AuthPage>(locale: Locale, page: P, status?: AuthStatus<P>, returnPath?: string | null): string {
   const path = authPagePath(locale, page);
-  return status ? `${path}?status=${status}` : path;
+  const query = new URLSearchParams();
+  if (status) query.set("status", status);
+  if (returnPath) query.set(AUTH_FIELDS.returnTo, returnPath);
+  const search = query.toString();
+  return search ? `${path}?${search}` : path;
+}
+
+/**
+ * The login page with a return path (M5-04): where the download route sends
+ * a visitor without a valid public session. `returnPath` as in statusHref.
+ */
+export function loginHref(locale: Locale, returnPath: string | null): string {
+  return statusHref(locale, "login", undefined, returnPath);
 }
 
 /** The page's status from a search parameter value; anything outside its list is null. */

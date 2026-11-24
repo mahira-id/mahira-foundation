@@ -1,17 +1,27 @@
 /**
  * The public download route `GET /api/files/{fileId}/download` (M3-08,
- * DECISIONS §2.14 items 2 and 6). Pure: no I/O, no Payload import.
+ * DECISIONS §2.14 items 2 and 6; M5-04, §2.18 decision 12). Pure: no I/O,
+ * no Payload import.
  *
  * Answers: 307 to a short-lived signed URL when every check passed (the URL
  * asks storage for `Content-Disposition: attachment`, see
- * attachmentDisposition); 404 for every denial (CMS off, invalid or unknown
- * id, draft, unpublished, not public, file not ready), so a denial says
- * nothing about the file; 503 when the database or the storage failed.
- * Every answer has `Cache-Control: no-store` (a signed URL is a bearer
- * credential and must not be cached) and `X-Robots-Tag: noindex` (PDFs are
- * not indexed; DEC-021).
+ * attachmentDisposition); 303 to the login page with an internal return
+ * path for a `registered` file without a valid public session; 404 for
+ * every other denial (CMS off, invalid or unknown id, draft, unpublished,
+ * `subscriber`, unverified email, file not ready), so a denial says nothing
+ * about the file; 503 when the database or the storage failed. Every
+ * answer has `Cache-Control: no-store` (a signed URL is a bearer credential
+ * and must not be cached) and `X-Robots-Tag: noindex` (PDFs are not
+ * indexed; DEC-021).
+ *
+ * When the route read the public session (`registered` files only), the
+ * answer also carries the cookies Supabase set (a refreshed session or
+ * removals) and its cache headers, then `Cache-Control: private, no-store`.
  */
 export const DOWNLOAD_HEADERS = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } as const;
+
+/** Cache-Control of an answer that read the public session. */
+export const SESSION_CACHE_CONTROL = "private, no-store";
 
 /** Largest id of the Postgres `integer` primary key; a bigger number is never a record. */
 const MAX_ID = 2_147_483_647;
@@ -48,12 +58,25 @@ export function attachmentDisposition(filename: string): string {
   return `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`;
 }
 
-export type DownloadOutcome = { kind: "redirect"; url: string } | { kind: "not-found" } | { kind: "unavailable" };
+export type DownloadOutcome =
+  | { kind: "redirect"; url: string }
+  | { kind: "login"; location: string }
+  | { kind: "not-found" }
+  | { kind: "unavailable" };
 
-/** The HTTP answer of the download route; the signed URL goes only into `Location`. */
-export function downloadResponse(outcome: DownloadOutcome): Response {
+/**
+ * The HTTP answer of the download route; the signed URL goes only into
+ * `Location`. `base` is the request URL: the login `Location` is absolute
+ * on the request's own origin. The session cookies, when the route read the
+ * session, are added by lib/auth/download-session.ts withSessionWrites.
+ */
+export function downloadResponse(outcome: DownloadOutcome, base?: string): Response {
   if (outcome.kind === "redirect") {
     return new Response(null, { status: 307, headers: { ...DOWNLOAD_HEADERS, Location: outcome.url } });
+  }
+  if (outcome.kind === "login") {
+    const location = base ? new URL(outcome.location, base).toString() : outcome.location;
+    return new Response(null, { status: 303, headers: { ...DOWNLOAD_HEADERS, Location: location } });
   }
   if (outcome.kind === "unavailable") {
     return new Response("File could not be loaded", { status: 503, headers: DOWNLOAD_HEADERS });

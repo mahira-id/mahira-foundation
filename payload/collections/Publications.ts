@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { PUBLIC_PUBLICATION_READ } from "../access/public-read";
+import { publicPublicationRead } from "../access/public-read";
 import { isAnonymousLocalRead, isStaff, isStaffField, staffRoleOf } from "../access/roles";
 import { validateSlug } from "../fields/slug";
 import { enforceSharedFields } from "../hooks/enforce-shared-fields";
@@ -35,11 +35,13 @@ export const Publications: CollectionConfig = {
   },
   access: {
     // Staff see everything, drafts included. Public pages read through the
-    // server-side Local API and see published + public records only
-    // (DEC-002); anonymous REST is denied (Owner 2026-11-10, P1 A).
+    // server-side Local API and see published records of a public access
+    // level only (DEC-002; `registered` too while accounts are on, M5-03,
+    // DECISIONS §2.18 decision 11; never `subscriber`); anonymous REST and
+    // GraphQL are denied (Owner 2026-11-10, P1 A).
     read: ({ req }) => {
       if (staffRoleOf(req) !== null) return true;
-      if (isAnonymousLocalRead(req)) return PUBLIC_PUBLICATION_READ;
+      if (isAnonymousLocalRead(req)) return publicPublicationRead();
       return false;
     },
     create: isStaff,
@@ -190,7 +192,7 @@ export const Publications: CollectionConfig = {
         disableListFilter: true,
         disableBulkEdit: true,
         description:
-          "Dihitung sistem, tidak disimpan: Ya bila versi yang tayang berstatus published dan Access Level public (yang dilihat pengunjung, DEC-002). Status Changed + Ya = tayang dengan revisi tertunda.",
+          "Dihitung sistem, tidak disimpan: Ya bila versi yang tayang berstatus published dan Access Level public, atau registered saat akun publik aktif (yang dilihat pengunjung, DEC-002, M5-03). Subscriber belum tayang sampai M7. Status Changed + Ya = tayang dengan revisi tertunda.",
       },
     },
     {
@@ -210,7 +212,7 @@ export const Publications: CollectionConfig = {
       hasMany: true,
       admin: {
         description:
-          "File PDF publikasi ini, sesuai urutan tampil. Satu file hanya untuk satu publikasi. Hanya file public yang tampil dan dapat diunduh pengunjung.",
+          "File PDF publikasi ini, sesuai urutan tampil. Satu file hanya untuk satu publikasi. File public dapat diunduh semua pengunjung; file registered tampil terkunci dan hanya dapat diunduh dengan akun publik terverifikasi. File subscriber belum tampil sampai M7.",
       },
     },
   ],

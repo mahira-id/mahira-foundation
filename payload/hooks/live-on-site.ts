@@ -1,5 +1,5 @@
 import type { FieldHook } from "payload";
-import { PUBLIC_PUBLICATION_READ } from "../access/public-read";
+import { publicPublicationRead } from "../access/public-read";
 import { staffRoleOf } from "../access/roles";
 
 /** Last pending liveOnSite query per request (see `oneAtATime`). */
@@ -21,7 +21,8 @@ function oneAtATime<T>(key: object, task: () => Promise<T>): Promise<T> {
 /**
  * afterRead hook of the virtual field `liveOnSite` ("Tayang di situs",
  * DECISIONS §2.6 P4): "yes" when the record in the main table (the version
- * visitors get) matches the public read filter, "no" otherwise. A draft read
+ * visitors get) matches the public read filter (publicPublicationRead:
+ * `registered` counts while accounts are on, M5-03), "no" otherwise. A draft read
  * (`draft: true`) returns the latest version, so `data._status` alone cannot
  * tell a live record with a pending revision from one that is not live.
  *
@@ -39,7 +40,7 @@ export const readLiveOnSite: FieldHook = async ({ data, overrideAccess, req }) =
   const record = await oneAtATime(req, () =>
     req.payload.db.findOne({
       collection: "publications",
-      where: { and: [{ id: { equals: id } }, PUBLIC_PUBLICATION_READ] },
+      where: { and: [{ id: { equals: id } }, publicPublicationRead()] },
       select: { id: true },
       req,
     }),

@@ -4,10 +4,14 @@ import type { PublicationFileItem } from "@/lib/publications/detail-view";
 import { fileFormatLabel, fileKindLabel, fileLanguageLabel } from "@/lib/publications/file-labels";
 
 /**
- * A panel row. `kind` is set for publication files only; a toolkit file
- * (M3-13) has none and its row shows no kind label.
+ * A panel row. `kind` and `access` (M5-04) are set for publication files
+ * only; a toolkit file (M3-13) has neither (all toolkits are public) and its
+ * row shows no kind label.
  */
-export type PanelFile = Omit<PublicationFileItem, "kind"> & { kind?: PublicationFileItem["kind"] };
+export type PanelFile = Omit<PublicationFileItem, "kind" | "access"> & {
+  kind?: PublicationFileItem["kind"];
+  access?: PublicationFileItem["access"];
+};
 
 /**
  * File panel of the publication detail page (M3-08, DECISIONS §2.14 item 7).
