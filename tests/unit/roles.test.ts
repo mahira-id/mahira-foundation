@@ -18,6 +18,7 @@ import { PublicationTypes } from "../../payload/collections/PublicationTypes";
 import { Topics } from "../../payload/collections/Topics";
 import { TranslationGroups } from "../../payload/collections/TranslationGroups";
 import { Users } from "../../payload/collections/Users";
+import { withAccounts } from "../helpers/auth-env";
 import { fakeReq, fakeUser } from "../helpers/fake-req";
 
 // DEC-009 / DEC-016 roles and the collection access rules built on them
@@ -104,15 +105,22 @@ describe("payload/access/roles.ts", () => {
 });
 
 describe("collection access", () => {
-  test("Publications.read: staff all, anonymous Local API published+public, anonymous REST denied", async () => {
+  test("Publications.read: staff all, anonymous Local API published + public (+ registered with accounts on, M5-03; never subscriber), anonymous REST and GraphQL denied", async () => {
     const read = accessOf(Publications, "read");
-    assert.equal(await run(read, admin()), true);
-    assert.equal(await run(read, editor()), true);
-    assert.deepEqual(await run(read, anonymousLocal()), {
-      and: [{ _status: { equals: "published" } }, { accessLevel: { equals: "public" } }],
-    });
-    assert.equal(await run(read, anonymousRest()), false);
-    assert.equal(await run(read, fakeReq({ payloadAPI: "GraphQL" })), false);
+    for (const [on, levels] of [
+      [false, ["public"]],
+      [true, ["public", "registered"]],
+    ] as const) {
+      await withAccounts(on, async () => {
+        assert.equal(await run(read, admin()), true);
+        assert.equal(await run(read, editor()), true);
+        assert.deepEqual(await run(read, anonymousLocal()), {
+          and: [{ _status: { equals: "published" } }, { accessLevel: { in: levels } }],
+        }, `accounts ${on ? "on" : "off"}`);
+        assert.equal(await run(read, anonymousRest()), false);
+        assert.equal(await run(read, fakeReq({ payloadAPI: "GraphQL" })), false);
+      });
+    }
   });
 
   test("Publications.create/update/readVersions: staff only", async () => {

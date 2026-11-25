@@ -17,13 +17,15 @@ import {
   randomPassword,
   totalOf,
 } from "../helpers/fixtures";
+import { isAuthEnabled } from "../../lib/auth/env";
 import { assertServerUp, login, rest, restDoc, restErrors, restFact, type JsonObject } from "../helpers/http";
 import { closeTestPayload, getTestPayload } from "../helpers/payload";
 
 /**
  * Access checks (M3-02; port of the archived m3-02-access-checks, M3-10):
  * staff roles, role-based access, closed anonymous REST/GraphQL, anonymous
- * Local API sees only published + public, lifecycle fields and isActive.
+ * Local API sees only published + public (since M5-03 also published +
+ * registered, accounts on; never subscriber), lifecycle fields and isActive.
  * Needs `next start` with the full env (bun run test:integration).
  *
  * The archived S0/S9 (users count before/after) are the before/after hooks
@@ -49,6 +51,7 @@ type Fixtures = {
   editor: User;
   publicPub: Publication;
   registeredPub: Publication;
+  subscriberPub: Publication;
   draftPub: Publication;
   topic: Topic;
   adminToken: string | undefined;
@@ -132,6 +135,10 @@ describe("access (M3-02 role access, anonymous REST and Local API, lifecycle)", 
       pubData("published registered", "registered", await createGroup(payload, AREA, "registered"), { accessLevel: "registered" }),
       "published",
     );
+    const subscriberPub = await createPub(
+      pubData("published subscriber", "subscriber", await createGroup(payload, AREA, "subscriber"), { accessLevel: "subscriber" }),
+      "published",
+    );
     const draftPub = await createPub(pubData("draft only", "draft", await createGroup(payload, AREA, "draft")), "draft");
     const topic = await payload.create({
       collection: "topics",
@@ -144,6 +151,7 @@ describe("access (M3-02 role access, anonymous REST and Local API, lifecycle)", 
       editor,
       publicPub,
       registeredPub,
+      subscriberPub,
       draftPub,
       topic,
       adminToken: await login(ADMIN_EMAIL, adminSecret),
@@ -180,6 +188,8 @@ describe("access (M3-02 role access, anonymous REST and Local API, lifecycle)", 
   const anonymousPaths: Array<[string, () => string]> = [
     ["/api/publications", () => "/api/publications"],
     ["/api/publications/<public fixture>", () => `/api/publications/${f().publicPub.id}`],
+    ["/api/publications/<registered fixture>", () => `/api/publications/${f().registeredPub.id}`],
+    ["/api/publications/<subscriber fixture>", () => `/api/publications/${f().subscriberPub.id}`],
     ["/api/publications?draft=true", () => "/api/publications?draft=true"],
     ["/api/authors", () => "/api/authors"],
     ["/api/topics", () => "/api/topics"],
@@ -202,32 +212,39 @@ describe("access (M3-02 role access, anonymous REST and Local API, lifecycle)", 
   });
 
   // ------------------------------------------------------------ anonymous Local API
-  test("L1 anonymous Local API find publications: only published + public", async (t) => {
-    const { publicPub, registeredPub, draftPub } = f();
+  test("L1 anonymous Local API find publications: only published + public or registered (accounts on, M5-03); never subscriber or draft", async (t) => {
+    const { publicPub, registeredPub, subscriberPub, draftPub } = f();
+    assert.equal(isAuthEnabled(), true, "the integration env has public accounts on (APP_SUPABASE_PUBLISHABLE_KEY)");
     const anonymousTopics = await p().find({ collection: "topics", depth: 0, limit: 1, overrideAccess: false });
     t.diagnostic(`OBSERVED L4 anonymous Local API find topics: ${anonymousTopics.totalDocs} docs (read allowed for public pages)`);
     const found = await p().find({ collection: "publications", depth: 0, pagination: false, overrideAccess: false });
-    const allPublicPublished = found.docs.every((doc) => doc._status === "published" && doc.accessLevel === "public");
+    const allVisible = found.docs.every((doc) => doc._status === "published" && (doc.accessLevel === "public" || doc.accessLevel === "registered"));
     const ids = new Set(found.docs.map((doc) => doc.id));
     const expected = await p().count({
       collection: "publications",
-      where: { and: [{ _status: { equals: "published" } }, { accessLevel: { equals: "public" } }] },
+      where: { and: [{ _status: { equals: "published" } }, { accessLevel: { in: ["public", "registered"] } }] },
       overrideAccess: true,
     });
     assert.ok(
-      allPublicPublished &&
-        ids.has(publicPub.id) &&
-        !ids.has(registeredPub.id) &&
-        !ids.has(draftPub.id) &&
-        found.totalDocs === expected.totalDocs,
-      `anonymous find: ${found.totalDocs} docs (overrideAccess count published+public = ${expected.totalDocs}); ` +
-        `all published+public=${allPublicPublished}; public fixture=${ids.has(publicPub.id)}, ` +
-        `registered fixture=${ids.has(registeredPub.id)}, draft fixture=${ids.has(draftPub.id)}`,
+      allVisible &&
+      ids.has(publicPub.id) &&
+      ids.has(registeredPub.id) &&
+      !ids.has(subscriberPub.id) &&
+      !ids.has(draftPub.id) &&
+      found.totalDocs === expected.totalDocs,
+      `anonymous find: ${found.totalDocs} docs (overrideAccess count published + public/registered = ${expected.totalDocs}); ` +
+      `all published + public/registered=${allVisible}; public fixture=${ids.has(publicPub.id)}, ` +
+      `registered fixture=${ids.has(registeredPub.id)}, subscriber fixture=${ids.has(subscriberPub.id)}, draft fixture=${ids.has(draftPub.id)}`,
     );
   });
 
+  test("L2 anonymous Local API findByID registered fixture: found (M5-03, accounts on)", async () => {
+    const doc = await p().findByID({ collection: "publications", id: f().registeredPub.id, depth: 0, overrideAccess: false });
+    assert.equal(doc.accessLevel, "registered");
+  });
+
   for (const [id, label, pick] of [
-    ["L2", "registered", (fixtures: Fixtures) => fixtures.registeredPub.id],
+    ["L2b", "subscriber", (fixtures: Fixtures) => fixtures.subscriberPub.id],
     ["L3", "draft-only", (fixtures: Fixtures) => fixtures.draftPub.id],
   ] as const) {
     test(`${id} anonymous Local API findByID ${label} fixture: NotFound`, async () => {
@@ -298,7 +315,7 @@ describe("access (M3-02 role access, anonymous REST and Local API, lifecycle)", 
     assert.ok(
       postTopic.status === 403 && patchTopic.status === 403 && postType.status === 403,
       `editor POST /api/topics: ${restFact(postTopic)}; PATCH /api/topics/<id>: ${restFact(patchTopic)}; ` +
-        `POST /api/publication-types: ${restFact(postType)} (expected 403 each)`,
+      `POST /api/publication-types: ${restFact(postType)} (expected 403 each)`,
     );
   });
 
@@ -314,7 +331,7 @@ describe("access (M3-02 role access, anonymous REST and Local API, lifecycle)", 
       assert.ok(
         result.status === 201 && created.everPublished === true && typeof created.publishedAt === "string",
         `editor POST /api/publications (client sends everPublished=false): ${restFact(result)}; ` +
-          `everPublished=${String(created.everPublished)}; publishedAt set=${typeof created.publishedAt === "string"}`,
+        `everPublished=${String(created.everPublished)}; publishedAt set=${typeof created.publishedAt === "string"}`,
       );
     } finally {
       if (typeof created.id === "number") await p().delete({ collection: "publications", id: created.id, overrideAccess: true });

@@ -86,36 +86,41 @@ Aturan:
 
 ## 5. Download contract
 
-### 5.1 Implementasi M3-08: `GET /api/files/{fileId}/download` (file `public`)
+### 5.1 Implementasi M3-08 dan M5-04: `GET /api/files/{fileId}/download` (file `public` dan `registered`)
 
-Keputusan Owner 2026-11-16 (DECISIONS §2.14 butir 2, 3, 6, 9). Kontrak ini berlaku untuk file ber-akses efektif `public`; file `registered`/`subscriber` mengikuti §5.2 di M5/M7.
+Keputusan Owner 2026-11-16 (DECISIONS §2.14 butir 2, 3, 6, 9), diperluas untuk file `registered` oleh keputusan Owner 2026-11-20 (DECISIONS §2.18 keputusan 10–12) dan 2026-11-24 (§2.19 keputusan 4), dicatat di §2.20. Kontrak ini berlaku untuk file ber-akses efektif `public` dan `registered`; file `subscriber` mengikuti §5.2 di M7.
 
 - **Method dan path.** `GET /api/files/{fileId}/download` (route `app/api/files/[fileId]/download/route.ts`). Deviasi tercatat dari `POST` di §5.2: GET dipilih agar tautan "Unduh PDF" / "Download PDF" bekerja tanpa JavaScript. Tidak ada body dan tidak ada parameter lain; `fileId` adalah id record `publication-files` (bilangan bulat positif tanpa nol di depan, ≤ 2147483647).
-- **Pemeriksaan di server, setiap request** (`lib/cms/public-content.ts` `getPublicFileDownload`, semuanya sebagai pengunjung anonim lewat Local API dengan `overrideAccess: false`):
-  1. file terbaca anonim: `status = ready` dan `accessLevel = public` (`PUBLIC_FILE_READ`);
-  2. versi tayang (tabel utama, `draft: false`) sebuah record publikasi mencantumkan file itu, dan record itu `published` + `public` (`PUBLIC_PUBLICATION_READ`); file yang hanya ada di draf, record yang belum pernah terbit, dan record yang di-unpublish tidak lolos;
-  3. file PDF siap dan level yang lebih ketat antara publikasi dan file adalah `public` (`isPublicDownload`, DEC-011);
+- **Pemeriksaan di server, setiap request** (`lib/cms/public-content.ts` `getFileDownload`, data dibaca sebagai pengunjung anonim lewat Local API dengan `overrideAccess: false`; keputusan di `lib/access/file-download.ts` `decideFileDownload`):
+  1. file terbaca anonim: `status = ready` dan `accessLevel` salah satu dari `publicAccessLevels()` (`publicFileRead()`, `payload/access/public-read.ts`: `public`, ditambah `registered` hanya bila akun publik hidup; `subscriber` tidak pernah);
+  2. versi tayang (tabel utama, `draft: false`) sebuah record publikasi mencantumkan file itu, dan record itu `published` dengan level yang sama (`publicPublicationRead()`); file yang hanya ada di draf, record yang belum pernah terbit, dan record yang di-unpublish tidak lolos;
+  3. file PDF siap dan level yang lebih ketat antara publikasi dan file (`requiredLevel` di `lib/access/evaluator.ts`, DEC-011) adalah `public` atau `registered`;
+  3b. untuk `registered`: sesi publik dibaca di route (§ di bawah), lalu `evaluateFileAccess`; signed URL tidak dibuat sebelum keputusan allow;
   4. URL GET ditandatangani 60 detik (`lib/cms/publication-file-storage.ts`, `@aws-sdk/s3-request-presigner` ke endpoint S3 Supabase dengan config client yang sama dengan adapter `@payloadcms/storage-s3`), dengan `response-content-disposition` = `attachment` dan nama file tersimpan (sejak 2026-11-16).
-- **Tanpa sesi.** Route tidak membaca sesi; sesi staf tidak memberi bypass (DEC-009). Staf membuka file di `/admin` lewat `/api/publication-files/file/<nama>` di bawah access control Payload (302 bertanda tangan).
+- **Sesi (hanya file `registered`).** File `public` tidak membaca sesi. Untuk `registered`, `lib/auth/download-session.ts` `readDownloadPrincipal`: akun mati atau tanpa cookie `sb-*-auth-token` → anonim tanpa panggilan Supabase; selain itu `getUser()` lewat cookie jar (validasi ke server Auth, bukan hanya JWT); galat atau tanpa email → anonim; `public_user` dengan `emailVerified = Boolean(email_confirmed_at)`. Route me-refresh sesi sendiri dan menulis cookie Supabase hasil refresh ke jawabannya; `proxy.ts` tidak diubah (DECISIONS §2.20). Cookie `payload-token` dan header `Authorization` tidak dibaca: sesi staf diperlakukan anonim (DEC-009). Staf membuka file di `/admin` lewat `/api/publication-files/file/<nama>` di bawah access control Payload (302 bertanda tangan).
+- **Tujuan kembali (`next`).** `Location` 303 = `/{locale publikasi}/login?next=<path detail ter-encode>` pada origin request. `next` hanya boleh `/{id|en}/publications/<slug>` (pola slug, ≤ 200 karakter, tanpa query, fragment, `//`, atau `\`; `readReturnPath` di `lib/auth/validation.ts`); nilai lain diabaikan dan login berakhir di `/{locale}/account`. Setelah login pengguna kembali ke halaman detail publikasi, lalu mengklik tautan unduhan lagi.
 
 | Kondisi | Respons |
 |---|---|
-| Semua pemeriksaan lolos | `307`, `Location` = signed URL 60 detik ke private bucket `publication-files` yang membuat storage menjawab `Content-Disposition: attachment`; tanpa body |
-| CMS mati, id tidak valid atau tidak dikenal, file draf/tidak tayang/tidak terpasang, publikasi draf/di-unpublish/bukan `public`, file `registered`/`subscriber`, file belum `ready` | `404` `Not Found` yang sama untuk semua penolakan (tidak membocorkan keberadaan file) |
+| File `public`, atau file `registered` + sesi publik valid + email terverifikasi | `307`, `Location` = signed URL 60 detik ke private bucket `publication-files` yang membuat storage menjawab `Content-Disposition: attachment`; tanpa body |
+| File `registered` tanpa sesi publik valid (anonim, sesi kedaluwarsa/tidak valid/dirusak, atau hanya sesi staf) | `303`, `Location` ke halaman login dengan `next` (lihat atas) |
+| CMS mati, id tidak valid atau tidak dikenal, file draf/tidak tayang/tidak terpasang, publikasi draf/di-unpublish, file atau publikasi `subscriber`, file `registered` saat akun publik mati, sesi valid dengan email belum terverifikasi, file belum `ready` | `404` `Not Found` yang sama untuk semua penolakan (tidak membocorkan keberadaan file) |
 | Galat baca database atau galat penandatanganan | `503` |
 
-- **Header setiap respons:** `Cache-Control: no-store` (signed URL adalah bearer credential) dan `X-Robots-Tag: noindex` (PDF tidak diindeks; halaman detail tetap yang diindeks, DEC-021).
+- **Header setiap respons:** `Cache-Control: no-store` (signed URL adalah bearer credential) dan `X-Robots-Tag: noindex` (PDF tidak diindeks; halaman detail tetap yang diindeks, DEC-021). Untuk file `registered`, cache menjadi `private, no-store` dan header cookie/cache dari Supabase ditulis ke jawaban 303, 307, dan 404 (RF9).
 - **Log:** hanya nama galat (`PublicationReadError`, `FileStorageError`), tidak pernah URL atau signed URL.
 - **Nama file unduhan dan attachment (OPEN ditutup 2026-11-16, catatan bertanggal DECISIONS §2.14):** objek disimpan dengan nama asli yang sudah disanitasi Payload. Signed URL membawa `response-content-disposition`, dan Supabase menjawab dengan header itu (SPIKE-003 §11, DL4): `attachment; filename="<fallback ASCII>"; filename*=UTF-8''<nama ter-encode persen>` (RFC 6266). Browser mengunduh PDF sebagai file dengan nama tersimpan, tidak membukanya inline. Header aman dari injeksi: karakter kontrol (CR, LF, …) dibuang dari kedua bentuk, dan fallback mengganti `"`, `\`, `%`, serta karakter non-ASCII dengan `_` (`attachmentDisposition` di `lib/publications/file-download.ts`; FU10, FU11). Dependency langsung: `@aws-sdk/s3-request-presigner` (disetujui Owner) dan `@aws-sdk/client-s3` (sumber `GetObjectCommand`/`S3Client`, diberitahukan kepada Owner oleh orchestrator), keduanya exact `3.1164.0`; tanpa variabel env baru. Unduhan staf di `/admin` tetap lewat handler adapter (Bucket + Key saja, terbuka inline).
 - **TTL dan pencabutan:** URL baru ditolak setelah 60 detik (DL11). Unduhan yang sudah berjalan tidak diputus saat TTL lewat (diukur lokal: 10 MB yang dibaca lambat selesai 818 detik sesudah URL dibuat); request `Range` baru dengan URL kedaluwarsa dijawab 400, jadi lanjutan unduhan butuh klik ulang. Unpublish atau perubahan Access Level berlaku untuk request berikutnya; URL yang sudah diberikan tetap berlaku sampai 60 detik.
-- **Tanpa audit, hitungan unduhan, atau rate limit** untuk unduhan publik di M3-08 (butir 9). FR-026 untuk file terbatas (M5); rate limit dicatat sebagai butir M4.
+- **Tanpa audit, hitungan unduhan, atau rate limit** untuk unduhan publik di M3-08 (butir 9). Tanpa audit juga untuk file `registered` di M5-04: FR-026 pindah ke M4 (DECISIONS §2.18 keputusan 10); rate limit dicatat sebagai butir M4.
 - **`/api/media/file/*`** selalu `404` dengan kedua header di atas (butir 10; sebelumnya HTTP 500 dari fallback disk Payload, SPIKE-003 §8). File media tetap URL bucket publik.
 
-### 5.2 Kontrak umum (file terbatas, M5/M7)
+### 5.2 Kontrak umum (file terbatas; `registered` dibangun di §5.1, `subscriber` M7)
+
+Bentuk untuk file `registered` diputuskan dan dibangun di M5-04 sebagai `GET` (§5.1; 303 untuk login diperlukan, bukan 401, supaya tautan tanpa JavaScript bekerja). Tabel di bawah tetap kandidat untuk `subscriber` di M7 (langkah 4 entitlement dan 7 audit belum dibangun).
 
 #### Request
 
-`POST /api/files/{assetId}/download` (kandidat awal; M3-08 membangun `GET /api/files/{fileId}/download`, §5.1. Bentuk untuk file terbatas diputuskan di M5.)
+`POST /api/files/{assetId}/download` (kandidat awal; M3-08/M5-04 membangun `GET /api/files/{fileId}/download`, §5.1.)
 
 The authenticated/anonymous caller identifies only the asset requested. The server loads publication/asset access metadata from trusted sources.
 
@@ -154,7 +159,7 @@ Whether inaccessible assets return `403` or `404` must be decided from the threa
 
 #### URL expiry
 
-File `public` (M3-08): 60 detik (DECISIONS §2.14 butir 2; pengukuran di §5.1). File terbatas: TTL is **TBD**. Choose the shortest practical period after testing download size, user experience, and provider constraints. Signed URLs are bearer credentials: anyone who obtains one may use it until expiry. Revoking an entitlement does not necessarily invalidate an already issued URL. If immediate revocation is required, use a proxy/stream or another revocation-capable design.
+File `public` (M3-08): 60 detik (DECISIONS §2.14 butir 2; pengukuran di §5.1). File `registered` (M5-04): 60 detik juga. File `subscriber`: TTL is **TBD** (M7). Choose the shortest practical period after testing download size, user experience, and provider constraints. Signed URLs are bearer credentials: anyone who obtains one may use it until expiry. Revoking an entitlement does not necessarily invalidate an already issued URL. If immediate revocation is required, use a proxy/stream or another revocation-capable design.
 
 ### 5.3 Implementasi M3-13: `GET /api/learning-hub/files/{fileId}/download?locale=id|en` (file toolkit)
 

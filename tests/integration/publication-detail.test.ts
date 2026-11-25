@@ -35,8 +35,8 @@ import { assertNotFoundPage, fetchAllIndexPages, indexState, robotsContent } fro
  * topics [topic-off, topic-a], 2090-01-05) with its published EN
  * counterpart `pub-en`; ID `solo` whose EN counterpart `solo-en` is a draft
  * (access level is a shared field, DEC-004, so a `registered` counterpart of
- * a public record cannot exist); draft-only `draft`; `registered`;
- * `subscriber`; EN-only `en-only`. No user is created; the Owner guard runs
+ * a public record cannot exist); draft-only `draft`; `registered` (has a
+ * page since M5-03, accounts on: DT14); `subscriber`; EN-only `en-only`. No user is created; the Owner guard runs
  * before any fixture is written and after cleanup.
  *
  * DT10 starts a second `next start` on TEST_PORT + 1 (no build) whose
@@ -77,7 +77,7 @@ const title = (name: string) => `${LABEL}${name}`;
 function notFoundCases(): [string, string | null][] {
   return [
     [`/id/publications/${slug("draft")}`, title("draft")],
-    [`/id/publications/${slug("registered")}`, title("registered")],
+    // `registered` has a page since M5-03 (accounts on; DT14); `subscriber` none before M7.
     [`/id/publications/${slug("subscriber")}`, title("subscriber")],
     [`/en/publications/${slug("solo-en")}`, title("solo-en")],
     [`/id/publications/${slug("en-only")}`, title("en-only")],
@@ -256,7 +256,14 @@ describe("publication detail (M3-05 published + public only, switcher, not-found
     assert.equal(robotsContent(html), null, "no robots meta on a public detail");
   });
 
-  test("DT2 Mahira not-found page of the URL's locale with noindex for draft, registered, subscriber, other-locale, missing, upper-case and invalid slugs", async (t) => {
+  test("DT14 registered record (M5-03, accounts on): the detail page renders like a public one (H1, summary, no robots meta)", async () => {
+    const html = await page(`/id/publications/${slug("registered")}`);
+    assert.equal(html.includes(`data-publication-detail="${slug("registered")}"`), true, "data-publication-detail of registered");
+    assert.match(html, new RegExp(`<h1[^>]*>${htmlText(title("registered")).replace(/[[\]]/g, "\\$&")}</h1>`), "H1 = title");
+    assert.equal(robotsContent(html), null, "indexable: no robots meta");
+  });
+
+  test("DT2 Mahira not-found page of the URL's locale with noindex for draft, subscriber, other-locale, missing, upper-case and invalid slugs", async (t) => {
     const statuses: string[] = [];
     for (const [path, hidden] of notFoundCases()) {
       const result = await getPage(path);

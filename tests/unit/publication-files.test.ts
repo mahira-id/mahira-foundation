@@ -16,10 +16,11 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 import { findLivePublicationOfFile, findPublicFile } from "../../lib/cms/publication-file-query";
 import { FileStorageError, signedFileUrl } from "../../lib/cms/publication-file-storage";
+import { requiredLevel } from "../../lib/access/evaluator";
 import { publicFiles, toPublicationDetail, type PublicationDetailDoc } from "../../lib/publications/detail-view";
-import { isPublicDownload, stricterAccess, type AccessLevel } from "../../lib/publications/file-access";
+import { stricterAccess, type AccessLevel } from "../../lib/publications/file-access";
 import { attachmentDisposition, DOWNLOAD_HEADERS, downloadPath, downloadResponse, parseFileId } from "../../lib/publications/file-download";
-import { PUBLIC_FILE_READ, PUBLIC_PUBLICATION_READ } from "../../payload/access/public-read";
+import { publicAccessLevels, publicFileRead, publicPublicationRead } from "../../payload/access/public-read";
 import { PublicationFiles } from "../../payload/collections/PublicationFiles";
 import { Publications } from "../../payload/collections/Publications";
 import { SHARED_FIELDS } from "../../payload/hooks/enforce-shared-fields";
@@ -32,6 +33,7 @@ import {
   setFileStatus,
 } from "../../payload/hooks/publication-files";
 import { storageClientConfig } from "../../payload/storage";
+import { withAccounts } from "../helpers/auth-env";
 import { fakeReq, fakeUser } from "../helpers/fake-req";
 
 /**
@@ -127,24 +129,25 @@ describe("lib/publications/file-access.ts", () => {
     }
   });
 
-  test("FU2 isPublicDownload: ready + PDF + stricter level public only", () => {
-    assert.equal(isPublicDownload("public", file()), true);
-    assert.equal(isPublicDownload("registered", file()), false, "registered publication, public file (looser file has no effect)");
-    assert.equal(isPublicDownload("subscriber", file()), false);
-    assert.equal(isPublicDownload("public", file({ accessLevel: "registered" })), false);
-    assert.equal(isPublicDownload("public", file({ accessLevel: "subscriber" })), false);
+  test("FU2 requiredLevel with accounts off (the M3-08 rule): ready + PDF + stricter level public only", () => {
+    const off = { accountsEnabled: false };
+    assert.equal(requiredLevel("public", file(), off), "public");
+    assert.equal(requiredLevel("registered", file(), off), null, "registered publication, public file (looser file has no effect)");
+    assert.equal(requiredLevel("subscriber", file(), off), null);
+    assert.equal(requiredLevel("public", file({ accessLevel: "registered" }), off), null);
+    assert.equal(requiredLevel("public", file({ accessLevel: "subscriber" }), off), null);
     for (const status of ["pending", "failed", "quarantined", "archived", undefined, "READY"]) {
-      assert.equal(isPublicDownload("public", file({ status })), false, `status ${String(status)}`);
+      assert.equal(requiredLevel("public", file({ status }), off), null, `status ${String(status)}`);
     }
     for (const mimeType of ["application/octet-stream", "image/png", undefined, "application/PDF"]) {
-      assert.equal(isPublicDownload("public", file({ mimeType })), false, `mimeType ${String(mimeType)}`);
+      assert.equal(requiredLevel("public", file({ mimeType }), off), null, `mimeType ${String(mimeType)}`);
     }
-    assert.equal(isPublicDownload(undefined, file()), false, "missing publication level");
+    assert.equal(requiredLevel(undefined, file(), off), null, "missing publication level");
   });
 });
 
 describe("lib/publications/detail-view.ts files", () => {
-  test("FU3 publicFiles: populated public ready PDFs in stored order; ids, restricted, not ready and incomplete dropped; no storage keys", () => {
+  test("FU3 publicFiles: populated ready PDFs with a download now in stored order (registered locked only with accounts on, never subscriber); ids, not ready and incomplete dropped; no storage keys", async () => {
     const files = [
       file({ id: 3, label: "Ringkasan", kind: "preview" }),
       42,
@@ -159,24 +162,50 @@ describe("lib/publications/detail-view.ts files", () => {
       file({ id: 12, filesize: null }),
       file({ id: 1, label: " Lampiran ", kind: "appendix", language: "en", filesize: 0 }),
     ];
-    const items = publicFiles("public", files);
-    assert.deepEqual(items, [
-      { id: 3, label: "Ringkasan", kind: "preview", language: "id", sizeBytes: 1_234_567, downloadPath: "/api/files/3/download" },
-      { id: 1, label: "Lampiran", kind: "appendix", language: "en", sizeBytes: 0, downloadPath: "/api/files/1/download" },
-    ]);
-    for (const item of items) {
-      assert.deepEqual(Object.keys(item).sort(), ["downloadPath", "id", "kind", "label", "language", "sizeBytes"], "no url, filename, prefix, _objectKey");
+    const ringkasan = { id: 3, label: "Ringkasan", kind: "preview", language: "id", sizeBytes: 1_234_567, downloadPath: "/api/files/3/download" };
+    const lampiran = { id: 1, label: "Lampiran", kind: "appendix", language: "en", sizeBytes: 0, downloadPath: "/api/files/1/download" };
+    const terdaftar = { id: 4, label: "Laporan lengkap", kind: "full_document", language: "id", sizeBytes: 1_234_567, downloadPath: "/api/files/4/download" };
+
+    const off = publicFiles("public", files, false);
+    assert.deepEqual(off, [
+      { ...ringkasan, access: "public" },
+      { ...lampiran, access: "public" },
+    ], "accounts off: public files only (M3-08)");
+    const on = publicFiles("public", files, true);
+    assert.deepEqual(on, [
+      { ...ringkasan, access: "public" },
+      { ...terdaftar, access: "registered" },
+      { ...lampiran, access: "public" },
+    ], "accounts on: the registered file locked, the subscriber file dropped");
+    for (const item of [...off, ...on]) {
+      assert.deepEqual(Object.keys(item).sort(), ["access", "downloadPath", "id", "kind", "label", "language", "sizeBytes"], "no url, filename, prefix, _objectKey");
     }
-    assert.deepEqual(publicFiles("registered", files), [], "registered publication: no file");
-    assert.deepEqual(publicFiles("public", null), []);
+    assert.deepEqual(publicFiles("registered", files, false), [], "registered publication, accounts off: no file");
+    assert.deepEqual(
+      publicFiles("registered", files, true).map((item) => [item.id, item.access]),
+      [[3, "registered"], [4, "registered"], [1, "registered"]],
+      "registered publication, accounts on: every non-subscriber file locked (stricter level)",
+    );
+    assert.deepEqual(publicFiles("subscriber", files, true), [], "subscriber publication: no file before M7");
+    assert.deepEqual(publicFiles("public", null, true), []);
+    assert.deepEqual(publicFiles("public", files).map((item) => item.id), [3, 1], "default: accounts off in the unit env");
+    await withAccounts(true, () => {
+      assert.deepEqual(publicFiles("public", files).map((item) => item.id), [3, 4, 1], "default follows the account gate");
+    });
 
     const detail = toPublicationDetail(detailDoc({ files: [file({ id: 3 }), 99] }), "id");
     assert.deepEqual(detail.files.map((item) => item.id), [3]);
     assert.deepEqual(toPublicationDetail(detailDoc(), "en").files, [], "no files: empty list (no panel)");
-    const serialized = JSON.stringify(toPublicationDetail(detailDoc({ files: [file({ id: 3, url: "https://x.storage.supabase.co/a", filename: "a.pdf", prefix: "p", _objectKey: "k" })] }), "id"));
-    for (const key of ["storage.supabase.co", "a.pdf", "_objectKey", '"prefix"', '"url"']) {
-      assert.equal(serialized.includes(key), false, `${key} in the view model`);
-    }
+    const stored = { url: "https://x.storage.supabase.co/a", filename: "a.pdf", prefix: "p", _objectKey: "k" };
+    await withAccounts(true, () => {
+      const serialized = JSON.stringify(
+        toPublicationDetail(detailDoc({ files: [file({ id: 3, ...stored }), file({ id: 4, accessLevel: "registered", ...stored })] }), "id"),
+      );
+      assert.equal(serialized.includes('"access":"registered"'), true, "the registered file is in the view model");
+      for (const key of ["storage.supabase.co", "a.pdf", "_objectKey", '"prefix"', '"url"']) {
+        assert.equal(serialized.includes(key), false, `${key} in the view model`);
+      }
+    });
   });
 });
 
@@ -196,8 +225,8 @@ describe("lib/cms/publication-file-query.ts", () => {
     assert.equal("draft" in fileArgs, false, "files have no drafts");
     assert.deepEqual(Object.keys(fileArgs.select as Args).sort(), ["_objectKey", "accessLevel", "filename", "mimeType", "prefix", "status"]);
 
-    const pubs = recordingFind([{ id: 9, accessLevel: "public" }]);
-    assert.deepEqual(await findLivePublicationOfFile(pubs.payload, 5), { id: 9, accessLevel: "public" });
+    const pubs = recordingFind([{ id: 9, accessLevel: "public", locale: "id", slug: "a" }]);
+    assert.deepEqual(await findLivePublicationOfFile(pubs.payload, 5), { id: 9, accessLevel: "public", locale: "id", slug: "a" });
     const [pubArgs] = pubs.calls;
     assert.ok(pubArgs);
     assert.equal(pubArgs.collection, "publications");
@@ -207,7 +236,7 @@ describe("lib/cms/publication-file-query.ts", () => {
     assert.equal(pubArgs.fallbackLocale, false);
     assert.equal(pubArgs.limit, 1);
     assert.equal("user" in pubArgs, false, "no user");
-    assert.deepEqual(pubArgs.select, { accessLevel: true });
+    assert.deepEqual(pubArgs.select, { accessLevel: true, locale: true, slug: true }, "level, and locale + slug for the login return path (M5-04)");
 
     assert.equal(await findPublicFile(recordingFind([]).payload, 5), null);
     assert.equal(await findLivePublicationOfFile(recordingFind([]).payload, 5), null);
@@ -226,12 +255,16 @@ describe("lib/publications/file-download.ts", () => {
     assert.equal(downloadPath(42), "/api/files/42/download");
   });
 
-  test("FU6 downloadResponse: 307 + Location, 404, 503, always no-store + noindex; FileStorageError says nothing", async () => {
+  test("FU6 downloadResponse: 307 + Location, 303 to login on the request origin (M5-04), 404, 503, always no-store + noindex; FileStorageError says nothing", async () => {
     const url = "https://ref.storage.supabase.co/storage/v1/s3/publication-files/a.pdf?X-Amz-Expires=60";
     const redirect = downloadResponse({ kind: "redirect", url });
     assert.equal(redirect.status, 307);
     assert.equal(redirect.headers.get("location"), url);
     assert.equal(await redirect.text(), "", "the URL is only in Location");
+    const login = downloadResponse({ kind: "login", location: "/id/login?next=%2Fid%2Fpublications%2Fa" }, "https://preview.example/api/files/4/download");
+    assert.equal(login.status, 303);
+    assert.equal(login.headers.get("location"), "https://preview.example/id/login?next=%2Fid%2Fpublications%2Fa");
+    assert.equal(await login.text(), "");
     const notFound = downloadResponse({ kind: "not-found" });
     assert.equal(notFound.status, 404);
     assert.equal(notFound.headers.get("location"), null);
@@ -239,7 +272,7 @@ describe("lib/publications/file-download.ts", () => {
     const unavailable = downloadResponse({ kind: "unavailable" });
     assert.equal(unavailable.status, 503);
     assert.equal(unavailable.headers.get("location"), null);
-    for (const response of [redirect, notFound, unavailable]) {
+    for (const response of [redirect, login, notFound, unavailable]) {
       assert.equal(response.headers.get("cache-control"), "no-store");
       assert.equal(response.headers.get("x-robots-tag"), "noindex");
     }
@@ -322,19 +355,43 @@ describe("attachment downloads (lib/publications/file-download.ts, lib/cms/publi
 });
 
 describe("payload/collections/PublicationFiles.ts and Publications.files", () => {
-  test("FU7 access, fields and upload config: staff write, anonymous Local read = ready + public, REST denied, PDF only, no versions", async () => {
+  test("FU7 access, fields and upload config: staff write, anonymous Local read = ready + public (+ registered with accounts on), REST and GraphQL denied, PDF only, no versions", async () => {
     const admin = fakeReq({ user: fakeUser("admin", 1) });
     const editor = fakeReq({ user: fakeUser("editor", 2) });
     const anonymousLocal = fakeReq({ payloadAPI: "local" });
     const anonymousRest = fakeReq({ payloadAPI: "REST" });
+    const anonymousGraphql = fakeReq({ payloadAPI: "GraphQL" });
     const other = fakeReq({ user: fakeUser("editor", 3, "members") });
     const read = PublicationFiles.access?.read as Access;
     assert.equal(await runAccess(read, admin), true);
     assert.equal(await runAccess(read, editor), true);
-    assert.deepEqual(await runAccess(read, anonymousLocal), PUBLIC_FILE_READ);
-    assert.equal(await runAccess(read, anonymousRest), false);
-    assert.equal(await runAccess(read, other), false);
-    assert.deepEqual(PUBLIC_FILE_READ, { and: [{ status: { equals: "ready" } }, { accessLevel: { equals: "public" } }] });
+    for (const [on, levels] of [
+      [false, ["public"]],
+      [true, ["public", "registered"]],
+    ] as const) {
+      await withAccounts(on, async () => {
+        const where = { and: [{ status: { equals: "ready" } }, { accessLevel: { in: levels } }] };
+        assert.deepEqual(publicAccessLevels(), levels, `accounts ${on ? "on" : "off"}: levels`);
+        assert.deepEqual(publicFileRead(), where, `accounts ${on ? "on" : "off"}: file filter`);
+        assert.deepEqual(await runAccess(read, anonymousLocal), where, `accounts ${on ? "on" : "off"}: anonymous Local API`);
+        assert.equal(await runAccess(read, anonymousRest), false, "anonymous REST");
+        assert.equal(await runAccess(read, anonymousGraphql), false, "anonymous GraphQL");
+        assert.equal(await runAccess(read, other), false);
+        assert.deepEqual(
+          publicPublicationRead(),
+          { and: [{ _status: { equals: "published" } }, { accessLevel: { in: levels } }] },
+          `accounts ${on ? "on" : "off"}: publication filter`,
+        );
+        const publications = Publications.access?.read as Access;
+        assert.deepEqual(await runAccess(publications, anonymousLocal), publicPublicationRead(), "Publications: anonymous Local API");
+        assert.equal(await runAccess(publications, anonymousRest), false, "Publications: anonymous REST");
+        assert.equal(await runAccess(publications, anonymousGraphql), false, "Publications: anonymous GraphQL");
+      });
+    }
+    await withAccounts(true, async () => {
+      process.env.VERCEL_ENV = "production";
+      assert.deepEqual(publicAccessLevels(), ["public"], "VERCEL_ENV=production: accounts off, registered hidden");
+    });
     for (const operation of ["create", "update", "delete"] as const) {
       const access = PublicationFiles.access?.[operation] as Access;
       assert.equal(await runAccess(access, admin), true, `${operation} admin`);
@@ -368,7 +425,6 @@ describe("payload/collections/PublicationFiles.ts and Publications.files", () =>
     assert.equal(files.relationTo, "publication-files");
     assert.equal(files.hasMany, true);
     assert.equal((SHARED_FIELDS as readonly string[]).includes("files"), false, "files are not a DEC-004 shared field");
-    assert.deepEqual(PUBLIC_PUBLICATION_READ, { and: [{ _status: { equals: "published" } }, { accessLevel: { equals: "public" } }] });
   });
 });
 

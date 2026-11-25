@@ -1,8 +1,8 @@
 # ADR-0003 — Public User and Staff Identity Boundary
 
-- **Status:** Proposed. **Diajukan Accepted (2026-11-20, akhir M5 PR-1; DECISIONS §2.18 keputusan 16), menunggu persetujuan Owner.** Status belum diubah; Owner menyetujui sebagai PO karena Security owner belum ada (B-03).
+- **Status:** Accepted (2026-11-24; DECISIONS §2.19 keputusan 1, bersama DEC-008). Bukti: SPIKE-002 "Hasil M5-01" dan cek Owner di Preview A–K 2026-11-24.
 - **Related decisions:** DEC-008, DEC-009, DEC-016
-- **Decision owner / approver:** Product Owner + Security owner — TBD
+- **Decision owner / approver:** Haidar (Product Owner), sebagai PO karena Security owner belum diangkat (B-03; DECISIONS §2.18 keputusan 16). Pilihan DEC-009 untuk staf: akun publik terpisah, tanpa grant staf (§2.18 keputusan 14b).
 
 ## Context
 

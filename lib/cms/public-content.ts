@@ -4,6 +4,9 @@ import { draftMode, headers } from "next/headers";
 import { getPayload } from "payload";
 import { cache } from "react";
 import { aboutPath, isAboutVisible, toAboutPage, type AboutPage } from "@/lib/about/about-view";
+import type { Principal } from "@/lib/access/evaluator";
+import { decideFileDownload, type FileDownloadDecision } from "@/lib/access/file-download";
+import { isAuthEnabled } from "@/lib/auth/env";
 import { findPublicAbout } from "@/lib/cms/about-query";
 import { findActiveTopics, findHomepagePublications } from "@/lib/cms/homepage-query";
 import { findPublicPublication, findPublicRef, findPublicTitle } from "@/lib/cms/publication-detail-query";
@@ -43,7 +46,7 @@ import {
 import { toolkitFileItems } from "@/lib/learning-hub/toolkit-files";
 import { getPublicationAlternates } from "@/lib/publications/alternates";
 import { toPublicationDetail, type PublicationDetail } from "@/lib/publications/detail-view";
-import { isPublicDownload } from "@/lib/publications/file-access";
+import type { FileAccessFacts } from "@/lib/publications/file-access";
 import {
   buildFacets,
   inIdOrder,
@@ -67,7 +70,11 @@ export type { LearningHubSitemap, SitemapPublication };
  *
  * Every read here runs as an anonymous visitor through the Local API, so
  * Payload access control limits publications to published + public
- * (M3-02, P1 A). Rules for public code:
+ * (M3-02, P1 A), and since M5-03 also published + `registered` while public
+ * accounts are on (payload/access/public-read.ts publicAccessLevels;
+ * DECISIONS §2.18 decision 11; never `subscriber`). "Public" below means
+ * these levels. No read here depends on a session, so the HTML is the same
+ * for every visitor. Rules for public code:
  * - never pass `overrideAccess: true`, `draft: true` or a `user` (the
  *   exceptions, the staff previews of getPublicationDetail and getAboutPage,
  *   go through lib/cms/staff-preview.ts);
@@ -77,7 +84,7 @@ export type { LearningHubSitemap, SitemapPublication };
  * The one read outside the Local API is the index search (M3-06, DECISIONS
  * §2.12, ADR-0007): raw SQL in lib/cms/publication-search-query.ts, run by
  * getPublicationIndex only. It is held to the same result in four layers:
- * (1) its WHERE repeats PUBLIC_PUBLICATION_READ and the record `locale` on
+ * (1) its WHERE repeats publicPublicationRead and the record `locale` on
  * the main table only; (2) it reads taxonomy names of the route locale only;
  * (3) it returns ids and ranks only, and planIndex keeps the ids that the
  * anonymous scan (findIndexRefs) returned; (4) the rows of the page come
@@ -89,10 +96,11 @@ export type { LearningHubSitemap, SitemapPublication };
  * visitors can open; the sitemap and the Open Graph title read published +
  * public records like the detail page.
  *
- * File downloads (M3-08, DECISIONS §2.14): the detail page gets the public
- * files without any storage location (toPublicationDetail), and the
- * download route asks getPublicFileDownload, which reads the file and its
- * publication anonymously and only then signs a 60 s URL.
+ * File downloads (M3-08, DECISIONS §2.14; M5-04): the detail page gets the
+ * `public` and `registered` files without any storage location
+ * (toPublicationDetail), and the download route asks getFileDownload, which
+ * reads the file and its publication anonymously, for a `registered` file
+ * checks the public session, and only then signs a 60 s URL.
  *
  * About page (M3-09, DECISIONS §2.15): the `about` global is read
  * anonymously too (published version only, this locale only); a locale's
@@ -186,7 +194,7 @@ export const getPublicationIndex = cache(
 /**
  * Thrown by getPublicationDetail, getPublicationRedirect,
  * getSitemapPublications, getPublicPublicationTitle and
- * getPublicFileDownload when the CMS read fails. Fixed message and no cause, so nothing of the database error (host,
+ * getFileDownload when the CMS read fails. Fixed message and no cause, so nothing of the database error (host,
  * user) reaches the page or the logs of Next.js.
  */
 export class PublicationReadError extends Error {
@@ -281,42 +289,54 @@ export const getSitemapPublications = cache(async (): Promise<SitemapPublication
   }
 });
 
-/**
- * Signed download URL of a publication file, or null (M3-08, DECISIONS
- * §2.14 items 2, 3 and 6; route app/api/files/[fileId]/download). Checks on
- * the server, as an anonymous visitor, on every request:
- * 1. the file is readable anonymously: ready + public (PUBLIC_FILE_READ);
- * 2. the live version of a publication record lists it and that record is
- *    published + public (PUBLIC_PUBLICATION_READ; `draft: false`, so a file
- *    only in a draft finds nothing and an unpublish applies at once);
- * 3. the file is a ready PDF and the stricter of both levels is public
- *    (isPublicDownload);
- * then signs a GET URL valid for 60 s that makes storage answer
- * `Content-Disposition: attachment` (lib/cms/publication-file-storage.ts).
- * Null for every denial. A failed read is logged with the error name only
- * and throws PublicationReadError; a failed signing throws
- * FileStorageError. The URL is never logged. Not cached: every request runs
- * the checks.
- */
-export async function getPublicFileDownload(fileId: number): Promise<string | null> {
-  if (!isCmsEnabled()) return null;
-  let checked: StoredFile | null;
+/** Runs one CMS read of the file download; a failure is logged with the error name only and throws PublicationReadError. */
+async function downloadRead<T>(read: () => Promise<T>): Promise<T> {
   try {
-    const payload = await getPayload({ config });
-    const file = await findPublicFile(payload, fileId);
-    const publication = file ? await findLivePublicationOfFile(payload, fileId) : null;
-    checked = file && publication && isPublicDownload(publication.accessLevel, file) ? file : null;
+    return await read();
   } catch (error) {
     console.error("[file-download] CMS read failed:", readErrorLabel(error));
     throw new PublicationReadError();
   }
-  if (!checked) return null;
-  try {
-    return await signedFileUrl(checked);
-  } catch (error) {
-    console.error("[file-download] signing failed:", readErrorLabel(error));
-    throw new FileStorageError();
-  }
+}
+
+/**
+ * The answer to a publication file download (M3-08, DECISIONS §2.14 items
+ * 2, 3 and 6; M5-04, §2.18 decisions 11 and 12; route
+ * app/api/files/[fileId]/download), decided by decideFileDownload
+ * (lib/access/file-download.ts) on every request:
+ * 1. the file is readable anonymously: ready, Access Level `public` or,
+ *    while accounts are on, `registered` (publicFileRead);
+ * 2. the live version of a publication record lists it and that record is
+ *    readable anonymously (publicPublicationRead; `draft: false`, so a file
+ *    only in a draft finds nothing and an unpublish applies at once);
+ * 3. the file is a ready PDF and the stricter of both levels has a download
+ *    now (requiredLevel); for `registered` the public session decides
+ *    (`principal`, read only then; a staff session never counts, DEC-009);
+ * then, only when allowed, signs a GET URL valid for 60 s that makes
+ * storage answer `Content-Disposition: attachment`
+ * (lib/cms/publication-file-storage.ts). The storage location stays here:
+ * the signed URL leaves only as the route's `Location`. A failed read is
+ * logged with the error name only and throws PublicationReadError; a failed
+ * signing throws FileStorageError. The URL is never logged. Not cached:
+ * every request runs the checks. No download audit in M5 (§2.18 decision 10).
+ */
+export async function getFileDownload(fileId: number, principal: () => Promise<Principal>): Promise<FileDownloadDecision> {
+  if (!isCmsEnabled()) return { kind: "not-found" };
+  const payload = await downloadRead(() => getPayload({ config }));
+  return decideFileDownload<StoredFile & FileAccessFacts>(fileId, {
+    accountsEnabled: isAuthEnabled(),
+    findFile: (id) => downloadRead(() => findPublicFile(payload, id)),
+    findPublication: (id) => downloadRead(() => findLivePublicationOfFile(payload, id)),
+    principal,
+    async sign(file) {
+      try {
+        return await signedFileUrl(file);
+      } catch (error) {
+        console.error("[file-download] signing failed:", readErrorLabel(error));
+        throw new FileStorageError();
+      }
+    },
+  });
 }
 
 /**

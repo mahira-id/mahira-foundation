@@ -25,7 +25,7 @@ import { decodeAmp, robotsContent } from "../helpers/publication-pages";
  * generated Open Graph images, against `next start` with the full env (CMS
  * on, no VERCEL_ENV, so robots.txt is the non-Production one). Metadata,
  * sitemap and images must never name a draft, an unpublished,
- * `registered`/`subscriber` or other-locale record.
+ * `subscriber` or other-locale record (a `registered` one is eligible since M5-03, accounts on).
  *
  * Metadata is read from the HTML wherever Next puts it (head for crawlers of
  * the `htmlLimitedBots` list, streamed into the body for other agents), for a
@@ -170,10 +170,11 @@ describe("SEO (M3-07 metadata, sitemap, robots, Open Graph images)", () => {
     await unpublish(unpubEn);
     // Ineligible records.
     await createPub("draft", {}, "draft");
+    // M5-03: `registered` is eligible while accounts are on (SE5 sitemap, SE7 image); `subscriber` never.
     await createPub("registered", { accessLevel: "registered" });
     await createPub("subscriber", { accessLevel: "subscriber" });
     await unpublish(await createPub("unpublished"));
-    for (const name of ["solo-en-draft", "unpubpair-en-unpublished", "draft", "registered", "subscriber", "unpublished"]) {
+    for (const name of ["solo-en-draft", "unpubpair-en-unpublished", "draft", "subscriber", "unpublished"]) {
       hidden.push(slug(name), title(name));
     }
   });
@@ -287,7 +288,7 @@ describe("SEO (M3-07 metadata, sitemap, robots, Open Graph images)", () => {
     }
   });
 
-  test("SE5 sitemap: /, both indexes and the public records of both locales on mahira.id; never draft, unpublished, registered, subscriber", async () => {
+  test("SE5 sitemap: /, both indexes and the public (and, M5-03, registered) records of both locales on mahira.id; never draft, unpublished, subscriber", async () => {
     const result = await getPage("/sitemap.xml");
     assert.equal(result.status, 200, `GET /sitemap.xml: ${pageFact(result)}`);
     const locs = [...result.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1] as string);
@@ -299,6 +300,7 @@ describe("SEO (M3-07 metadata, sitemap, robots, Open Graph images)", () => {
       ["en", "pair-en"],
       ["id", "solo-id"],
       ["id", "unpubpair-id"],
+      ["id", "registered"],
     ] as const) {
       assert.equal(locs.includes(`${SITE}${detailPath(locale, name)}`), true, `sitemap lists ${name}`);
     }
@@ -318,7 +320,7 @@ describe("SEO (M3-07 metadata, sitemap, robots, Open Graph images)", () => {
   });
 
   test("SE7 generated Open Graph images: 1200×630 PNG for /, an index and a public detail (detail no-store)", async () => {
-    for (const path of ["/og/site", "/og/id/publications", "/og/en/publications", `/og/id/publications/${slug("pair-id")}`, `/og/en/publications/${slug("pair-en")}`]) {
+    for (const path of ["/og/site", "/og/id/publications", "/og/en/publications", `/og/id/publications/${slug("pair-id")}`, `/og/en/publications/${slug("pair-en")}`, `/og/id/publications/${slug("registered")}`]) {
       const image = await getBinary(path);
       assert.equal(image.status, 200, `GET ${path}: HTTP ${image.status}`);
       assert.equal(image.contentType, "image/png", `GET ${path}: content-type`);
@@ -327,9 +329,9 @@ describe("SEO (M3-07 metadata, sitemap, robots, Open Graph images)", () => {
     }
   });
 
-  test("SE8 generated detail image: 404 for draft, unpublished, registered, subscriber, other-locale, unknown and invalid slugs", async () => {
+  test("SE8 generated detail image: 404 for draft, unpublished, subscriber, other-locale, unknown and invalid slugs", async () => {
     const paths = [
-      ...["draft", "unpublished", "registered", "subscriber"].map((name) => `/og/id/publications/${slug(name)}`),
+      ...["draft", "unpublished", "subscriber"].map((name) => `/og/id/publications/${slug(name)}`),
       ...["unpubpair-en-unpublished", "solo-en-draft"].map((name) => `/og/en/publications/${slug(name)}`),
       `/og/en/publications/${slug("pair-id")}`,
       `/og/id/publications/${slug("pair-en")}`,

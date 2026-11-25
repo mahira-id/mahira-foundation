@@ -3,10 +3,9 @@
  * DEC-011). Pure: no I/O, no Payload import at runtime.
  *
  * The effective level is the stricter of the publication and the file; a
- * file set looser than its publication has no effect. In M3-08 only a file
- * whose effective level is `public` is shown and downloadable; `registered`
- * and `subscriber` files stay hidden until M5/M7. Anything unknown or
- * missing is treated as the strictest case (deny by default).
+ * file set looser than its publication has no effect. Anything unknown or
+ * missing is treated as the strictest case (deny by default). Which level
+ * may be downloaded by whom is decided by lib/access/evaluator.ts (M5-03).
  */
 export type AccessLevel = "public" | "registered" | "subscriber";
 
@@ -28,17 +27,3 @@ export type FileAccessFacts = {
   mimeType?: unknown;
   accessLevel?: unknown;
 };
-
-/**
- * True when visitors may download the file in M3-08: the file is `ready`, a
- * PDF, and the stricter of the publication's and the file's level is
- * `public`. Whether the publication itself is live (published + public) is
- * checked by the read (PUBLIC_PUBLICATION_READ), not here.
- */
-export function isPublicDownload(publicationAccess: unknown, file: FileAccessFacts): boolean {
-  return (
-    file.status === "ready" &&
-    file.mimeType === "application/pdf" &&
-    stricterAccess(publicationAccess, file.accessLevel) === "public"
-  );
-}

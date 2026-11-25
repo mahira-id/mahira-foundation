@@ -2,6 +2,7 @@ import { sql } from "@payloadcms/db-postgres";
 
 import type { Locale } from "@/lib/i18n/locales";
 import { SEARCH_CONFIG } from "@/lib/publications/search-terms";
+import { publicAccessLevels, type PublicAccessLevel } from "@/payload/access/public-read";
 
 /**
  * Server-only. Full-text search of the publication index (M3-06, DEC-013,
@@ -15,12 +16,14 @@ import { SEARCH_CONFIG } from "@/lib/publications/search-terms";
  * publication type names in the route locale (C), with the text search
  * configuration of that locale. Body text and PDF content are not searched.
  *
- * Same guarantees as the Local API reads (PUBLIC_PUBLICATION_READ in
+ * Same guarantees as the Local API reads (publicPublicationRead in
  * payload/access/public-read.ts, record `locale`, no fallback locale): only
  * the main `publications` row (never `_publications_v`, so a pending draft
- * is never searched) with `_status` published, access level public and the
- * route locale; taxonomy names only of that locale. Every value (locale,
- * configuration, query) is a bound parameter.
+ * is never searched) with `_status` published, an access level of
+ * publicAccessLevels() (`public`, and `registered` while accounts are on,
+ * M5-03; never `subscriber`) and the route locale; taxonomy names only of
+ * that locale. Every value (locale, configuration, query, levels) is a bound
+ * parameter.
  */
 type Sql = ReturnType<typeof sql>;
 
@@ -32,8 +35,10 @@ export type SqlExecute = (query: Sql) => Promise<{ rows: unknown[] }>;
  * title > summary > names (initial tuning, ADR-0007). Equal ranks are
  * ordered by planIndex (M3-05 order).
  */
-export function buildSearchSql(locale: Locale, tsquery: string): Sql {
+export function buildSearchSql(locale: Locale, tsquery: string, levels: readonly PublicAccessLevel[] = publicAccessLevels()): Sql {
   const config = SEARCH_CONFIG[locale];
+  // drizzle writes an array as a list of bound parameters: `($1, $2)`.
+  const accessLevels = [...levels];
   return sql`
     SELECT d."id", ts_rank('{0.1,0.2,0.4,1.0}', d."document", d."query")::float8 AS "rank"
     FROM (
@@ -59,7 +64,7 @@ export function buildSearchSql(locale: Locale, tsquery: string): Sql {
       CROSS JOIN (SELECT to_tsquery(${config}::regconfig, ${tsquery}) AS "query") q
       WHERE p."locale"::text = ${locale}
         AND p."_status" = 'published'
-        AND p."access_level" = 'public'
+        AND p."access_level"::text IN ${accessLevels}
     ) d
     WHERE d."document" @@ d."query"
   `;

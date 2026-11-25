@@ -1,6 +1,6 @@
 import type { CollectionAfterChangeHook, CollectionBeforeDeleteHook } from "payload";
 import { isLocale } from "../../lib/i18n/locales";
-import { PUBLIC_PUBLICATION_READ } from "../access/public-read";
+import { publicPublicationRead } from "../access/public-read";
 import { SLUG_PATTERN } from "../fields/slug";
 
 type RelationValue = number | string | { id: number | string } | null | undefined;
@@ -15,10 +15,11 @@ function idOf(value: RelationValue): string | null {
  * of a record that visitors can now see in `publication-slugs`.
  *
  * The record is read back from the main table (the version visitors get)
- * with PUBLIC_PUBLICATION_READ, the filter of the anonymous read and of
+ * with publicPublicationRead(), the filter of the anonymous read and of
  * "Tayang di situs". So a draft save, a published record with Access Level
- * `registered`/`subscriber`, and an unpublish record nothing, and the
- * result does not depend on the `select` of the caller. `db.findOne` runs in
+ * `subscriber` (and `registered` while accounts are off, M5-03), and an
+ * unpublish record nothing, and the result does not depend on the `select`
+ * of the caller. `db.findOne` runs in
  * the save's transaction (`req`) without hooks or access, like
  * readLiveOnSite.
  *
@@ -32,7 +33,7 @@ function idOf(value: RelationValue): string | null {
 export const recordPublicSlug: CollectionAfterChangeHook = async ({ doc, req }) => {
   const live = (await req.payload.db.findOne({
     collection: "publications",
-    where: { and: [{ id: { equals: doc.id } }, PUBLIC_PUBLICATION_READ] },
+    where: { and: [{ id: { equals: doc.id } }, publicPublicationRead()] },
     select: { slug: true, locale: true },
     req,
   })) as { locale?: unknown; slug?: unknown } | null;

@@ -1,6 +1,6 @@
 import type { Locale } from "@/lib/i18n/locales";
 
-import { authHandlerPath, authPagePath, statusHref, type AuthPage, type AuthStatus } from "./routes";
+import { AUTH_FIELDS, authHandlerPath, authPagePath, statusHref, type AuthPage, type AuthStatus } from "./routes";
 import { logAuthError, type AuthClient } from "./supabase";
 import {
   hasRecentRecovery,
@@ -11,6 +11,7 @@ import {
   parseLogin,
   parseRegister,
   parseResetPassword,
+  readReturnPath,
   type FormInput,
 } from "./validation";
 
@@ -22,6 +23,8 @@ import {
  *
  * - Messages are generic: an unknown email, a wrong password and an
  *   unconfirmed account all give login `invalid` (decision 14a).
+ * - Login keeps a valid return path (`next`, M5-04): only a publication
+ *   detail path (validation.readReturnPath), never a URL from elsewhere.
  * - Register and forgot-password answer `check-email` whether or not the
  *   email has an account; only local validation, `weak_password`, 429 and
  *   a server or network failure differ.
@@ -78,15 +81,29 @@ function passwordUpdateStatus(error: unknown): "same-password" | "weak-password"
   return "error";
 }
 
+/** The login form's return path (M5-04), or null; see validation.readReturnPath. */
+function returnPathOf(form: FormInput): string | null {
+  return readReturnPath(form.get(AUTH_FIELDS.returnTo));
+}
+
+/** Login page with a status, keeping the form's valid return path. */
+function toLogin(context: ActionContext, form: FormInput, status: AuthStatus<"login">): ActionResult {
+  return { location: statusHref(context.locale, "login", status, returnPathOf(form)) };
+}
+
+/**
+ * Success: the valid return path (the publication detail page of a locked
+ * file, M5-04), else the account page. Every failure keeps the return path.
+ */
 export async function login(form: FormInput, client: AuthClient, context: ActionContext): Promise<ActionResult> {
   const input = parseLogin(form);
-  if (!input.ok) return to(context, "login", input.status);
+  if (!input.ok) return toLogin(context, form, input.status);
   const { error } = await client.signInWithPassword({ email: input.email, password: input.password });
-  if (!error) return { location: authPagePath(context.locale, "account") };
+  if (!error) return { location: returnPathOf(form) ?? authPagePath(context.locale, "account") };
   logAuthError("login", error);
   const details = facts(error);
-  if (details.status === 429) return to(context, "login", "rate-limited");
-  return to(context, "login", isClientError(details) ? "invalid" : "error");
+  if (details.status === 429) return toLogin(context, form, "rate-limited");
+  return toLogin(context, form, isClientError(details) ? "invalid" : "error");
 }
 
 export async function register(form: FormInput, client: AuthClient, context: ActionContext): Promise<ActionResult> {
@@ -181,7 +198,7 @@ export async function confirm(params: URLSearchParams, client: AuthClient, conte
 
 /** The POST form handlers, with the target used when an operation throws. */
 export const FORM_ACTIONS = {
-  login: { run: login, failure: (context: ActionContext) => to(context, "login", "error") },
+  login: { run: login, failure: (context: ActionContext, form: FormInput) => toLogin(context, form, "error") },
   register: { run: register, failure: (context: ActionContext) => to(context, "register", "error") },
   "forgot-password": { run: forgotPassword, failure: (context: ActionContext) => to(context, "forgot-password", "error") },
   "reset-password": { run: resetPassword, failure: (context: ActionContext) => to(context, "reset-password", "error") },

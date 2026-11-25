@@ -24,7 +24,7 @@ import { indexState, robotsContent, rowSlugs, type IndexStateAttributes } from "
  * author, topic and type names (C), equal ranks in the M3-05 order; the
  * route locale's text and taxonomy names only (`indonesian` / `english`
  * configuration, stemming, prefix on the last word); AND with the filters;
- * never a draft, a pending draft, a `registered`/`subscriber` record or
+ * never a draft, a pending draft, a `subscriber` record (a `registered` one is found since M5-03, SR12) or
  * another locale's text. Needs `next start` with the full env
  * (bun run test:integration --only search).
  *
@@ -58,7 +58,6 @@ const DRAVEK_ORDER = ["s-topic", "s-sum", "s-author", "halvex", "s-stem", "s-tit
 /** Records the search must never show, with a title fragment that only the record has. */
 const HIDDEN: { query: string; locale: "id" | "en"; record: string; text: string; why: string }[] = [
   { query: "vexmora", locale: "id", record: "vexmora", text: "Draf Vexmora", why: "never-published draft" },
-  { query: "quillaro", locale: "id", record: "quillaro", text: "Terdaftar Quillaro", why: "published, registered" },
   { query: "snervik", locale: "id", record: "snervik", text: "Pelanggan Snervik", why: "published, subscriber" },
   { query: "glimmeron", locale: "id", record: "halvex", text: "Halvex Glimmeron", why: "pending draft of a live record" },
   { query: "orvantis", locale: "id", record: "s-topic", text: "Kajian empat", why: "EN topic name on an ID record" },
@@ -191,7 +190,8 @@ describe("publication search (M3-06 relevance, locale, filters, non-disclosure)"
       overrideAccess: true,
     });
     await createPub("vexmora", "Draf Vexmora", { publishedAt: date("2003-04-10") }, "draft");
-    await createPub("quillaro", "Terdaftar Quillaro", { accessLevel: "registered", publishedAt: date("2002-08-10") });
+    // M5-03: a published `registered` record is found (accounts on); type B keeps it out of the dravek (type A) order.
+    await createPub("quillaro", "Terdaftar Quillaro", { accessLevel: "registered", publicationType: types.b.id, publishedAt: date("2002-08-10") });
     await createPub("snervik", "Pelanggan Snervik", { accessLevel: "subscriber", publishedAt: date("2002-09-10") });
     await createPub("e1", "Policies of Governance Tarquell", { locale: "en", topics: [topics.brumelak.id], publishedAt: date("2003-01-10") });
   });
@@ -242,7 +242,12 @@ describe("publication search (M3-06 relevance, locale, filters, non-disclosure)"
     assert.deepEqual([unknown.state.state, unknown.state.unknown, unknown.slugs], ["unknown-filter", "type", []]);
   });
 
-  test("SR5 never drafts, pending drafts, registered/subscriber records, other-locale text or names (no fallback)", async () => {
+  test("SR12 a published registered record is found on /id (M5-03, accounts on); the subscriber one stays hidden (SR5)", async () => {
+    await assertRows("id", q("quillaro"), ["quillaro"]);
+    await assertRows("id", `${q("quillaro")}&type=${TYPE_B}`, ["quillaro"]);
+  });
+
+  test("SR5 never drafts, pending drafts, subscriber records, other-locale text or names (no fallback)", async () => {
     await assertRows("id", q("halvex"), ["halvex"]);
     // Every case is checked; the assertion lists all that leak.
     const leaks: string[] = [];

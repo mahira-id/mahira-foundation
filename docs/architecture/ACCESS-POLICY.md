@@ -57,9 +57,10 @@ Example: publication `registered`, asset `subscriber` → subscriber required. P
 
 - **Resource:** record koleksi Payload `publication-files` (file PDF), milik tepat satu record publikasi (satu bahasa); publikasi mencantumkan file-nya berurutan di field `files`.
 - **Level file wajib, tanpa default, tanpa "inherit":** `accessLevel` di setiap file menyimpan `public`/`registered`/`subscriber` sejak awal. Akses efektif = level yang lebih ketat antara publikasi dan file (`lib/publications/file-access.ts` `stricterAccess`); file yang diset lebih longgar tidak berpengaruh. Nilai yang tidak dikenal atau hilang dianggap `subscriber` (fail closed).
-- **Syarat unduhan publik (M3-08):** publikasi tayang (`published`) + `public`, file `ready`, PDF, akses efektif `public` (`isPublicDownload`). Diperiksa ulang di server pada setiap request unduhan (API-SPECIFICATION §5.1).
-- **File `registered`/`subscriber` (sementara sampai M5/M7):** boleh diunggah ke private bucket tetapi tidak tampil di situs publik sama sekali: tidak ada baris di panel, tidak ada URL, dan route unduhan menjawab 404. Ini deviasi tercatat dari DEC-002 ("aset terbatas pada publikasi publik ditampilkan terkunci tanpa URL") dan konsisten dengan §2.11 P7 A. Unduhannya M5 (`registered`) dan M7 (`subscriber`).
-- **Staf:** membuka semua file di `/admin` di bawah access control Payload (`/api/publication-files/file/<nama>`, signed 302). Route publik tidak membaca sesi, jadi sesi staf tidak memberi akses di sana (DEC-009).
+- **Syarat unduhan (M3-08, diperluas M5-03):** publikasi tayang (`published`), file `ready`, PDF, dan akses efektif yang dihitung `requiredLevel` (`lib/access/evaluator.ts`; `isPublicDownload` dihapus). Level `public` boleh untuk semua pemanggil; level `registered` hanya bila akun publik hidup dan pemanggil punya sesi publik valid dengan email terverifikasi (§7, §8). Diperiksa ulang di server pada setiap request unduhan (API-SPECIFICATION §5.1).
+- **File `registered` (M5-03/M5-04, DECISIONS §2.18 keputusan 11, 12 dan §2.19 keputusan 4; mencabut §2.11 P7 A dan §2.14 3b(ii) untuk level ini, §2.20):** tampil terkunci di panel file dengan badge "Terdaftar"/"Registered" dan label "Unduh PDF (perlu akun)" / "Download PDF (account required)". HTML sama untuk semua pengunjung; tidak ada URL, nama file, atau object key di HTML. Keputusan akses ada di route unduhan. Publikasi `registered` tampil di detail, indeks, pencarian, sitemap, dan homepage dengan badge. Bila akun publik mati (tanpa `APP_SUPABASE_PUBLISHABLE_KEY` atau Production), `registered` tetap tersembunyi dan route menjawab 404.
+- **File dan publikasi `subscriber` (sampai M7):** boleh diunggah ke private bucket tetapi tidak tampil di situs publik sama sekali (HTML, pencarian, sitemap, homepage, REST/GraphQL anonim), dan route unduhan menjawab 404. Unduhannya M7 (`subscriber`).
+- **Staf:** membuka semua file di `/admin` di bawah access control Payload (`/api/publication-files/file/<nama>`, signed 302). Di route unduhan publik sesi staf Payload tidak dibaca dan diperlakukan anonim, jadi tidak memberi akses file `registered` (DEC-009); staf yang perlu file itu mendaftar akun publik biasa (§2.18 keputusan 14b).
 
 ### 4.3 Toolkit Learning Hub (M3-13, DECISIONS §2.17 keputusan 1–5)
 
@@ -103,7 +104,9 @@ Proposed precedence must be approved: explicit asset/publication grant, collecti
 
 The staff column is deliberately deny-by-default for restricted files; DEC-009 must settle operational exception.
 
-M3-08 (DECISIONS §2.14): baris "Public asset" berlaku untuk file `publication-files` dengan akses efektif `public` pada publikasi tayang + `public` (§4.2). "Staff policy" untuk aset publik = staf membuka file di `/admin` di bawah access control Payload; route unduhan publik sama untuk semua pemanggil. Baris Registered/Subscriber asset belum dibangun: file itu disembunyikan dan route menjawab 404 sampai M5/M7.
+M3-08 (DECISIONS §2.14): baris "Public asset" berlaku untuk file `publication-files` dengan akses efektif `public` pada publikasi tayang + `public` (§4.2). "Staff policy" untuk aset publik = staf membuka file di `/admin` di bawah access control Payload; route unduhan publik sama untuk semua pemanggil. Baris Subscriber asset belum dibangun: file itu disembunyikan dan route menjawab 404 sampai M7.
+
+M5-04 (DECISIONS §2.18 keputusan 12, §2.20): baris "Registered asset" dibangun untuk kolom Anonymous, Registered, Editor, dan Admin. Anonymous (termasuk sesi staf Payload saja) → 303 ke login; Registered dengan sesi publik valid dan email terverifikasi → Allow (307 signed URL 60 detik); sesi valid tetapi email belum terverifikasi → 404; Editor/Admin → diperlakukan anonim (Deny by default, DEC-009) kecuali mereka juga punya akun publik terverifikasi. Kolom "Subscriber with valid scope" menunggu M7.
 
 ## 7. Evaluator interface
 
@@ -137,7 +140,9 @@ export type AccessDecision = {
 };
 ```
 
-This is an illustrative contract, not an exported application type until accepted. Avoid returning details that enable entitlement enumeration. Internal audit reason can be more detailed than public response.
+Implementasi M5-03 (`lib/access/evaluator.ts`, fungsi murni): `Principal = { kind: "anonymous" } | { kind: "public_user"; emailVerified: boolean }`; tidak ada `staff_user` karena staf = anonim (DEC-009). `requiredLevel(publicationAccess, file, { accountsEnabled })` mengembalikan `public`, `registered`, atau `null` (null untuk file bukan `ready`/bukan PDF, `subscriber`, nilai tidak dikenal, atau `registered` saat akun mati). `evaluateFileAccess(level, principal)`: `public` → allowed `public_access`; `registered` + terverifikasi → allowed `authenticated_access`; `registered` + anonim → denied `authentication_required` (`requiredAction: "login"`); `registered` + belum terverifikasi → denied `resource_unavailable`. Alasan `entitlement_*`, `scope_mismatch`, dan `staff_policy_denied` belum dibangun (M7).
+
+Kontrak di atas adalah gambaran umum, bukan tipe aplikasi yang diekspor sampai diterima. Avoid returning details that enable entitlement enumeration. Internal audit reason can be more detailed than public response.
 
 Evaluator requirements:
 
@@ -163,6 +168,8 @@ Evaluator requirements:
 
 Implementasi M3-08 untuk file `public` (API-SPECIFICATION §5.1): langkah 1–3, 5, 7, 9 dan 11 dibangun di `GET /api/files/{fileId}/download`; langkah 4 dan 6 tidak ada (tanpa sesi, tanpa entitlement); langkah 10 tidak ada untuk unduhan publik (butir 9: tanpa audit, hitungan, atau rate limit; log hanya nama galat). Langkah 9 selalu menerbitkan signed URL 60 detik dari private bucket, juga untuk file `public`; tidak ada URL bucket publik. Setiap penolakan menjawab 404 yang sama; galat database atau storage 503.
 
+Implementasi M5-04 untuk file `registered` (`lib/access/file-download.ts` `decideFileDownload`, `lib/auth/download-session.ts`): langkah 4 dibangun. Sesi publik dibaca hanya untuk file `registered` (tanpa cookie `sb-*-auth-token` atau akun mati → anonim tanpa panggilan Supabase; selain itu `getUser()` di route, bukan `getClaims()`); cookie Payload dan header `Authorization` tidak pernah dibaca. Langkah 5 dan 7 memakai `requiredLevel` + `evaluateFileAccess` (§7); signed URL baru dibuat sesudah keputusan allow (langkah 9). Langkah 6 tetap tidak ada (entitlement = M7). Langkah 10 (audit) tidak ada: FR-026 pindah ke M4 (DECISIONS §2.18 keputusan 10); log hanya nama galat. Langkah 11: jawaban sesudah sesi dibaca memakai `Cache-Control: private, no-store` plus `X-Robots-Tag: noindex`, dan cookie hasil refresh Supabase ditulis ke jawaban itu.
+
 ## 9. HTTP and UX contract
 
 | Condition | Suggested HTTP behavior | User experience |
@@ -174,6 +181,8 @@ Implementasi M3-08 untuk file `public` (API-SPECIFICATION §5.1): langkah 1–3,
 | Storage provider error | 503/502 depending failure | Retry message with correlation ID. |
 | Invalid request | 400/422 | Correct input; no internal details. |
 
+Implementasi M5-04 untuk `GET /api/files/{fileId}/download` (DECISIONS §2.18 keputusan 12, §2.20): tanpa sesi publik valid (anonim, sesi kedaluwarsa/tidak valid, atau hanya sesi staf) → **303** ke `/{locale publikasi}/login?next=<path detail publikasi>` (`next` hanya boleh `/{id|en}/publications/<slug>`; setelah login pengguna kembali ke halaman detail, bukan langsung ke unduhan); sesi valid + email terverifikasi → **307** ke signed URL 60 detik (attachment); sesi valid + email belum terverifikasi, file `subscriber`, tidak layak, atau akun mati → **404** yang sama seperti sebelumnya; galat database/storage → 503. Tabel di atas adalah saran umum; baris "Missing/invalid session" dipenuhi dengan 303, dan baris 403 belum dipakai sampai M7.
+
 No generic `200` with a secret-bearing URL on denial. Never include object key, bucket credentials, entitlement internals, or private storage path in public errors.
 
 ## 10. Storage policy
@@ -183,7 +192,7 @@ No generic `200` with a secret-bearing URL on denial. Never include object key, 
 - Keep bucket separation and object key prefixes as defense in depth, not as sole authorization.
 - Disable public listing for private buckets.
 - Use random opaque keys; sanitize display filename separately.
-- Signed URL TTL: TBD. Choose from file size, mobile reliability, expected download duration, revocation semantics, and threat model; record exact setting in an accepted ADR/config. File `public` (M3-08): 60 detik (`SIGNED_DOWNLOAD_TTL_SECONDS`, payload/payload.config.ts; DECISIONS §2.14 butir 2). Unduhan yang sudah berjalan tidak diputus saat TTL lewat; request baru dengan URL kedaluwarsa ditolak (API-SPECIFICATION §5.1). TTL file terbatas ditetapkan di M5.
+- Signed URL TTL: TBD. Choose from file size, mobile reliability, expected download duration, revocation semantics, and threat model; record exact setting in an accepted ADR/config. File `public` (M3-08): 60 detik (`SIGNED_DOWNLOAD_TTL_SECONDS`, payload/payload.config.ts; DECISIONS §2.14 butir 2). Unduhan yang sudah berjalan tidak diputus saat TTL lewat; request baru dengan URL kedaluwarsa ditolak (API-SPECIFICATION §5.1). TTL file `registered` (M5-04): 60 detik, nilai yang sama (`SIGNED_DOWNLOAD_TTL_SECONDS`, DECISIONS §2.18 keputusan 12). TTL file `subscriber` ditetapkan di M7.
 - Verify that generated URL is not included in application logs, analytics events, referrer headers, or cached rendered HTML.
 - Define deletion lifecycle and backup retention for removed objects.
 
@@ -238,6 +247,8 @@ Each event should contain event ID, timestamp, actor type/ID, action, target typ
 
 Status M5 PR-1 (2026-11-20): butir "Public signup cannot create staff identity/role" dan "Staff session cannot be confused with public subscriber session" tercakup oleh `auth-boundary` AB1–AB4, `account-pages` AP4, dan unit AUU3, AUU7 (TEST-PLAN §12.2). Butir lain di daftar ini menunggu PR-2 (M5-03/M5-04) atau M7.
 
+Status M5 PR-2 (2026-11-24): "Anonymous cannot download registered/subscriber assets" tercakup RF2 dan RF3; "Client cannot override access level, user ID, or object key" oleh RDU1, RDU2, RDU5; "Signed URL is short-lived and not included in public HTML/cache/logs" oleh RF2 (Range 200 attachment, URL tidak dicetak), RF7 (HTML tanpa kunci objek, host storage, `X-Amz-`), dan RF9 (`no-store`); "Staff session cannot be confused with public subscriber session" oleh RF2 (Editor/Admin saja → 303) dan RDU5/RDU6; "Cached pages cannot leak personalized locked/unlocked decisions" oleh RF7 (`<main>` sama untuk anonim, pengguna terverifikasi, dan cookie staf); "Unpublished/draft ... never appears" oleh RF8 (subscriber tidak muncul di detail, indeks, pencarian, sitemap, homepage, REST/GraphQL anonim). Butir entitlement dan subscriber menunggu M7 (TEST-PLAN §12.5).
+
 ## 15. Open policy decisions
 
-DEC-009 staff asset access; DEC-011 asset override/inheritance (Accepted 2026-11-16: level lebih ketat, file wajib punya level sendiri, §4.2); TTL and revocation behavior (file `public`: 60 detik, §10; file terbatas: M5); user verification requirement; entitlement grant scope; no-account download logging; account deletion and log retention; response concealment policy; MFA enforcement mechanism. Do not implement ambiguous exception by intuition.
+DEC-009 staff asset access; DEC-011 asset override/inheritance (Accepted 2026-11-16: level lebih ketat, file wajib punya level sendiri, §4.2); TTL and revocation behavior (file `public`: 60 detik, §10; file `registered`: 60 detik, §10; file `subscriber`: M7); user verification (`registered` mensyaratkan email terverifikasi, §2.18 keputusan 12) requirement; entitlement grant scope; no-account download logging; account deletion and log retention; response concealment policy; MFA enforcement mechanism. Do not implement ambiguous exception by intuition.

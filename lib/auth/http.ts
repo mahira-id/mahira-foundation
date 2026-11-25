@@ -94,7 +94,7 @@ export async function authPost(request: NextRequest, params: Params, action: For
     result = await run(form, createAuthClient(jar, { secure }), context);
   } catch (error) {
     logAuthError(action, error);
-    result = failure(context);
+    result = failure(context, form);
   }
   return redirect(request, result, jar, secure);
 }

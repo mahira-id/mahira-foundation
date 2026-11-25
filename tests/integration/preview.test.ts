@@ -37,7 +37,9 @@ import { assertNotFoundPage, fetchAllIndexPages, robotsContent } from "../helper
  * Editor fixture-test-preview-editor@example.invalid (session token sent as
  * the `payload-token` cookie, never printed); ID draft-only `draft`; ID
  * `live`, published + public, with a pending draft revision titled T2; ID
- * `registered`, published with Access Level registered (M3-05b).
+ * `registered`, published with Access Level registered (M3-05b; visible
+ * since M5-03 with accounts on); ID `subscriber`, published with Access
+ * Level subscriber (M5-03: never visible before M7).
  * Relations reuse the first existing author, topic and type. The Owner guard
  * runs before any fixture is written and after cleanup.
  */
@@ -153,8 +155,10 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
     };
     await create("draft", DRAFT_TITLE, "draft");
     await create("live", LIVE_TITLE, "published");
-    // Published but not public (M3-05b): no page visitors can see.
+    // Published `registered` (M3-05b): since M5-03 (accounts on) visitors see its page.
     await create("registered", `${LABEL}registered`, "published", "registered");
+    // Published `subscriber` (M5-03): no page visitors can see before M7.
+    await create("subscriber", `${LABEL}subscriber`, "published", "subscriber");
     // Pending draft revision: the stored record stays live with LIVE_TITLE.
     await p().update({ collection: "publications", id: pub("live").id, data: { title: T2 }, draft: true, depth: 0, overrideAccess: true });
 
@@ -334,9 +338,14 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
 
     const adminDraft = `/admin/collections/publications/${id("draft")}`;
     assert.equal(await exitAs({ id: id("draft"), locale: "id", slug: slug("draft") }, "draft"), adminDraft);
+    // M5-03: a published `registered` record has a public page (accounts on); `subscriber` has none.
     assert.equal(
-      await exitAs({ id: id("registered"), locale: "id", slug: slug("registered") }, "registered"),
-      `/admin/collections/publications/${id("registered")}`,
+      await exitAs({ id: id("registered"), locale: "id", slug: slug("other") }, "registered"),
+      `/id/publications/${slug("registered")}`,
+    );
+    assert.equal(
+      await exitAs({ id: id("subscriber"), locale: "id", slug: slug("subscriber") }, "subscriber"),
+      `/admin/collections/publications/${id("subscriber")}`,
     );
     // Unknown record or invalid id: the posted detail URL, as before M3-05b.
     for (const value of [UNKNOWN_ID, "abc", "01", ""]) {
@@ -357,7 +366,7 @@ describe("staff draft preview (M3-05: /api/preview, Draft Mode + staff session, 
       ["no cookies", {}],
     ];
     for (const [label, headers] of sessions) {
-      for (const name of ["draft", "registered", "live"]) {
+      for (const name of ["draft", "registered", "subscriber", "live"]) {
         const result = await postForm("/api/preview/exit", { id: String(pub(name).id), locale: "id", slug: slug(name) }, headers);
         assert.equal(result.status, 303, `${label} ${name}: ${pageFact(result)}`);
         assert.equal(target(result), `/id/publications/${slug(name)}`, `${label} ${name}: target`);

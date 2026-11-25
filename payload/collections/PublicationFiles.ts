@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { PUBLIC_FILE_READ } from "../access/public-read";
+import { publicFileRead } from "../access/public-read";
 import { isAnonymousLocalRead, isStaff, staffRoleOf } from "../access/roles";
 import {
   refuseLiveFileDelete,
@@ -19,9 +19,11 @@ import {
  *   payload/hooks/one-publication-per-file.ts). Not a DEC-004 shared field.
  * - `accessLevel` is required, has no default and stores all three levels
  *   from the start (DEC-011). The effective level is the stricter of the
- *   publication and the file (lib/publications/file-access.ts). Only
- *   `public` files are downloadable in M3-08; the others stay hidden on the
- *   public site until M5.
+ *   publication and the file (lib/publications/file-access.ts). `public`
+ *   files download for everyone (M3-08); `registered` files show locked and
+ *   download only with a verified public session (M5-04, DECISIONS §2.18
+ *   decisions 11 and 12, while accounts are on); `subscriber` files stay
+ *   hidden on the public site until M7.
  * - No versions: label, kind, language and Access Level edits apply at once.
  *   The content of a file on a live publication cannot be replaced or
  *   deleted (item 8, payload/hooks/publication-files.ts).
@@ -39,11 +41,13 @@ export const PublicationFiles: CollectionConfig = {
   },
   access: {
     // Staff see every file. Public pages read through the server-side Local
-    // API and see ready + public files only; anonymous REST is denied
-    // (P1 A), which also closes `/api/publication-files/file/<name>`.
+    // API and see ready files of a public access level only (`public`, and
+    // `registered` while accounts are on; never `subscriber`); anonymous
+    // REST and GraphQL are denied (P1 A), which also closes
+    // `/api/publication-files/file/<name>`.
     read: ({ req }) => {
       if (staffRoleOf(req) !== null) return true;
-      if (isAnonymousLocalRead(req)) return PUBLIC_FILE_READ;
+      if (isAnonymousLocalRead(req)) return publicFileRead();
       return false;
     },
     create: isStaff,
@@ -103,7 +107,7 @@ export const PublicationFiles: CollectionConfig = {
       ],
       admin: {
         description:
-          "Akses efektif = level yang lebih ketat antara publikasi dan file. File registered/subscriber belum tampil di situs sampai M5.",
+          "Akses efektif = level yang lebih ketat antara publikasi dan file. File registered tampil terkunci dan hanya dapat diunduh dengan akun publik terverifikasi (saat akun publik aktif). File subscriber belum tampil di situs sampai M7.",
       },
     },
     {

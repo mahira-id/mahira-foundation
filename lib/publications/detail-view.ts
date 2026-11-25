@@ -1,6 +1,7 @@
 import { isLocale, languageSwitchHref, otherLocale, type Locale } from "@/lib/i18n/locales";
+import { requiredLevel, type DownloadLevel } from "@/lib/access/evaluator";
+import { isAuthEnabled } from "@/lib/auth/env";
 import { formatPublicationDate, publicationYear } from "@/lib/publications/dates";
-import { isPublicDownload } from "@/lib/publications/file-access";
 import { downloadPath } from "@/lib/publications/file-download";
 import type { Publication } from "@/payload/payload-types";
 import { SLUG_PATTERN } from "@/payload/fields/slug";
@@ -62,10 +63,13 @@ export type PublicationCoverImage = { url: string; alt: string; width: number; h
 export type PublicationFileKind = "preview" | "full_document" | "appendix" | "dataset" | "supplementary" | "other";
 
 /**
- * A downloadable file of the panel (M3-08, DECISIONS §2.14 item 7): only
- * files visitors may download (isPublicDownload), in stored order. No
- * storage URL or object key: the link is `downloadPath`, the app route that
- * checks access again on every request.
+ * A file of the panel (M3-08, DECISIONS §2.14 item 7; M5-04, §2.18
+ * decision 11): only files with a download now (requiredLevel), in stored
+ * order. `access` is the level the download needs: `public` for everyone,
+ * `registered` shown locked (a verified public account). No storage URL or
+ * object key, and nothing that depends on the visitor's session: the link
+ * is `downloadPath`, the app route that checks access again on every
+ * request.
  */
 export type PublicationFileItem = {
   id: number;
@@ -75,6 +79,7 @@ export type PublicationFileItem = {
   language: Locale;
   sizeBytes: number;
   downloadPath: string;
+  access: DownloadLevel;
 };
 
 export type PublicationDetail = {
@@ -95,7 +100,7 @@ export type PublicationDetail = {
   year: string | null;
   /** An uploaded image cover, or null for the typographic cover. */
   cover: PublicationCoverImage | null;
-  /** Public PDF files in stored order; empty = no file panel. */
+  /** PDF files with a download now (`public`, or `registered` locked) in stored order; empty = no file panel. */
   files: PublicationFileItem[];
 };
 
@@ -151,23 +156,29 @@ function isFileKind(value: unknown): value is PublicationFileKind {
 }
 
 /**
- * The files visitors may download (M3-08, DECISIONS §2.14 items 3 and 7),
- * in stored order: populated, ready, PDF, the stricter of the publication's
- * and the file's level `public` (isPublicDownload), with a label, a known
- * kind and language and a size. An id (the anonymous read could not
+ * The files of the panel (M3-08, DECISIONS §2.14 items 3 and 7; M5-04), in
+ * stored order: populated, ready, PDF, with a download now (requiredLevel:
+ * the stricter of the publication's and the file's level is `public`, or
+ * `registered` while accounts are on; never `subscriber`), with a label, a
+ * known kind and language and a size. An id (the anonymous read could not
  * populate it) or anything incomplete is dropped. The staff preview uses
  * the same filter, so it shows exactly the files visitors will get.
  */
-export function publicFiles(publicationAccess: unknown, files: FileRelation[] | null | undefined): PublicationFileItem[] {
+export function publicFiles(
+  publicationAccess: unknown,
+  files: FileRelation[] | null | undefined,
+  accountsEnabled: boolean = isAuthEnabled(),
+): PublicationFileItem[] {
   const items: PublicationFileItem[] = [];
   for (const file of files ?? []) {
     if (!file || typeof file === "number" || typeof file.id !== "number") continue;
-    if (!isPublicDownload(publicationAccess, file)) continue;
+    const access = requiredLevel(publicationAccess, file, { accountsEnabled });
+    if (access === null) continue;
     const label = nonEmpty(file.label);
     const { kind, language, filesize } = file;
     if (!label || !isFileKind(kind) || typeof language !== "string" || !isLocale(language)) continue;
     if (typeof filesize !== "number" || !Number.isFinite(filesize) || filesize < 0) continue;
-    items.push({ id: file.id, label, kind, language, sizeBytes: filesize, downloadPath: downloadPath(file.id) });
+    items.push({ id: file.id, label, kind, language, sizeBytes: filesize, downloadPath: downloadPath(file.id), access });
   }
   return items;
 }

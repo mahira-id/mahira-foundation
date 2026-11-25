@@ -1,3 +1,6 @@
+import { isLocale } from "@/lib/i18n/locales";
+import { SLUG_PATTERN } from "@/payload/fields/slug";
+
 import { AUTH_FIELDS } from "./routes";
 
 /**
@@ -96,6 +99,29 @@ export function isSameOrigin(headers: Headers): boolean {
   if (url.protocol !== "http:" && url.protocol !== "https:") return false;
   const host = (headers.get("x-forwarded-host") ?? headers.get("host") ?? "").split(",")[0].trim().toLowerCase();
   return host !== "" && url.host.toLowerCase() === host;
+}
+
+/** Longest return path kept; a longer value is ignored. */
+export const RETURN_PATH_MAX_LENGTH = 200;
+
+const RETURN_PATH_PATTERN = /^\/([a-z]{2})\/publications\/([^/]+)$/;
+
+/**
+ * The login page's return path (`?next=` and the form field `next`, M5-04,
+ * DECISIONS §2.18 decision 12): the publication detail path the locked
+ * file came from, `/{id|en}/publications/<slug>` with a slug of
+ * SLUG_PATTERN, at most RETURN_PATH_MAX_LENGTH characters, else null. So it
+ * is always an internal path: no scheme, host, `//`, `\`, query, fragment,
+ * percent-encoding or other route (an account page, an API route, the
+ * download route itself). For an array (repeated parameter) the first value
+ * counts.
+ */
+export function readReturnPath(value: unknown): string | null {
+  const first: unknown = Array.isArray(value) ? value[0] : value;
+  if (typeof first !== "string" || first.length > RETURN_PATH_MAX_LENGTH) return null;
+  const match = RETURN_PATH_PATTERN.exec(first);
+  if (!match || !isLocale(match[1]) || !SLUG_PATTERN.test(match[2])) return null;
+  return first;
 }
 
 export function isTokenHash(value: string | null): value is string {

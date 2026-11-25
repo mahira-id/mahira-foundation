@@ -231,7 +231,7 @@ describe("slug redirect (M3-07 308 of old publication slugs)", () => {
     await assertDetail(detailPath("id", "d1"), "d1");
   });
 
-  test("RD4 target unpublished, registered or subscriber: not-found without Location and without the new slug; published registered never gets a row", async (t) => {
+  test("RD4 target unpublished or subscriber: not-found without Location and without the new slug; registered (M5-03, accounts on) redirects; published subscriber never gets a row", async (t) => {
     const record = await createPub("t1");
     await publish(record, { slug: slug("t2") });
     const hidden = [slug("t2"), title("t1")];
@@ -239,14 +239,18 @@ describe("slug redirect (M3-07 308 of old publication slugs)", () => {
     await assertNoRedirect("id", detailPath("id", "t1"), hidden, t);
     await publish(record, {});
     await assert308(detailPath("id", "t1"), detailPath("id", "t2"));
-    for (const accessLevel of ["registered", "subscriber"] as const) {
-      await publish(record, { accessLevel });
-      await assertNoRedirect("id", detailPath("id", "t1"), hidden, t);
-    }
-    const registered = await createPub("r1", { accessLevel: "registered" });
-    await publish(registered, { slug: slug("r2") });
-    assert.deepEqual(await rows({ publication: registered.id }), [], "rows of a record that was never public");
+    await publish(record, { accessLevel: "registered" });
+    await assert308(detailPath("id", "t1"), detailPath("id", "t2"));
+    await publish(record, { accessLevel: "subscriber" });
+    await assertNoRedirect("id", detailPath("id", "t1"), hidden, t);
+    const subscriber = await createPub("r1", { accessLevel: "subscriber" });
+    await publish(subscriber, { slug: slug("r2") });
+    assert.deepEqual(await rows({ publication: subscriber.id }), [], "rows of a record that was never visible");
     await assertNoRedirect("id", detailPath("id", "r1"), [slug("r2"), title("r1")], t);
+    const registered = await createPub("v1", { accessLevel: "registered" });
+    await publish(registered, { slug: slug("v2") });
+    assert.equal((await rows({ publication: registered.id })).length > 0, true, "a published registered record records its URL (M5-03)");
+    await assert308(detailPath("id", "v1"), detailPath("id", "v2"));
   });
 
   test("RD5 locale: an old slug never redirects to or from another locale", async (t) => {

@@ -1,29 +1,53 @@
 import type { Where } from "payload";
+import { isAuthEnabled } from "../../lib/auth/env";
+
+/** Access levels the public site may show (never `subscriber` before M7). */
+export type PublicAccessLevel = "public" | "registered";
 
 /**
- * What an anonymous Local API read of `publications` may see (DEC-002):
- * published records with Access Level public. Public pages read through this
- * filter (payload/collections/Publications.ts, access.read).
+ * Access levels of the publications and files visitors may see (M5-03/M5-04,
+ * DECISIONS §2.18 decision 11): `public`, and `registered` while public
+ * accounts are on (lib/auth/env.ts isAuthEnabled). This lifts §2.11 P7 A and
+ * §2.14 decision 3b(ii) for `registered` only. `subscriber` stays hidden
+ * until M7. With the CMS on and accounts off (e.g. local without
+ * APP_SUPABASE_PUBLISHABLE_KEY) `registered` stays hidden as before, so no
+ * page shows a locked file whose login link would answer 404.
+ *
+ * Read on every call: anonymous REST and GraphQL never reach these filters
+ * (payload/access/roles.ts isAnonymousLocalRead), so nothing widens there.
+ */
+export function publicAccessLevels(): PublicAccessLevel[] {
+  return isAuthEnabled() ? ["public", "registered"] : ["public"];
+}
+
+/**
+ * What an anonymous Local API read of `publications` may see (DEC-002,
+ * M5-03): published records whose Access Level is one of
+ * publicAccessLevels(). Public pages read through this filter
+ * (payload/collections/Publications.ts, access.read); the index search SQL
+ * repeats it (lib/cms/publication-search-query.ts).
  *
  * The same rule defines the staff-only column "Tayang di situs"
- * (`liveOnSite`, DECISIONS §2.6 P4): "Ya" when the record (the live version)
- * matches this filter, so the column shows exactly what visitors see.
+ * (`liveOnSite`, DECISIONS §2.6 P4) and the slug history (M3-07): "Ya" when
+ * the record (the live version) matches this filter, so the column shows
+ * exactly what visitors see.
  */
-export const PUBLIC_PUBLICATION_READ: Where = {
-  and: [{ _status: { equals: "published" } }, { accessLevel: { equals: "public" } }],
-};
+export function publicPublicationRead(): Where {
+  return { and: [{ _status: { equals: "published" } }, { accessLevel: { in: publicAccessLevels() } }] };
+}
 
 /**
  * What an anonymous Local API read of `publication-files` may see (M3-08,
- * DECISIONS §2.14): ready files with Access Level public. Files with
- * `registered`/`subscriber` stay hidden on the public site until M5 (§2.14
- * item 3). Whether the file may be downloaded also needs its publication's
- * live version to match PUBLIC_PUBLICATION_READ and the stricter of both
- * levels to be public (lib/publications/file-access.ts).
+ * DECISIONS §2.14; M5-04): ready files whose Access Level is one of
+ * publicAccessLevels(); `subscriber` files stay hidden until M7. Whether
+ * the file may be downloaded also needs its publication's live version to
+ * match publicPublicationRead() and the access decision of the download
+ * route (lib/access/evaluator.ts: the stricter of both levels; `registered`
+ * needs a verified public session).
  */
-export const PUBLIC_FILE_READ: Where = {
-  and: [{ status: { equals: "ready" } }, { accessLevel: { equals: "public" } }],
-};
+export function publicFileRead(): Where {
+  return { and: [{ status: { equals: "ready" } }, { accessLevel: { in: publicAccessLevels() } }] };
+}
 
 /**
  * What an anonymous Local API read of the `about` global may see (M3-09,

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
 import type { Payload } from "payload";
 
+import { publicPublicationRead } from "../../payload/access/public-read";
 import type { Topic, User } from "../../payload/payload-types";
 import {
   areaEmail,
@@ -92,11 +93,12 @@ describe("locale (M3-01 routes, lang, status codes, no public fallback)", () => 
     hookNote(t, `cleanup at start removed ${formatCounts(await cleanupArea(payload, AREA))}`);
     await assertOwnerIntact(payload);
     await assertServerUp();
-    // Expected sets: published + public publications of each locale.
+    // Expected sets: published publications of each locale with a level visitors see
+    // (public, and since M5-03 registered while accounts are on; never subscriber).
     for (const locale of LOCALES) {
       const result = await payload.find({
         collection: "publications",
-        where: { and: [{ locale: { equals: locale } }, { _status: { equals: "published" } }, { accessLevel: { equals: "public" } }] },
+        where: { and: [{ locale: { equals: locale } }, publicPublicationRead()] },
         overrideAccess: true,
         pagination: false,
         depth: 0,

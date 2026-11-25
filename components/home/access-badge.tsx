@@ -8,7 +8,7 @@ const accessConfig = {
     dot: "bg-green",
   },
   registered: {
-    label: "Perlu akun",
+    label: "Terdaftar",
     className: "border-brand-500/30 bg-brand-50 text-brand-700",
     dot: "bg-brand-500",
   },
@@ -22,7 +22,7 @@ const accessConfig = {
 /** Labels of the English pages (M3-05, DECISIONS §2.11 P15 A); the Indonesian ones are in accessConfig. */
 const englishLabels: Record<AccessLevel, string> = {
   public: "Public access",
-  registered: "Account required",
+  registered: "Registered",
   subscriber: "Subscription",
 };
 

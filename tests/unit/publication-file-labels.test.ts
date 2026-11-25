@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, test } from "node:test";
+import { PublicationFiles, type PanelFile } from "../../components/publication/publication-files";
 import { dictionaries } from "../../lib/i18n/dictionaries";
 import { LOCALES } from "../../lib/i18n/locales";
 import { fileFormatLabel, fileKindLabel, fileLanguageLabel, fileSizeLabel } from "../../lib/publications/file-labels";
@@ -59,7 +62,52 @@ describe("file panel labels (M3-08: size, kind, document language)", () => {
     assert.equal(fileLanguageLabel("en", "en"), "English");
     assert.equal(dictionaries.id.files.download, "Unduh PDF");
     assert.equal(dictionaries.en.files.download, "Download PDF");
+    assert.equal(dictionaries.id.files.downloadRegistered, "Unduh PDF (perlu akun)");
+    assert.equal(dictionaries.en.files.downloadRegistered, "Download PDF (account required)");
     assert.equal(dictionaries.id.files.previewNote, "Unduhan aktif setelah publikasi diterbitkan.");
     assert.equal(dictionaries.en.files.previewNote, "Downloads become active once the publication is published.");
+  });
+
+  test("FL3 file panel rows (M5-04, DECISIONS §2.19 decision 4): a registered row has the Terdaftar/Registered badge, data-file-access, the locked label on an outline button; a public row has none; preview has no link; the same HTML for every visitor", () => {
+    const row = (id: number, access?: PanelFile["access"]): PanelFile => ({
+      id,
+      label: `Berkas ${id}`,
+      kind: "full_document",
+      language: "id",
+      sizeBytes: 1_572_864,
+      downloadPath: `/api/files/${id}/download`,
+      access,
+    });
+    const files = [row(1, "public"), row(2, "registered"), row(3)];
+    const render = (locale: "id" | "en", preview = false) =>
+      renderToStaticMarkup(createElement(PublicationFiles, { files, locale, preview }));
+
+    for (const [locale, badge, locked, open] of [
+      ["id", "Terdaftar", "Unduh PDF (perlu akun)", "Unduh PDF"],
+      ["en", "Registered", "Download PDF (account required)", "Download PDF"],
+    ] as const) {
+      const html = render(locale);
+      assert.equal(html, render(locale), `${locale}: deterministic, no session input`);
+      const rows = html.split("<li ").slice(1);
+      assert.equal(rows.length, 3);
+      assert.equal(rows[1].includes('data-file-access="registered"'), true, `${locale}: registered row marked`);
+      assert.equal(rows[1].includes(badge), true, `${locale}: badge`);
+      assert.equal(rows[1].includes(locked), true, `${locale}: locked label`);
+      assert.equal(rows[1].includes("btn-outline-dark"), true, `${locale}: outline button`);
+      assert.equal(rows[1].includes('href="/api/files/2/download"'), true, `${locale}: same download link`);
+      for (const index of [0, 2]) {
+        assert.equal(rows[index].includes("data-file-access"), false, `${locale}: row ${index} not locked`);
+        assert.equal(rows[index].includes(badge), false, `${locale}: row ${index} has no badge`);
+        assert.equal(rows[index].includes("btn-primary"), true, `${locale}: row ${index} primary button`);
+        assert.equal(rows[index].includes(`>${open}<`), true, `${locale}: row ${index} label`);
+      }
+      assert.equal(html.includes("sb-"), false);
+      assert.equal(html.includes("X-Amz"), false);
+    }
+
+    const preview = render("id", true);
+    assert.equal(preview.includes("href="), false, "preview: no links");
+    assert.equal(preview.includes("Terdaftar"), true, "preview: the registered badge stays");
+    assert.equal(preview.includes("Unduh PDF"), false, "preview: no download text");
   });
 });

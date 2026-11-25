@@ -50,10 +50,15 @@ import { NEXT_BIN, isPortOpen, runCommand, startNextServer, type ChildEnv } from
  *   account-pages the account pages (login, register, forgot-password, reset-password, account):
  *                 forms and their actions, noindex, status messages, the session on the
  *                 account page, staff cookie ignored, header link (M5-02)
+ *   registered    registered files and visibility: SRS §12.1 Visitor/Registered/Editor/Admin
+ *                 on /api/files/{id}/download (303 login, 307 only with a verified public
+ *                 session, staff = anonymous, subscriber 404), bad and refreshed cookies, the
+ *                 login return path, same HTML for every visitor, registered listed and
+ *                 subscriber hidden everywhere, closed REST/GraphQL (M5-03/M5-04)
  *   db-invariants users = 1 + Owner Admin, RLS, migrations ran, 0 fixtures left, no fixture
  *                 text in the About and Learning Hub globals (always last)
  *
- * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,toolkits,auth,auth-boundary,account-pages,db-invariants]
+ * Usage: bun run test:integration [--skip-build] [--only access,guards,...,index,search,detail,preview,redirect,seo,downloads,about,learning-hub,toolkits,auth,auth-boundary,account-pages,registered,db-invariants]
  * Never run two at once: the files share one database and one port.
  */
 const FILES = {
@@ -77,6 +82,7 @@ const FILES = {
   auth: "tests/integration/auth.test.ts",
   "auth-boundary": "tests/integration/auth-boundary.test.ts",
   "account-pages": "tests/integration/account-pages.test.ts",
+  registered: "tests/integration/registered-files.test.ts",
   "db-invariants": "tests/integration/db-invariants.test.ts",
 } as const;
 type Name = keyof typeof FILES;
