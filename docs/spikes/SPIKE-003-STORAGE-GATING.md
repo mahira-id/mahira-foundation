@@ -1,6 +1,6 @@
 # SPIKE-003 — Supabase Storage and Gated Publication Assets
 
-**Status:** Completed with findings untuk bagian publik (M2-03); bagian privat Planned (M5-04) · **Owner:** Haidar (Product Owner), approver keputusan · **Date:** 2026-11-10 (bagian publik dijalankan 2026-11-09 s.d. 2026-11-10) · **Decision links:** DEC-009, DEC-010, DEC-011, DEC-012 · **ADR:** 0006
+**Status:** Completed with findings untuk bagian publik (M2-03); pengiriman privat untuk `registered` dibangun di M5-04 (§13), `subscriber` Planned (M7-03) · **Owner:** Haidar (Product Owner), approver keputusan · **Date:** 2026-11-10 (bagian publik dijalankan 2026-11-09 s.d. 2026-11-10) · **Decision links:** DEC-009, DEC-010, DEC-011, DEC-012 · **ADR:** 0006
 
 Branch spike: `spike/m2-payload-postgres` (lokal, tidak di-push, tidak di-merge), commit kode `c19a774`. Rekomendasi dicatat sebagai usulan di `decisions/DECISIONS.md` §2.3; tidak ada status DEC yang diubah.
 
@@ -151,3 +151,18 @@ Diukur lewat tes `tests/integration/toolkit-files.test.ts` dengan objek `fixture
 | Bukan PDF | Byte non-PDF dan `text/plain` ditolak (TK1). |
 
 Batasan yang tersisa sama dengan §11: key S3 satu set untuk semua environment (M4), objek yatim dari client upload yang record-nya ditolak, dan waktu simpan file besar di Vercel (diukur Owner di Preview).
+
+## 13. Hasil M5-04 (2026-11-24, lokal, bucket `publication-files`): pengiriman privat file `registered`
+
+Diukur lewat tes `tests/integration/registered-files.test.ts` (area `registered`, RF1–RF9) dengan objek dan akun `fixture-test-registered-*` yang dihapus sesudahnya; DECISIONS §2.18 keputusan 11–12, §2.20. Signed URL tidak pernah dicetak atau dicatat.
+
+| Pertanyaan | Hasil |
+|---|---|
+| Mekanisme | Sama dengan §11: private bucket, cek di server, presigned GET 60 detik dengan `response-content-disposition` attachment. Kunci S3 Supabase melewati RLS Storage, jadi satu-satunya otorisasi adalah cek server di `decideFileDownload` (`lib/access/file-download.ts`) memakai `evaluateFileAccess` (`lib/access/evaluator.ts`). Signed URL dibuat sesudah keputusan allow (uji rusak-sengaja B3). |
+| Sesi | `readDownloadPrincipal` memakai `getUser()` di route (bukan `getClaims()`), hanya untuk file `registered`; `proxy.ts` tidak diubah. Cookie Payload dan header `Authorization` tidak dibaca (sesi staf = anonim, uji B6, RF2). |
+| Hasil per pemanggil | Anonim, Editor saja, Admin saja, JWT Editor → 303 ke `/{locale}/login?next=<detail>`; pengguna publik terverifikasi → 307, GET ke URL itu (Range) 200 `application/pdf` dengan `Content-Disposition: attachment`; file `subscriber` → 404 untuk semua (RF1–RF3). |
+| Sesi rusak | Cookie sampah, dimanipulasi, atau kedaluwarsa tanpa refresh valid → tanpa signed URL (303 dan cookie dihapus); access token kedaluwarsa dengan refresh valid → 307 dan cookie baru pada jawaban unduhan (RF4). |
+| TTL | 60 detik juga untuk `registered` (`SIGNED_DOWNLOAD_TTL_SECONDS`); perilaku kedaluwarsa sama dengan §11 (DL11). |
+| Kebocoran | HTML detail sama untuk anonim, pengguna terverifikasi, dan cookie staf; tanpa nama file, prefix, `_objectKey`, host storage, atau `X-Amz-` (RF7, uji B5). REST/GraphQL anonim tetap menolak file dan publikasi `registered` dan `subscriber` (RF8, uji B8). Jawaban 303/307/404 membawa `no-store` dan `noindex` (RF9). |
+
+Batasan yang tersisa sama dengan §11 ditambah: tanpa audit unduhan (FR-026, M4); akun dengan email belum terverifikasi tidak dapat dibuat terhadap Supabase dengan "Confirm email" ON, jadi jalur itu diuji di unit; bagian `subscriber` (entitlement, TTL, revocation) tetap M7-03. DEC-012 bagian `registered` diajukan Accepted, menunggu persetujuan Owner (DECISIONS §2.20).
