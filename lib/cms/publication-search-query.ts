@@ -16,6 +16,16 @@ import { publicAccessLevels, type PublicAccessLevel } from "@/payload/access/pub
  * publication type names in the route locale (C), with the text search
  * configuration of that locale. Body text and PDF content are not searched.
  *
+ * M3-06b: each of the three texts first goes through
+ * `regexp_replace(…, '[-+](?=[0-9])', ' ', 'g')`, so a `-` or `+` right
+ * before a digit only separates words, as it does in the visitor's text
+ * (searchTokens in lib/publications/search-terms.ts). Without it the default
+ * parser reads "M5-04" as `m5` plus the signed integer `-04` (likewise
+ * "COVID-19", "2020-2024", "+62"), and the query word `04` never matches
+ * `-04`. The pattern is a fixed literal, never visitor input. Other tokens
+ * that keep punctuation inside one lexeme (decimals "4.0", paths "11/2020",
+ * hosts, emails, URLs) are unchanged: a known limitation (ADR-0007).
+ *
  * Same guarantees as the Local API reads (publicPublicationRead in
  * payload/access/public-read.ts, record `locale`, no fallback locale): only
  * the main `publications` row (never `_publications_v`, so a pending draft
@@ -45,9 +55,9 @@ export function buildSearchSql(locale: Locale, tsquery: string, levels: readonly
       SELECT
         p."id",
         q."query",
-        setweight(to_tsvector(${config}::regconfig, coalesce(p."title", '')), 'A')
-          || setweight(to_tsvector(${config}::regconfig, coalesce(p."summary", '')), 'B')
-          || setweight(to_tsvector(${config}::regconfig, concat_ws(' ',
+        setweight(to_tsvector(${config}::regconfig, regexp_replace(coalesce(p."title", ''), '[-+](?=[0-9])', ' ', 'g')), 'A')
+          || setweight(to_tsvector(${config}::regconfig, regexp_replace(coalesce(p."summary", ''), '[-+](?=[0-9])', ' ', 'g')), 'B')
+          || setweight(to_tsvector(${config}::regconfig, regexp_replace(concat_ws(' ',
             (SELECT string_agg(a."display_name", ' ' ORDER BY r."order", r."id")
                FROM "publications_rels" r
                JOIN "authors" a ON a."id" = r."authors_id"
@@ -59,7 +69,7 @@ export function buildSearchSql(locale: Locale, tsquery: string, levels: readonly
             (SELECT string_agg(y."name", ' ' ORDER BY y."id")
                FROM "publication_types_locales" y
               WHERE y."_parent_id" = p."publication_type_id" AND y."_locale"::text = ${locale})
-          )), 'C') AS "document"
+          ), '[-+](?=[0-9])', ' ', 'g')), 'C') AS "document"
       FROM "publications" p
       CROSS JOIN (SELECT to_tsquery(${config}::regconfig, ${tsquery}) AS "query") q
       WHERE p."locale"::text = ${locale}
