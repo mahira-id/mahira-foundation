@@ -9,6 +9,8 @@ import type { Locale } from "@/lib/i18n/locales";
  * output never carries operators from the visitor. Every word must match as
  * a whole word after stemming; the last one also as a prefix ("ekon" finds
  * "ekonomi"). The text is still sent as a bound parameter, never as SQL.
+ * "M5-04" gives `M5 & 04:*`; the search SQL splits the document the same
+ * way at a `-` or `+` before a digit (M3-06b, lib/cms/publication-search-query.ts).
  */
 
 /** Postgres text search configuration of each locale (§2.12 P2). */

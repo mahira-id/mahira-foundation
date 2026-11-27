@@ -35,6 +35,13 @@ import { indexState, robotsContent, rowSlugs, type IndexStateAttributes } from "
  * (checked read-only 2026-11-15), each placed once. publishedAt 2001–2003,
  * so no fixture leads `/`. No user is created; the Owner guard runs before
  * any fixture is written and after cleanup.
+ *
+ * M3-06b (SR13–SR16): records `h-*` (type B, so outside the dravek order)
+ * with a hyphen or plus before digits in the title, summary or an author
+ * name ("[Zr7-4817]", "Plurvex-19", "2187-2193", "+7319", "Trevolk-552",
+ * "Drovak-6620", EN "Zentrax-21") and a hyphenated word without digits
+ * ("sosial-ekonomi"); words and numbers checked read-only 2026-11-25 to
+ * appear in no other record of `mahira-cms`.
  */
 type PubData = RequiredDataFromCollectionSlug<"publications">;
 
@@ -74,7 +81,7 @@ describe("publication search (M3-06 relevance, locale, filters, non-disclosure)"
   let payload: Payload | undefined;
   let types: { a: PublicationType; b: PublicationType } | undefined;
   let topics: { umum: Topic; brumelak: Topic } | undefined;
-  let authors: { umum: Author; brumelak: Author } | undefined;
+  let authors: { umum: Author; brumelak: Author; hyph: Author } | undefined;
   const records = new Map<string, Publication>();
 
   function p(): Payload {
@@ -171,7 +178,11 @@ describe("publication search (M3-06 relevance, locale, filters, non-disclosure)"
       umum: await activeTerm("topics", TOPIC_UMUM, "Topik Umum", "General Topic"),
       brumelak: await activeTerm("topics", TOPIC_BRUMELAK, "Topik Brumelak", "Topic Orvantis"),
     };
-    authors = { umum: await createAuthor("umum", "Penulis Umum"), brumelak: await createAuthor("brumelak", "Penulis Brumelak") };
+    authors = {
+      umum: await createAuthor("umum", "Penulis Umum"),
+      brumelak: await createAuthor("brumelak", "Penulis Brumelak"),
+      hyph: await createAuthor("hyph", "Penulis Drovak-6620"),
+    };
 
     await createPub("s-title", "Laporan Brumelak", { publishedAt: date("2001-01-10") });
     await createPub("s-sum", "Kajian satu", { summary: BRUMELAK_SUMMARY, publishedAt: date("2003-03-10") });
@@ -194,6 +205,14 @@ describe("publication search (M3-06 relevance, locale, filters, non-disclosure)"
     await createPub("quillaro", "Terdaftar Quillaro", { accessLevel: "registered", publicationType: types.b.id, publishedAt: date("2002-08-10") });
     await createPub("snervik", "Pelanggan Snervik", { accessLevel: "subscriber", publishedAt: date("2002-09-10") });
     await createPub("e1", "Policies of Governance Tarquell", { locale: "en", topics: [topics.brumelak.id], publishedAt: date("2003-01-10") });
+    // M3-06b: a hyphen or plus before digits; type B keeps these out of the dravek (type A) order.
+    const typeB = { publicationType: types.b.id };
+    await createPub("h-code", "[Zr7-4817] Laporan Kronvid", { ...typeB, publishedAt: date("2001-03-10") });
+    await createPub("h-word", "Dampak Plurvex-19 terhadap Usaha", { ...typeB, summary: `${LABEL}Ringkasan kode Trevolk-552.`, publishedAt: date("2001-04-10") });
+    await createPub("h-range", "Rencana Kerja Quendor 2187-2193", { ...typeB, authors: [authors.hyph.id], publishedAt: date("2001-05-10") });
+    await createPub("h-plus", "Kode Wilayah +7319 Brivant", { ...typeB, publishedAt: date("2001-06-10") });
+    await createPub("h-hword", "Kajian sosial-ekonomi Varnoth", { ...typeB, publishedAt: date("2001-07-10") });
+    await createPub("h-en", "Policy Brief Zentrax-21", { ...typeB, locale: "en", publishedAt: date("2001-08-10") });
   });
 
   after(async (t) => {
@@ -346,6 +365,44 @@ describe("publication search (M3-06 relevance, locale, filters, non-disclosure)"
     assert.equal(found.state.state, "page-not-found", "state");
     assert.equal(robotsContent(found.html), "noindex, follow", "robots");
     assert.equal(found.html.includes('href="/id/publications?q=brumelak"'), true, "link to page 1 with q");
+  });
+
+  test("SR13 M3-06b title: a hyphen or plus before digits separates words as in q (whole, parts, digits alone, prefix)", async () => {
+    for (const text of ["Zr7-4817", "[ZR7-4817]", "zr7 4817", "4817", "Zr7-48", "laporan zr7-4817 kronvid"]) {
+      await assertRows("id", q(text), ["h-code"]);
+    }
+    for (const text of ["Plurvex-19", "plurvex 19", "Plurvex-1", "dampak plurvex-19 terhadap usaha"]) {
+      await assertRows("id", q(text), ["h-word"]);
+    }
+    for (const text of ["2187-2193", "quendor 2193", "2187", "2187-219", "rencana kerja 2187-2193"]) {
+      await assertRows("id", q(text), ["h-range"]);
+    }
+    for (const text of ["+7319", "7319 brivant", "kode wilayah +73"]) {
+      await assertRows("id", q(text), ["h-plus"]);
+    }
+  });
+
+  test("SR14 M3-06b summary (B): Trevolk-552 matches whole and in parts", async () => {
+    for (const text of ["Trevolk-552", "trevolk 552", "552 trevolk"]) {
+      await assertRows("id", q(text), ["h-word"]);
+    }
+  });
+
+  test("SR15 M3-06b author name (C): Drovak-6620 matches whole, in parts and by its digits", async () => {
+    for (const text of ["Drovak-6620", "drovak 6620", "6620"]) {
+      await assertRows("id", q(text), ["h-range"]);
+    }
+  });
+
+  test("SR16 M3-06b hyphenated words without digits still match; english config; locale isolation", async () => {
+    for (const text of ["sosial-ekonomi varnoth", "varnoth sosial ekonomi", "varnoth sosial-ekon", "Varnoth ekonomi"]) {
+      await assertRows("id", q(text), ["h-hword"]);
+    }
+    for (const text of ["Zentrax-21", "zentrax 21", "Zentrax-2", "policy brief zentrax-21"]) {
+      await assertRows("en", q(text), ["h-en"]);
+    }
+    await assertNoResults("id", q("zentrax-21"));
+    await assertNoResults("en", q("zr7-4817"));
   });
 });
 

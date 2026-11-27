@@ -14,7 +14,8 @@ import { withAccounts } from "../helpers/auth-env";
 /**
  * Publication index search (M3-06, DEC-013, DECISIONS §2.12 P1–P8): the `q`
  * contract, the tsquery text, the ranked plan and the SQL of the search
- * query. No database, no env: the SQL is compiled with drizzle's PgDialect
+ * query (since M3-06b with a sign before a digit split in the document,
+ * SRU7, SRU8). No database, no env: the SQL is compiled with drizzle's PgDialect
  * (the dialect of @payloadcms/db-postgres) and checked as text + params.
  */
 const CREATED = "2026-01-01T00:00:00.000Z";
@@ -32,6 +33,11 @@ const TOPICS: IndexTermDoc[] = [{ id: 10, slug: "ekonomi", name: "Ekonomi", isAc
 function compile(locale: "id" | "en", tsquery: string): { sql: string; params: unknown[] } {
   return new PgDialect().sqlToQuery(buildSearchSql(locale, tsquery));
 }
+
+/** M3-06b: the fixed arguments of `regexp_replace(<text>, '[-+](?=[0-9])', ' ', 'g')` in the search SQL. */
+const SIGN_PATTERN = "'[-+](?=[0-9])', ' ', 'g')";
+/** SIGN_PATTERN as a RegExp source. */
+const SIGN_SPLIT = SIGN_PATTERN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Values of the parameters that `pattern` (with one `$n` group) refers to. */
 function paramsOf(compiled: { sql: string; params: unknown[] }, pattern: RegExp): unknown[] {
@@ -99,6 +105,29 @@ describe("lib/publications/search-terms.ts", () => {
     assert.deepEqual(SEARCH_CONFIG, { id: "indonesian", en: "english" });
     assert.deepEqual(Object.keys(SEARCH_CONFIG).sort(), [...LOCALES].sort());
   });
+
+  test("SRU8 M3-06b: a hyphen or plus before digits separates words (whole, parts, prefix); operators, punctuation only, 100 code points", () => {
+    assert.equal(toTsqueryText("UJI M5-04"), "UJI & M5 & 04:*", "the reported query");
+    assert.equal(toTsqueryText("[UJI M5-04]"), "UJI & M5 & 04:*", "brackets as in the title");
+    assert.equal(toTsqueryText("m5 04"), "m5 & 04:*", "typed in parts");
+    assert.equal(toTsqueryText("M5-0"), "M5 & 0:*", "prefix typed into the digits");
+    assert.equal(toTsqueryText("COVID-19"), "COVID & 19:*");
+    assert.equal(toTsqueryText("Dampak COVID-19 terhadap UMKM"), "Dampak & COVID & 19 & terhadap & UMKM:*");
+    assert.equal(toTsqueryText("2020-2024"), "2020 & 2024:*");
+    assert.equal(toTsqueryText("2020\u20132024"), "2020 & 2024:*", "en dash");
+    assert.equal(toTsqueryText("+62 812"), "62 & 812:*", "plus sign");
+    assert.equal(toTsqueryText("sosial-ekonomi"), "sosial & ekonomi:*", "hyphenated words without digits");
+    assert.equal(toTsqueryText("M5-04:*|!(x)"), "M5 & 04 & x:*", "operators next to the hyphen only separate words");
+    for (const text of ["-", "+-", " - + ", "\u2013", "--"]) {
+      assert.equal(toTsqueryText(text), null, `toTsqueryText(${JSON.stringify(text)})`);
+    }
+    for (const text of ["M5-04", "COVID-19 & x", "a-1|b+2", "-04", "+-+7"]) {
+      assert.match(toTsqueryText(text) ?? "", /^[\p{L}\p{N}]+(?: & [\p{L}\p{N}]+)*:\*$/u, `only words, " & " and ":*" for ${JSON.stringify(text)}`);
+    }
+    assert.equal(toTsqueryText(normalizeSearch(`${"!".repeat(95)}M5-04`)), "M5 & 04:*", "100 code points keep M5-04");
+    assert.equal(toTsqueryText(normalizeSearch(`${"!".repeat(97)}M5-04`)), "M5:*", "the cut after 100 code points drops 04");
+  });
+
 });
 
 describe("lib/publications/index-view.ts (ranked plan)", () => {
@@ -187,9 +216,23 @@ describe("lib/cms/publication-search-query.ts", () => {
       assert.equal(text.includes("subscriber"), false, `${locale}: never subscriber`);
       assert.match(text, /FROM "publications" p /, `${locale}: main table`);
       assert.equal(/_publications_v|version_/.test(text), false, `${locale}: never the versions table`);
-      assert.match(text, /setweight\(to_tsvector\(\$\d+::regconfig, coalesce\(p\."title", ''\)\), 'A'\)/, `${locale}: title A`);
-      assert.match(text, /setweight\(to_tsvector\(\$\d+::regconfig, coalesce\(p\."summary", ''\)\), 'B'\)/, `${locale}: summary B`);
-      assert.match(text, /a\."display_name".*t\."name".*y\."name".*\)\), 'C'\)/, `${locale}: author, topic and type names C`);
+      assert.match(
+        text,
+        new RegExp(String.raw`setweight\(to_tsvector\(\$\d+::regconfig, regexp_replace\(coalesce\(p\."title", ''\), ${SIGN_SPLIT}\), 'A'\)`),
+        `${locale}: title A, sign before a digit split (M3-06b)`,
+      );
+      assert.match(
+        text,
+        new RegExp(String.raw`setweight\(to_tsvector\(\$\d+::regconfig, regexp_replace\(coalesce\(p\."summary", ''\), ${SIGN_SPLIT}\), 'B'\)`),
+        `${locale}: summary B, sign before a digit split (M3-06b)`,
+      );
+      assert.match(
+        text,
+        new RegExp(String.raw`to_tsvector\(\$\d+::regconfig, regexp_replace\(concat_ws\(' ', .*a\."display_name".*t\."name".*y\."name".*\), ${SIGN_SPLIT}\), 'C'\)`),
+        `${locale}: author, topic and type names C, sign before a digit split (M3-06b)`,
+      );
+      assert.equal(text.split(SIGN_PATTERN).length - 1, 3, `${locale}: the M3-06b pattern once per text, no more`);
+      assert.equal(compiled.params.includes("[-+](?=[0-9])"), false, `${locale}: the M3-06b pattern is a fixed literal, not a parameter`);
       assert.match(text, /r\."path" = 'authors'.*r\."path" = 'topics'/, `${locale}: relation paths`);
       assert.match(text, /ts_rank\('\{0\.1,0\.2,0\.4,1\.0\}', d\."document", d\."query"\)/, `${locale}: weights D, C, B, A`);
       assert.match(text, /WHERE d\."document" @@ d\."query"/, `${locale}: only matching documents`);

@@ -1,6 +1,6 @@
 # SPIKE-003 — Supabase Storage and Gated Publication Assets
 
-**Status:** Completed with findings untuk bagian publik (M2-03); pengiriman privat untuk `registered` dibangun di M5-04 (§13), `subscriber` Planned (M7-03) · **Owner:** Haidar (Product Owner), approver keputusan · **Date:** 2026-11-10 (bagian publik dijalankan 2026-11-09 s.d. 2026-11-10) · **Decision links:** DEC-009, DEC-010, DEC-011, DEC-012 · **ADR:** 0006
+**Status:** Completed with findings untuk bagian publik (M2-03); pengiriman privat untuk `registered` dibangun di M5-04 (§13) dan dicek Owner di Preview 2026-11-25 (DEC-012 Accepted untuk `public` dan `registered`, DECISIONS §2.21), `subscriber` Planned (M7-03) · **Owner:** Haidar (Product Owner), approver keputusan · **Date:** 2026-11-10 (bagian publik dijalankan 2026-11-09 s.d. 2026-11-10) · **Decision links:** DEC-009, DEC-010, DEC-011, DEC-012 · **ADR:** 0006
 
 Branch spike: `spike/m2-payload-postgres` (lokal, tidak di-push, tidak di-merge), commit kode `c19a774`. Rekomendasi dicatat sebagai usulan di `decisions/DECISIONS.md` §2.3; tidak ada status DEC yang diubah.
 
